@@ -1,0 +1,20 @@
+{
+  "repo": "timm/vit_base_patch16_siglip_224.v2_webli",
+  "revision": "4c3661e5ac879a276ddc5ddc6d3f0ecc78fd5d82",
+  "licence": "apache-2.0",
+  "width": 224,
+  "height": 224,
+  "mean": [
+    0.5,
+    0.5,
+    0.5
+  ],
+  "std": [
+    0.5,
+    0.5,
+    0.5
+  ],
+  "interpolation": "bicubic",
+  "dim": 768,
+  "pooling": "out"
+}

@@ -1,0 +1,12 @@
+{
+  "appId": "com.riftmancer.app",
+  "appName": "RiftMancer",
+  "webDir": "dist-mobile",
+  "server": {
+    "androidScheme": "http",
+    "cleartext": true
+  },
+  "android": {
+    "backgroundColor": "#070d18"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "repo": "timm/mobilenetv4_conv_small.e2400_r224_in1k",
+  "revision": "331fb803779522b685cf942e15f914fb6741c1eb",
+  "licence": "apache-2.0",
+  "width": 224,
+  "height": 224,
+  "mean": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "std": [
+    0.229,
+    0.224,
+    0.225
+  ],
+  "interpolation": "bicubic",
+  "dim": 1280,
+  "pooling": "out"
+}

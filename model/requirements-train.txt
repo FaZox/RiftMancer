@@ -1,0 +1,6 @@
+# Local detector training (model/train.py), on top of the CUDA build of PyTorch:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+ultralytics==8.4.211  # pinned: multi_scale is a fraction of imgsz since 8.4; SPPF « legacy » rows get SiLU back (model/onnx_to_pt.py)
+onnx
+onnxruntime
+onnxslim

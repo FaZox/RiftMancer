@@ -1,0 +1,78 @@
+__pycache__/
+node_modules/
+model/backgrounds
+model/cards
+model/dataset
+venv/
+.venv/
+model/dataset.tar.gz
+model/dataset.tar.gz.sha256
+model/riftbound.db
+model/pictures
+model/runs
+# public/: everything is kept (models, card catalog, card images, icons)
+# except the ONNX runtime files copied from node_modules by scripts/copy-ort.mjs
+public/ort/
+nul
+dist/
+dist-mobile/
+android/app/build/
+android/.gradle/
+android/build/
+android/local.properties
+release
+build/icon.png
+
+# Claude Code work folders (worktrees are full copies of the project)
+.claude/
+
+# Real photos for the recognition test bench (npm run eval:matcher)
+model/real-photos/
+
+# French card data from riftboundfr.fr (downloaded by hand, see README) — not versioned
+model/fr/
+
+# Catalog embeddings cache of the test bench (npm run eval:matcher -- --compare)
+model/cache/
+
+# Raw phone photos for the bench (npm run photos:prepare → model/real-photos)
+model/real-photos-raw/
+model/real-photos-1115/
+
+# Python environment for the embedding exports
+model/.venv-embed/
+
+# Embedding models: re-downloadable / re-exportable, SHA-256 in model/MODELS.md (LFS quota)
+model/embedders/**/*.onnx
+
+# Copied from the root by scripts/copy-ort.mjs
+public/THIRD_PARTY_LICENSES.md
+public/LICENSE.txt
+
+# Detector bench scenes (python model/make_detector_eval.py)
+model/detector-eval/
+model/yolo-sizes/
+model/runs/
+model/dataset/
+model/.venv-train/
+model/*.pt
+model/archive/
+model/eval-detector.json
+*.pt
+
+# Models: only the ones the app ships are in git (LFS); trials stay in the
+# backup folder outside the repo (model/MODELS.md)
+public/models/*.onnx
+!public/models/yolo11s-pose-riftbound-dyn.onnx
+!public/models/dinov2s-ft-fp16.onnx
+model/finetune/
+
+model/dataset-rot/
+
+# Test apps only (src/lib/testFeatures.js): candidate detector, copied before a test build
+public/models/*-test.onnx
+
+# Content pack signing key (npm run pack:keygen): never in the repository
+*.pem
+pack-signing-key*
+test-results/

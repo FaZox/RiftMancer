@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- App icon (Hextech design): gold hexagon with the scan frame, on night blue. -->
+  <rect width="512" height="512" fill="#0a1220"/>
+  <polygon points="256,64 422,160 422,352 256,448 90,352 90,160" fill="#c8a84e"/>
+  <polygon points="256,64 422,160 422,352 256,448 90,352 90,160" fill="none" stroke="#e8c973" stroke-width="10"/>
+  <g fill="none" stroke="#0a1220" stroke-width="30" stroke-linecap="square">
+    <path d="M168 214 V168 H214"/>
+    <path d="M298 168 H344 V214"/>
+    <path d="M344 298 V344 H298"/>
+    <path d="M214 344 H168 V298"/>
+    <path d="M200 256 H312"/>
+  </g>
+</svg>

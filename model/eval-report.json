@@ -1,0 +1,97 @@
+{
+  "date": "2026-11-11",
+  "queries": {
+    "total": 50,
+    "simulated": 50,
+    "real": 0,
+    "cards": 50,
+    "perCard": 1,
+    "seed": 11,
+    "geo": "aléatoire 0–1",
+    "light": "aléatoire 0–1"
+  },
+  "artGroups": 53,
+  "before": {
+    "rule": "cosinus brut ≥ 0.8 (vues normale / miroir / 180°)",
+    "top1": 0.86,
+    "top5": 0.9,
+    "acceptedRight": 0.86,
+    "acceptedWrong": 0.14,
+    "rejected": 0,
+    "falsePositiveOutOfCatalog": 1
+  },
+  "after": {
+    "rule": "centré + marge (abs 0.44, marge 0.11) — vues normale / miroir / 180° / 90°",
+    "thresholds": {
+      "abs": 0.44,
+      "margin": 0.11,
+      "sureMargin": 0.2,
+      "temperature": 0.0275
+    },
+    "top1": 0.8,
+    "top5": 0.96,
+    "acceptedRight": 0.64,
+    "acceptedWrong": 0,
+    "rejected": 0.36,
+    "falsePositiveOutOfCatalog": 0,
+    "falsePositiveSameName": 0,
+    "falsePositiveExamples": []
+  },
+  "tradeoff": [
+    {
+      "maxFalsePositive": 0.01,
+      "abs": 0.44,
+      "margin": 0.09,
+      "acceptedRight": 0.66,
+      "acceptedWrong": 0,
+      "rejected": 0.34,
+      "falsePositiveOutOfCatalog": 0
+    },
+    {
+      "maxFalsePositive": 0.02,
+      "abs": 0.44,
+      "margin": 0.08,
+      "acceptedRight": 0.7,
+      "acceptedWrong": 0,
+      "rejected": 0.3,
+      "falsePositiveOutOfCatalog": 0.02
+    },
+    {
+      "maxFalsePositive": 0.03,
+      "abs": 0.44,
+      "margin": 0.08,
+      "acceptedRight": 0.7,
+      "acceptedWrong": 0,
+      "rejected": 0.3,
+      "falsePositiveOutOfCatalog": 0.02
+    },
+    {
+      "maxFalsePositive": 0.05,
+      "abs": 0.3,
+      "margin": 0.08,
+      "acceptedRight": 0.72,
+      "acceptedWrong": 0,
+      "rejected": 0.28,
+      "falsePositiveOutOfCatalog": 0.04
+    },
+    {
+      "maxFalsePositive": 0.1,
+      "abs": 0.3,
+      "margin": 0.07,
+      "acceptedRight": 0.74,
+      "acceptedWrong": 0,
+      "rejected": 0.26,
+      "falsePositiveOutOfCatalog": 0.06
+    }
+  ],
+  "calibrated": {
+    "abs": 0.44,
+    "margin": 0.09,
+    "sureMargin": 0.09,
+    "temperature": 0.0275,
+    "acceptedRight": 0.66,
+    "acceptedWrong": 0,
+    "rejected": 0.34,
+    "falsePositiveOutOfCatalog": 0
+  }
+}

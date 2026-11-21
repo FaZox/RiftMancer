@@ -1,0 +1,422 @@
+{
+  "date": "2026-11-14",
+  "seed": 42,
+  "photos": {
+    "simulated": 4245,
+    "real": 65
+  },
+  "configs": [
+    {
+      "config": "grid16@art",
+      "sizeMB": 0,
+      "msPerCard": 39.3,
+      "thresholds": {
+        "abs": 0.42,
+        "margin": 0.1
+      },
+      "thresholdsFast": {
+        "abs": -0.2,
+        "margin": 0.06,
+        "acceptedRight": 0.7945818610129565,
+        "acceptedWrong": 0.01154299175500589,
+        "falsePositiveOutOfCatalog": 0.08998822143698469
+      },
+      "simulated": {
+        "n": 4245,
+        "top1": 0.8541813898704358,
+        "top5": 0.903886925795053,
+        "acceptedRight": 0.7420494699646644,
+        "acceptedWrong": 0.001177856301531213,
+        "rejected": 0.2567726737338045,
+        "falsePositiveOutOfCatalog": 0.009658421672555949,
+        "reprintConfusion": 0.0018656716417910447
+      },
+      "real": {
+        "n": 65,
+        "top1": 0.8769230769230769,
+        "top5": 0.9384615384615385,
+        "acceptedRight": 0.6923076923076923,
+        "acceptedWrong": 0,
+        "rejected": 0.3076923076923077,
+        "falsePositiveOutOfCatalog": 0,
+        "reprintConfusion": 0
+      }
+    },
+    {
+      "config": "dinov2s-ft-fp16-mean-168@art",
+      "sizeMB": 46,
+      "msPerCard": 179.6,
+      "thresholds": {
+        "abs": -0.2,
+        "margin": 0.14
+      },
+      "thresholdsFast": {
+        "abs": 0.4,
+        "margin": 0.07,
+        "acceptedRight": 0.8494699646643109,
+        "acceptedWrong": 0.00447585394581861,
+        "falsePositiveOutOfCatalog": 0.0928150765606596
+      },
+      "simulated": {
+        "n": 4245,
+        "top1": 0.9090694935217903,
+        "top5": 0.9406360424028268,
+        "acceptedRight": 0.7901060070671378,
+        "acceptedWrong": 0.00023557126030624264,
+        "rejected": 0.209658421672556,
+        "falsePositiveOutOfCatalog": 0.008244994110718492,
+        "reprintConfusion": 0.0006218905472636816
+      },
+      "real": {
+        "n": 65,
+        "top1": 1,
+        "top5": 1,
+        "acceptedRight": 1,
+        "acceptedWrong": 0,
+        "rejected": 0,
+        "falsePositiveOutOfCatalog": 0.015384615384615385,
+        "reprintConfusion": 0
+      }
+    },
+    {
+      "config": "dinov2s-ft-fp16-mean-168@art+grid16 α0.5",
+      "sizeMB": null,
+      "msPerCard": null,
+      "thresholds": {
+        "abs": 0.4,
+        "margin": 0.11
+      },
+      "thresholdsFast": {
+        "abs": -0.2,
+        "margin": 0.06,
+        "acceptedRight": 0.9133097762073027,
+        "acceptedWrong": 0.002591283863368669,
+        "falsePositiveOutOfCatalog": 0.08244994110718493
+      },
+      "simulated": {
+        "n": 4245,
+        "top1": 0.9493521790341578,
+        "top5": 0.9733804475853945,
+        "acceptedRight": 0.8676089517078917,
+        "acceptedWrong": 0.0004711425206124853,
+        "rejected": 0.13191990577149593,
+        "falsePositiveOutOfCatalog": 0.009422850412249705,
+        "reprintConfusion": 0
+      },
+      "real": {
+        "n": 65,
+        "top1": 1,
+        "top5": 1,
+        "acceptedRight": 1,
+        "acceptedWrong": 0,
+        "rejected": 0,
+        "falsePositiveOutOfCatalog": 0,
+        "reprintConfusion": 0
+      }
+    },
+    {
+      "config": "dinov2s-ft-fp16-mean-168@art+grid16 α0.5 cascade100",
+      "sizeMB": null,
+      "msPerCard": null,
+      "thresholds": {
+        "abs": 0.4,
+        "margin": 0.13
+      },
+      "aiShare": 0.272,
+      "aiImagesPerAIPhoto": 2.92,
+      "thresholdsFast": {
+        "abs": -0.2,
+        "margin": 0.06,
+        "acceptedRight": 0.8848056537102473,
+        "acceptedWrong": 0.0077738515901060075,
+        "falsePositiveOutOfCatalog": 0.09634864546525324
+      },
+      "simulated": {
+        "n": 4245,
+        "top1": 0.9123674911660777,
+        "top5": 0.9323910482921084,
+        "acceptedRight": 0.84263839811543,
+        "acceptedWrong": 0.00023557126030624264,
+        "rejected": 0.1571260306242639,
+        "falsePositiveOutOfCatalog": 0.009422850412249705,
+        "reprintConfusion": 0.0006218905472636816
+      },
+      "real": {
+        "n": 65,
+        "top1": 0.9076923076923077,
+        "top5": 0.9538461538461539,
+        "acceptedRight": 0.8923076923076924,
+        "acceptedWrong": 0,
+        "rejected": 0.10769230769230764,
+        "falsePositiveOutOfCatalog": 0,
+        "reprintConfusion": 0
+      }
+    },
+    {
+      "config": "dinov2s-ft-fp16-mean-168@art+grid16 α0.5 cascade100 +accord",
+      "sizeMB": null,
+      "msPerCard": null,
+      "thresholds": {
+        "abs": -0.2,
+        "margin": 0.12
+      },
+      "aiShare": 0.28,
+      "aiImagesPerAIPhoto": 2.92,
+      "thresholdsFast": {
+        "abs": -0.2,
+        "margin": 0.06,
+        "acceptedRight": 0.8843345111896349,
+        "acceptedWrong": 0.007538280329799764,
+        "falsePositiveOutOfCatalog": 0.09234393404004712
+      },
+      "simulated": {
+        "n": 4245,
+        "top1": 0.9123674911660777,
+        "top5": 0.9326266195524147,
+        "acceptedRight": 0.8464075382803298,
+        "acceptedWrong": 0,
+        "rejected": 0.15359246171967023,
+        "falsePositiveOutOfCatalog": 0.008716136631330978,
+        "reprintConfusion": 0.0006218905472636816
+      },
+      "real": {
+        "n": 65,
+        "top1": 0.9076923076923077,
+        "top5": 0.9538461538461539,
+        "acceptedRight": 0.9076923076923077,
+        "acceptedWrong": 0,
+        "rejected": 0.09230769230769231,
+        "falsePositiveOutOfCatalog": 0,
+        "reprintConfusion": 0
+      }
+    },
+    {
+      "config": "dinov2s-ft-fp16-mean-168@art+grid16 α0.5 cascade100 1img",
+      "sizeMB": null,
+      "msPerCard": null,
+      "thresholds": {
+        "abs": 0.4,
+        "margin": 0.14
+      },
+      "aiShare": 0.272,
+      "aiImagesPerAIPhoto": 1,
+      "thresholdsFast": {
+        "abs": 0.28,
+        "margin": 0.06,
+        "acceptedRight": 0.8812720848056537,
+        "acceptedWrong": 0.008244994110718492,
+        "falsePositiveOutOfCatalog": 0.0994110718492344
+      },
+      "simulated": {
+        "n": 4245,
+        "top1": 0.9036513545347468,
+        "top5": 0.9210836277974087,
+        "acceptedRight": 0.8381625441696113,
+        "acceptedWrong": 0.00023557126030624264,
+        "rejected": 0.1616018845700824,
+        "falsePositiveOutOfCatalog": 0.009658421672555949,
+        "reprintConfusion": 0
+      },
+      "real": {
+        "n": 65,
+        "top1": 0.8923076923076924,
+        "top5": 0.9384615384615385,
+        "acceptedRight": 0.8923076923076924,
+        "acceptedWrong": 0,
+        "rejected": 0.10769230769230764,
+        "falsePositiveOutOfCatalog": 0,
+        "reprintConfusion": 0
+      }
+    },
+    {
+      "config": "dinov2s-ft-fp16-mean-168@art+grid16 α0.5 cascade100 1img +accord",
+      "sizeMB": null,
+      "msPerCard": null,
+      "thresholds": {
+        "abs": 0.36,
+        "margin": 0.12
+      },
+      "aiShare": 0.277,
+      "aiImagesPerAIPhoto": 1,
+      "thresholdsFast": {
+        "abs": -0.2,
+        "margin": 0.06,
+        "acceptedRight": 0.8810365135453475,
+        "acceptedWrong": 0.008716136631330978,
+        "falsePositiveOutOfCatalog": 0.09988221436984687
+      },
+      "simulated": {
+        "n": 4245,
+        "top1": 0.9036513545347468,
+        "top5": 0.921319199057715,
+        "acceptedRight": 0.8487632508833922,
+        "acceptedWrong": 0,
+        "rejected": 0.15123674911660778,
+        "falsePositiveOutOfCatalog": 0.009187279151943463,
+        "reprintConfusion": 0
+      },
+      "real": {
+        "n": 65,
+        "top1": 0.8923076923076924,
+        "top5": 0.9384615384615385,
+        "acceptedRight": 0.8923076923076924,
+        "acceptedWrong": 0,
+        "rejected": 0.10769230769230764,
+        "falsePositiveOutOfCatalog": 0,
+        "reprintConfusion": 0
+      }
+    },
+    {
+      "config": "dinov2s-ft-fp16-mean-168@art+grid16 α0.5 cascade300",
+      "sizeMB": null,
+      "msPerCard": null,
+      "thresholds": {
+        "abs": -0.2,
+        "margin": 0.13
+      },
+      "aiShare": 0.272,
+      "aiImagesPerAIPhoto": 3,
+      "thresholdsFast": {
+        "abs": -0.2,
+        "margin": 0.06,
+        "acceptedRight": 0.8866902237926972,
+        "acceptedWrong": 0.0063604240282685515,
+        "falsePositiveOutOfCatalog": 0.08645465253239105
+      },
+      "simulated": {
+        "n": 4245,
+        "top1": 0.9170789163722026,
+        "top5": 0.9389870435806832,
+        "acceptedRight": 0.8447585394581861,
+        "acceptedWrong": 0.00023557126030624264,
+        "rejected": 0.1550058892815076,
+        "falsePositiveOutOfCatalog": 0.009187279151943463,
+        "reprintConfusion": 0
+      },
+      "real": {
+        "n": 65,
+        "top1": 0.9076923076923077,
+        "top5": 0.9538461538461539,
+        "acceptedRight": 0.8923076923076924,
+        "acceptedWrong": 0,
+        "rejected": 0.10769230769230764,
+        "falsePositiveOutOfCatalog": 0,
+        "reprintConfusion": 0
+      }
+    },
+    {
+      "config": "dinov2s-ft-fp16-mean-168@art+grid16 α0.5 cascade300 +accord",
+      "sizeMB": null,
+      "msPerCard": null,
+      "thresholds": {
+        "abs": 0.38,
+        "margin": 0.11
+      },
+      "aiShare": 0.284,
+      "aiImagesPerAIPhoto": 3,
+      "thresholdsFast": {
+        "abs": -0.2,
+        "margin": 0.06,
+        "acceptedRight": 0.8859835100117786,
+        "acceptedWrong": 0.006124852767962308,
+        "falsePositiveOutOfCatalog": 0.08244994110718493
+      },
+      "simulated": {
+        "n": 4245,
+        "top1": 0.9170789163722026,
+        "top5": 0.9392226148409893,
+        "acceptedRight": 0.8499411071849234,
+        "acceptedWrong": 0,
+        "rejected": 0.15005889281507656,
+        "falsePositiveOutOfCatalog": 0.009658421672555949,
+        "reprintConfusion": 0
+      },
+      "real": {
+        "n": 65,
+        "top1": 0.9076923076923077,
+        "top5": 0.9538461538461539,
+        "acceptedRight": 0.9076923076923077,
+        "acceptedWrong": 0,
+        "rejected": 0.09230769230769231,
+        "falsePositiveOutOfCatalog": 0,
+        "reprintConfusion": 0
+      }
+    },
+    {
+      "config": "dinov2s-ft-fp16-mean-168@art+grid16 α0.5 cascade300 1img",
+      "sizeMB": null,
+      "msPerCard": null,
+      "thresholds": {
+        "abs": 0.36,
+        "margin": 0.13
+      },
+      "aiShare": 0.272,
+      "aiImagesPerAIPhoto": 1,
+      "thresholdsFast": {
+        "abs": -0.2,
+        "margin": 0.06,
+        "acceptedRight": 0.8831566548881037,
+        "acceptedWrong": 0.007538280329799764,
+        "falsePositiveOutOfCatalog": 0.09257950530035336
+      },
+      "simulated": {
+        "n": 4245,
+        "top1": 0.9085983510011778,
+        "top5": 0.9269729093050648,
+        "acceptedRight": 0.8468786808009423,
+        "acceptedWrong": 0.00023557126030624264,
+        "rejected": 0.15288574793875143,
+        "falsePositiveOutOfCatalog": 0.009658421672555949,
+        "reprintConfusion": 0
+      },
+      "real": {
+        "n": 65,
+        "top1": 0.8923076923076924,
+        "top5": 0.9384615384615385,
+        "acceptedRight": 0.8923076923076924,
+        "acceptedWrong": 0,
+        "rejected": 0.10769230769230764,
+        "falsePositiveOutOfCatalog": 0,
+        "reprintConfusion": 0
+      }
+    },
+    {
+      "config": "dinov2s-ft-fp16-mean-168@art+grid16 α0.5 cascade300 1img +accord",
+      "sizeMB": null,
+      "msPerCard": null,
+      "thresholds": {
+        "abs": -0.2,
+        "margin": 0.12
+      },
+      "aiShare": 0.281,
+      "aiImagesPerAIPhoto": 1,
+      "thresholdsFast": {
+        "abs": -0.2,
+        "margin": 0.06,
+        "acceptedRight": 0.8826855123674912,
+        "acceptedWrong": 0.007302709069493522,
+        "falsePositiveOutOfCatalog": 0.08881036513545347
+      },
+      "simulated": {
+        "n": 4245,
+        "top1": 0.9085983510011778,
+        "top5": 0.927208480565371,
+        "acceptedRight": 0.8489988221436985,
+        "acceptedWrong": 0,
+        "rejected": 0.15100117785630152,
+        "falsePositiveOutOfCatalog": 0.00800942285041225,
+        "reprintConfusion": 0
+      },
+      "real": {
+        "n": 65,
+        "top1": 0.8923076923076924,
+        "top5": 0.9384615384615385,
+        "acceptedRight": 0.8923076923076924,
+        "acceptedWrong": 0,
+        "rejected": 0.10769230769230764,
+        "falsePositiveOutOfCatalog": 0,
+        "reprintConfusion": 0
+      }
+    }
+  ]
+}

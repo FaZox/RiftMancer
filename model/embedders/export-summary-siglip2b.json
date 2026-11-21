@@ -1,0 +1,38 @@
+[
+  {
+    "id": "siglip2b",
+    "repo": "timm/vit_base_patch16_siglip_224.v2_webli",
+    "revision": "4c3661e5ac879a276ddc5ddc6d3f0ecc78fd5d82",
+    "licence": "apache-2.0",
+    "width": 224,
+    "height": 224,
+    "mean": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "std": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "interpolation": "bicubic",
+    "dim": 768,
+    "pooling": "out",
+    "parity_fp32_max_abs": 2.86102294921875e-06,
+    "int8_cosine_vs_fp32": 0.91849,
+    "files": {
+      "model.onnx": {
+        "bytes": 371675949,
+        "sha256": "64d6665d5bbbe593b7d597b9458516e603666e92dc63473c5704b036ffb720cf"
+      },
+      "model_int8.onnx": {
+        "bytes": 93994859,
+        "sha256": "cc991108e2a4cd707105c78213b25eeb0cea60162e65fcdb302d5227a24c42ce"
+      },
+      "safetensors": {
+        "sha256": "9106b0d8d9d02ea90fc3571fffd1557cf444736f695ee40b1e57c856bc3d9494"
+      }
+    }
+  }
+]

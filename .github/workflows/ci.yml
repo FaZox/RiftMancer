@@ -1,0 +1,52 @@
+# Light continuous integration (lot 11.4, chosen 20/11/2026): lint, tests,
+# build and audit, WITHOUT the Git LFS files (card images, models) — the free
+# LFS quota (1 GB/month) would not last. The tests that need those files skip
+# and say so (tests/helpers.mjs, NO_LFS); the build skips the thumbnails.
+# The full checks stay local: npm test, npm run build, npm run test:e2e.
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**/*.md', 'docs/**']
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: '1'      # Electron is not run here
+      ONNXRUNTIME_NODE_INSTALL_CUDA: skip     # CPU only
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          lfs: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Tests (those needing the LFS files skip)
+        run: npm test
+      - name: Build (without the thumbnails, made from the LFS images)
+        run: node scripts/copy-ort.mjs && npx vite build
+      # Full audit: Electron is a devDependency (needed by electron-builder) but it is shipped in the PC app,
+      # so --omit=dev would not see it. High and critical block; moderate ones are only shown.
+      - name: Audit (high and critical block)
+        run: npm audit --audit-level=high
+      - name: Audit (moderate, shown only)
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+      - name: Electron maintained and up to date
+        run: npm run check:electron

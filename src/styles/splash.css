@@ -1,0 +1,50 @@
+/* Loading screen A « Forge hextech » (B.6.13) — from docs/maquettes/splash.css,
+   adapted: real progress on the arc, intro played once, still when calm.
+   Only transform, opacity and stroke-dashoffset are animated. */
+.forge{position:fixed;inset:0;z-index:100;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;--u:1;color:#e6ecf5;
+  background:radial-gradient(circle at 50% 44%,#16284a 0,#0a1220 46%,#05080f 100%);background-color:#070d18}
+.forge.ph{--u:.78}
+.forge::before{content:"";position:absolute;inset:-60px;opacity:.5;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97'%3E%3Cpath d='M28 1l27 15.500v31L28 63 1 47.500v-31zM28 63v33M1 96.500l27-15.500 27 15.500' fill='none' stroke='%23c8a84e' stroke-opacity='.13'/%3E%3C/svg%3E");
+  animation:fg-drift 24s linear infinite;mask-image:radial-gradient(circle at 50% 44%,#000 0,transparent 68%);-webkit-mask-image:radial-gradient(circle at 50% 44%,#000 0,transparent 68%)}
+@keyframes fg-drift{to{transform:translateY(97px)}}
+.forge .emblem{position:relative;width:calc(340px*var(--u));height:calc(340px*var(--u));margin-bottom:calc(18px*var(--u))}
+.forge .emblem svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.forge .ring1{transform-origin:170px 170px;animation:fg-spin 26s linear infinite}
+.forge .ring2{transform-origin:170px 170px;animation:fg-spin-r 18s linear infinite}
+@keyframes fg-spin{to{transform:rotate(360deg)}}
+@keyframes fg-spin-r{to{transform:rotate(-360deg)}}
+.forge .arc{transform:rotate(-90deg);transform-origin:170px 170px;transition:stroke-dashoffset .45s cubic-bezier(.5,0,.3,1);filter:drop-shadow(0 0 6px rgba(232,201,115,.9))}
+.forge .hexline{filter:drop-shadow(0 0 10px rgba(232,201,115,.7))}
+.forge .hexfill,.forge .frame{transform-origin:170px 170px}
+.forge .hexfill{opacity:0;animation:fg-fill .7s ease-out .15s forwards}
+@keyframes fg-fill{to{opacity:1}}
+.forge .frame{opacity:0;animation:fg-frame .6s ease-out .45s forwards}
+@keyframes fg-frame{from{opacity:0;transform:scale(1.25)}to{opacity:1;transform:none}}
+.forge .beam{animation:fg-beam 2.4s ease-in-out infinite}
+@keyframes fg-beam{0%,100%{transform:translateY(-34px);opacity:.2}50%{transform:translateY(34px);opacity:1}}
+.forge .spark{position:absolute;bottom:38%;left:50%;width:6px;height:6px;background:#e8c973;transform:rotate(45deg);opacity:0;animation:fg-spark 3.6s ease-out infinite;box-shadow:0 0 8px #e8c973}
+@keyframes fg-spark{0%{opacity:0;translate:var(--x) 0;scale:1}12%{opacity:.9}100%{opacity:0;translate:calc(var(--x)*1.6) calc(-300px*var(--u));scale:.3}}
+.forge .name{font-family:Cinzel,serif;font-weight:700;color:#e8c973;font-size:calc(44px*var(--u));letter-spacing:.18em;margin-right:-.18em;text-shadow:0 0 28px rgba(232,201,115,.35);opacity:0;animation:fg-name .8s ease-out .1s forwards}
+@keyframes fg-name{to{opacity:1}}
+.forge .sub{font-family:Cinzel,serif;font-size:calc(15px*var(--u));letter-spacing:.62em;margin-right:-.62em;color:#9fb0c8;margin-top:calc(6px*var(--u))}
+.forge .status{height:20px;margin-top:calc(22px*var(--u));font-size:13px;color:#8392ab;text-align:center;animation:fg-step .25s ease-out}
+@keyframes fg-step{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.forge .ver{position:absolute;bottom:18px;left:0;right:0;text-align:center;font-family:"JetBrains Mono",monospace;font-size:11px;color:#6b7a93;letter-spacing:.08em}
+/* exit: the emblem grows a little and the screen fades into the app (300 ms) */
+.forge.leaving{opacity:0;transition:opacity .3s ease-in;pointer-events:none}
+.forge.leaving .emblem{transform:scale(1.08);transition:transform .3s ease-in}
+/* « Réduire les animations »: still emblem, progress only */
+.forge.calm::before,.forge.calm .ring1,.forge.calm .ring2,.forge.calm .beam,.forge.calm .hexfill,.forge.calm .frame,.forge.calm .name,.forge.calm .status{animation:none}
+.forge.calm .hexfill,.forge.calm .frame,.forge.calm .name{opacity:1}
+@media (prefers-reduced-motion:reduce){.forge::before,.forge .ring1,.forge .ring2,.forge .beam,.forge .spark{animation:none}.forge .spark{display:none}}
+/* the gold gauge: two half-rings turned by the browser (transform only: smooth while the phone loads) */
+.forge .gauge{position:absolute;left:6.03%;top:6.03%;width:87.94%;height:87.94%;pointer-events:none}
+.forge .gauge .side{position:absolute;top:0;width:50%;height:100%;overflow:hidden}
+.forge .gauge .side.r{left:50%}.forge .gauge .side.l{left:0}
+.forge .gauge .turn{position:absolute;top:0;width:200%;height:100%;transform-origin:50% 50%;will-change:transform}
+.forge .gauge .side.r .turn{left:-100%}.forge .gauge .side.l .turn{left:0}
+.forge .gauge .half{position:absolute;top:0;width:50%;height:100%;overflow:hidden}
+.forge .gauge .side.r .half{left:0}.forge .gauge .side.l .half{left:50%}
+.forge .gauge .ring{position:absolute;top:0;width:200%;height:100%;box-sizing:border-box;border-radius:50%;border:calc(3px*var(--u)) solid #e8c973;box-shadow:inset 0 0 6px rgba(232,201,115,.55),0 0 6px rgba(232,201,115,.55)}
+.forge .gauge .side.r .ring{left:0}.forge .gauge .side.l .ring{left:-100%}

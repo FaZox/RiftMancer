@@ -1,0 +1,286 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    font-family: 'Source Sans 3', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-rift-900 text-rift-100;
+    overscroll-behavior: none;
+    overflow: hidden;
+    height: 100dvh;
+  }
+
+  #root {
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(200, 168, 78, 0.25);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(200, 168, 78, 0.45);
+  }
+}
+
+@layer components {
+  /* ─── Hextech : angles biseautés (comme les cartes) ─────────────── */
+  .hex-cut {
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  }
+  .hex-cut-sm {
+    clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  }
+  .hexagon {
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  }
+
+  .btn-primary {
+    @apply flex items-center justify-center gap-2 px-4 py-2.5 min-h-[40px]
+           bg-gold-500 text-rift-900 font-bold transition-colors duration-150
+           hover:bg-gold-400 active:bg-gold-600
+           disabled:opacity-40 disabled:pointer-events-none;
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  }
+
+  .btn-secondary {
+    @apply flex items-center justify-center gap-2 px-4 py-2.5 min-h-[40px]
+           bg-rift-800 text-gold-400 font-semibold border border-gold-500/50
+           transition-colors duration-150 hover:bg-rift-700 hover:border-gold-400/70
+           disabled:opacity-40 disabled:pointer-events-none;
+  }
+
+  .btn-ghost {
+    @apply flex items-center justify-center gap-2 px-3 py-2
+           text-rift-300 transition-colors duration-150 hover:bg-rift-700/70
+           hover:text-rift-100 disabled:opacity-40;
+  }
+
+  /* Panneau : surface avec fin liseré doré */
+  .panel {
+    @apply bg-rift-800 border border-gold-500/25;
+  }
+
+  /* Onglets segmentés (Cartes | Progression | Souhaits) */
+  .seg {
+    @apply flex border border-gold-500/35;
+  }
+  .seg > button {
+    @apply flex-1 flex items-center justify-center gap-1.5 h-10 px-2 text-sm font-semibold text-rift-400
+           border-l border-gold-500/25 transition-colors;
+  }
+  .seg > button:first-child {
+    border-left: 0;
+  }
+  /* Chosen option: tabs use aria-selected, toggles (deck / réserve…) aria-pressed */
+  .seg > button[aria-selected="true"],
+  .seg > button[aria-pressed="true"] {
+    @apply bg-gold-500/20 text-gold-400;
+    box-shadow: inset 0 -2px 0 theme('colors.gold.400');
+  }
+  /* Filter chips (B.1). This merges the two former .chip rules into the look they
+     gave together, so existing screens are unchanged. */
+  .chip {
+    @apply flex-shrink-0 inline-flex items-center justify-center gap-1.5 h-8 px-2.5 text-xs font-semibold
+           bg-rift-800 text-rift-300 border border-rift-600 transition-colors;
+  }
+  .chip:hover { @apply border-gold-500/50 text-rift-100; }
+  .chip[aria-selected="true"] {
+    @apply bg-gold-500/20 text-gold-400 border-gold-400;
+    box-shadow: inset 0 -2px 0 theme('colors.gold.400');
+  }
+  .chip[aria-pressed="true"] {
+    @apply bg-gold-500/15 text-gold-400 border-gold-500/60;
+    box-shadow: inset 0 -2px 0 theme('colors.gold.400');
+  }
+  .chip:disabled { @apply opacity-40; }
+
+  /* Standalone toggle button (B.1), for new screens */
+  .toggle {
+    @apply inline-flex items-center justify-center gap-1 min-h-[36px] px-3 border border-rift-600 text-rift-300
+           font-semibold transition-colors;
+  }
+  .toggle:hover { @apply border-gold-500/50 text-rift-100; }
+  .toggle[aria-pressed="true"] {
+    @apply bg-gold-500/20 text-gold-400 border-gold-400;
+    box-shadow: inset 0 -2px 0 theme('colors.gold.400');
+  }
+  .toggle:disabled { @apply opacity-40; }
+
+  /* Visible keyboard focus everywhere (B.1) */
+  :focus-visible {
+    outline: 2px solid theme('colors.gold.400');
+    outline-offset: 2px;
+  }
+
+  .h-title {
+    @apply font-display font-bold tracking-wide text-gold-400;
+  }
+
+  .input-field {
+    @apply w-full rounded-xl bg-rift-800 border border-rift-600 px-3 py-2
+           text-sm text-rift-100 font-body placeholder:text-rift-500
+           focus:outline-none focus:border-gold-500/60 focus:ring-1 focus:ring-gold-500/20
+           transition-colors duration-200;
+  }
+
+  .select-field {
+    @apply w-full rounded-xl bg-rift-800 border border-rift-600/50 px-3 py-2
+           text-sm text-rift-100 font-body appearance-none cursor-pointer
+           focus:outline-none focus:border-gold-500/60 focus:ring-1 focus:ring-gold-500/20
+           transition-colors duration-200;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23c8a84e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.25rem 1.25rem;
+    padding-right: 2.25rem;
+  }
+
+  .scan-pulse {
+    animation: scanPulse 2s ease-in-out infinite;
+  }
+
+  .guide-border {
+    animation: guidePulse 3s ease-in-out infinite;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+
+  .fade-out {
+    animation: fadeOut 0.4s ease-in forwards;
+  }
+
+  .slide-up {
+    animation: slideUp 0.3s ease-out forwards;
+  }
+
+}
+
+/* Scan feedback: result card pops in, frame flashes once */
+.scan-pop {
+  animation: scanPop 0.22s ease-out both;
+}
+.scan-flash {
+  animation: scanFlash 0.7s ease-out;
+}
+@keyframes scanPop {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes scanFlash {
+  0% { background: color-mix(in srgb, var(--flash) 45%, transparent); }
+  100% { background: transparent; }
+}
+
+/* Card zoom: the card rises out of a rift (RiftStage, designs B and C) */
+@keyframes rfRise { 0% { transform: translateY(115%); } 100% { transform: translateY(0); } }
+/* After the rise, one sway, then the card stands still and straight: a turned picture is always a little
+   soft (each pixel is resampled), so the card is perfectly sharp when it is read. The scene keeps moving. */
+@keyframes rfSettle { 0% { transform: none; } 30% { transform: translateY(-7px) rotate(-1.2deg); } 65% { transform: translateY(-3px) rotate(.7deg); } 100% { transform: none; } }
+@keyframes rfPulse { 0%, 100% { opacity: .7; } 50% { opacity: 1; } }
+@keyframes rfSpark { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translateY(-220px); opacity: 0; } }
+@keyframes rfShard { 0% { transform: translateY(0) rotate(0deg); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-140px) rotate(60deg); opacity: 0; } }
+@keyframes rfDraw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes rfBolt { 0%, 100% { opacity: 0; } 2% { opacity: 1; } 4% { opacity: .15; } 6% { opacity: 1; } 10% { opacity: 0; } }
+@keyframes rfFlash { 0%, 100% { opacity: 0; } 2% { opacity: .22; } 4% { opacity: 0; } 6% { opacity: .16; } 10% { opacity: 0; } }
+@keyframes rfRun { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -100; } }
+.rf-crack path { stroke-dasharray: 1; }
+.rf-on .rf-crack path { animation: rfDraw 1.3s ease-out 1.9s both; }
+.rf-on .rf-crack.rf-pulse { animation: rfPulse 3s ease-in-out infinite; }
+.rf-on .rf-rise { animation: rfRise 2.4s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes rfAppear { 0% { transform: translateY(28px) scale(.94); opacity: 0; } 100% { transform: none; opacity: 1; } }
+.rf-on .rf-appear { animation: rfAppear .9s cubic-bezier(.2,.8,.2,1) both; }
+.rf-on .rf-card { animation: rfSettle 3s ease-in-out 2.4s 1; }
+.rf-on .rf-pulse { animation: rfPulse 3s ease-in-out infinite; }
+.rf-on .rf-spark { animation: rfSpark 3.4s linear infinite; transform-box: fill-box; }
+.rf-on .rf-shard { animation: rfShard 4.5s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+.rf-on .rf-bolt { opacity: 0; animation: rfBolt 4.2s linear infinite; }
+.rf-flash { opacity: 0; }
+.rf-on .rf-flash { animation: rfFlash 2.1s linear 2.4s infinite; }
+.rf-on .rf-run { animation: rfRun 6s linear infinite; }  /* slow: one turn of the legend frame in 6 s */
+.rf-on .rf-run2 { animation: rfRun 9s linear infinite reverse; }
+/* Réglages → « Animations des cartes » off: the card is simply there (no rise,
+   no cracks drawing, no sparks or shards). Legend effects and the sway of
+   the deck's legend / champion stay. */
+.rf-calm .rf-on .rf-rise, .rf-calm .rf-on .rf-appear, .rf-calm .rf-on .rf-crack path { animation: none !important; }
+.rf-calm .rf-on .rf-crack path { stroke-dashoffset: 0; }
+.rf-calm .rf-spark, .rf-calm .rf-shard { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rf-on .rf-rise, .rf-on .rf-appear, .rf-on .rf-card, .rf-on .rf-pulse, .rf-on .rf-spark, .rf-on .rf-shard,
+  .rf-on .rf-flash, .rf-on .rf-run, .rf-on .rf-run2, .rf-on .rf-crack path { animation: none !important; }
+  .rf-on .rf-crack path { stroke-dashoffset: 0; }
+  .rf-on .rf-bolt { animation: none; opacity: .9; }
+  .rf-spark, .rf-shard { display: none; }
+}
+
+@keyframes scanPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes guidePulse {
+  0%, 100% { border-color: rgba(200, 168, 78, 0.4); }
+  50% { border-color: rgba(200, 168, 78, 0.8); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(16px); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scanLine {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+
+.scan-line {
+  animation: scanLine 1.5s linear infinite;
+}
+
+/* Test version of the apps (src/lib/variant.js) */
+.rb-test-badge {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 6px);
+  right: 8px;
+  z-index: 9999;
+  padding: 2px 8px;
+  font: 700 11px/1.4 system-ui, sans-serif;
+  letter-spacing: .08em;
+  color: #fff;
+  background: #d9480f;
+  border: 1px solid #ffa94d;
+  pointer-events: none;
+}

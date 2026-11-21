@@ -1,0 +1,11 @@
+# Export of the image-embedding models to ONNX (AMELIORATIONS-MODELES.md, step 2.2)
+#   python -m venv model/.venv-embed
+#   model/.venv-embed/Scripts/pip install --index-url https://download.pytorch.org/whl/cpu torch
+#   model/.venv-embed/Scripts/pip install -r model/requirements-embed.txt
+timm
+safetensors
+huggingface_hub
+onnx
+onnxscript
+onnxruntime
+numpy

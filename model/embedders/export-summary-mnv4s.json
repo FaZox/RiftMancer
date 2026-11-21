@@ -1,0 +1,38 @@
+[
+  {
+    "id": "mnv4s",
+    "repo": "timm/mobilenetv4_conv_small.e2400_r224_in1k",
+    "revision": "331fb803779522b685cf942e15f914fb6741c1eb",
+    "licence": "apache-2.0",
+    "width": 224,
+    "height": 224,
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ],
+    "interpolation": "bicubic",
+    "dim": 1280,
+    "pooling": "out",
+    "parity_fp32_max_abs": 5.841255187988281e-06,
+    "int8_cosine_vs_fp32": 0.13793,
+    "files": {
+      "model.onnx": {
+        "bytes": 9944826,
+        "sha256": "f059bee20174d742b252b278ad70ab928f14821ae5ce0f934013865e1bde2384"
+      },
+      "model_int8.onnx": {
+        "bytes": 2631835,
+        "sha256": "02d8930a2a856b4864731c8f5a7751772bcd638d9226c30ad84f3b9037f0903f"
+      },
+      "safetensors": {
+        "sha256": "7a7102ec18f62bbfb555b6fe829bbb5af749516b84174926c29ffdfdfc03aec4"
+      }
+    }
+  }
+]

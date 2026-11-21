@@ -1,0 +1,10 @@
+{
+  "keys": [
+    {
+      "publicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAv+XV96vTduJiuTkz/ICkP4Cd8vkhaMbzZPEjBOS7W5U=\n-----END PUBLIC KEY-----\n",
+      "fingerprint": "ad2dc14ad8eb638e",
+      "createdAt": "2026-11-18",
+      "revoked": false
+    }
+  ]
+}

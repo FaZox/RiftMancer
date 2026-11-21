@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+ system launch screen: the app's gold hexagon on #070d18 (B.6.13 rule 7). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path
+        android:pathData="M54,25.6L78.6,39.8L78.6,68.2L54,82.4L29.4,68.2L29.4,39.8Z"
+        android:strokeColor="#E8C973" android:strokeWidth="2.6"
+        android:strokeLineJoin="round" android:fillColor="#00000000" />
+</vector>
