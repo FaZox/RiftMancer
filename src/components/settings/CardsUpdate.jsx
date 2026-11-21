@@ -78,10 +78,11 @@ export default function CardsUpdateSheet({ open, onClose, pageText = null, valid
       if (result.added.length) {
         const engine = await aiEngine();
         // 1. Parity on 50 cards of the shipped catalog: or nothing is installed.
+        // (First launch without cards, NoCards.jsx: no card to compare with.)
         const sample = paritySample(m.cards);
         setProgress({ label: tx('Vérification des empreintes'), done: 0, total: sample.length });
-        const parity = await checkParity(sample, async (c) => cardFeatures(await imageOf(c.id), c.artBottom ?? 0.55, engine),
-          (done, total) => setProgress({ label: tx('Vérification des empreintes'), done, total }));
+        const parity = sample.length ? await checkParity(sample, async (c) => cardFeatures(await imageOf(c.id), c.artBottom ?? 0.55, engine),
+          (done, total) => setProgress({ label: tx('Vérification des empreintes'), done, total })) : { ok: true };
         if (!parity.ok) throw new Error(tx('Les empreintes recalculées ne sont pas identiques à celles du catalogue ({length} cartes sur {cards}) : rien n’a été installé.', { length: parity.failures.length, cards: parity.cards }));
         // 2. Images, thumbnails, fingerprints, AI signatures of the new cards.
         for (let i = 0; i < result.added.length; i++) {

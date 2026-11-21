@@ -17,6 +17,7 @@ const MoreTab = lazy(() => import('./components/more/MoreTab.jsx'));
 import useAppController from './hooks/useAppController.js';
 import GlobalSearch from './components/common/GlobalSearch.jsx';
 import Welcome from './components/common/Welcome.jsx';
+import NoCards from './components/common/NoCards.jsx';
 import { requestOpen } from './lib/navRequest.js';
 import { tx } from './lib/i18n.js';
 
@@ -91,6 +92,7 @@ export default function App() {
       {/* PC: navigation on the left (the bottom bar is for phones) */}
       {/* Tab content */}
       <div className="flex-1 flex flex-col min-h-0">
+        <NoCards onSync={() => { requestOpen({ kind: 'setting', id: 'sync' }); setActiveTab('more'); }} />
         <ErrorBoundary key={activeTab} where={activeTab} page>
         <Suspense fallback={<PageLoading />}>
         {activeTab === 'scan' && (

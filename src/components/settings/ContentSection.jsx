@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Ban, FileUp, Languages, Layers, Pencil, RefreshCw, RotateCcw } from 'lucide-react';
+import { Ban, FileUp, FolderInput, Languages, Layers, Pencil, RefreshCw, RotateCcw } from 'lucide-react';
 import { BanEditSheet, BanUpdateSheet } from './BanUpdate.jsx';
 import TranslationsSheet from './TranslationsUpdate.jsx';
 import CardsUpdateSheet from './CardsUpdate.jsx';
@@ -23,9 +23,11 @@ const day = (d) => (d ? new Date(d).toLocaleDateString(locale(), { day: 'numeric
 const n = (x) => (x ?? 0).toLocaleString(locale());
 const SHIPPED = tx('contenu livré avec l’appli');
 
+const SOURCE_LABEL = { 'galerie officielle Riot': tx('galerie officielle Riot'), 'dossier importé': tx('dossier importé') };
 function sourceLine(layer, fallback) {
   if (!layer) return tx('Source : {fallback}', { fallback });
-  return tx('Source : {v0} · installée le {day}', { v0: layer.source?.label || tx('mise à jour'), day: day(layer.createdAt) });
+  // labels written by the app in French (« galerie officielle Riot », « dossier importé »): shown in the app's language
+  return tx('Source : {v0} · installée le {day}', { v0: layer.source?.label ? (SOURCE_LABEL[layer.source.label] || layer.source.label) : tx('mise à jour'), day: day(layer.createdAt) });
 }
 const layerStatus = (layer) => (layer ? <span className="text-state-ok">{tx('Mis à jour')}</span> : <span>{tx('D’origine')}</span>);
 
@@ -36,7 +38,7 @@ export function ContentCards({ info, actions = {}, cardsStatus = null }) {
     <>
       <SectionCard icon={Layers} title={tx('Cartes')} status={cardsStatus || layerStatus(L.cartes)}>
         <p className="text-[14px] text-rift-200">{n(info.cards)} {tx('cartes')}{info.lastSet ? tx(' · dernière extension : {lastSet}', { lastSet: info.lastSet }) : ''}</p>
-        <p className="text-[13px] text-rift-400 mt-0.5">{sourceLine(L.cartes, `galerie officielle Riot, ${SHIPPED} (${day(info.base?.generatedAt)})`)}</p>
+        <p className="text-[13px] text-rift-400 mt-0.5">{info.base && !info.base.cards && !L.cartes ? tx('Aucune carte livrée avec l’appli : téléchargez-les ou importez un dossier.') : sourceLine(L.cartes, tx('galerie officielle Riot, {SHIPPED} ({day})', { SHIPPED, day: day(info.base?.generatedAt) }))}</p>
         {info.errata > 0 && <p className="text-[13px] text-state-info mt-0.5">{n(info.errata)} {tx('carte')}{info.errata > 1 ? 's' : ''} {tx('au texte modifié par une mise à jour (« Texte modifié » sur la fiche)')}</p>}
         {actions.cartes}
       </SectionCard>
@@ -90,6 +92,7 @@ function PcContent() {
     })) return info;
     return api.content.reset();
   });
+  const importFolder = () => run(async () => (await api.content.importFolder()) || info);
   const restoreBans = () => run(async () => {
     if (!await ask({ title: tx('Restaurer la liste précédente ?'), message: tx('La liste des cartes bannies installée avant celle-ci reprend sa place.'), confirmLabel: tx('Restaurer') })) return info;
     return api.content.restorePrevious('bannies');
@@ -117,6 +120,7 @@ function PcContent() {
             <WeeklyToggle api={api} kind="cartes" info={info} setInfo={setInfo} />
             <div className="flex flex-wrap justify-end gap-2 mt-3">
               <button onClick={() => setSheet('cards')} className="btn-secondary text-[13px] py-2 px-3"><RefreshCw className="w-4 h-4" /> {tx('Rechercher')}</button>
+              <button onClick={importFolder} className="btn-ghost text-[13px] py-2 px-3"><FolderInput className="w-4 h-4" /> {tx('Importer un dossier…')}</button>
               {notices.cartes && <button onClick={() => setSheet('cardsPending')} className="btn-primary text-[13px] py-2 px-3">{tx('Installer')} {notices.cartes.added ? `les ${notices.cartes.added}` : 'les corrections'}</button>}
             </div>
           </>

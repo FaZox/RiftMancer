@@ -21,6 +21,7 @@
     "desktop:exe:test": "npm run build && node scripts/make-icons.mjs && node scripts/desktop-exe.mjs --test",
     "catalog:enrich": "node scripts/enrich-catalog.mjs",
     "catalog:update": "node scripts/update-catalog.mjs",
+    "catalog:base": "node scripts/catalog-base.mjs",
     "eval:matcher": "node scripts/eval-matcher.mjs",
     "photos:prepare": "node scripts/photos-prepare.mjs",
     "lint": "eslint .",

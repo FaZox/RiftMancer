@@ -224,7 +224,8 @@ Gel des fonctionnalités jusqu'à la 2.1.0 et aux premiers retours des amis : se
 - [x] **Partie 2 · Renommage en RiftMancer** (21/11) : nom affiché partout, identifiant Android `com.riftmancer.app`, dossier de données PC repris au premier lancement
 - [x] Partie 2 · Contenu des cartes hors de la copie publique (`npm run public:export`, `npm run content:import`, tests et version sans / avec contenu) — contenu sauvegardé dans `../sauvegarde-contenu` (21/11)
 - [x] Partie 2 · Données personnelles nettoyées, recherche de secrets (gitleaks : rien de réel), **dépôt public https://github.com/FaZox/RiftMancer** publié le 21/11/2026 (historique neuf, adresse e-mail masquée, 465 fichiers)
-- [ ] Facultatif : contenu des cartes téléchargé par l'appli au premier lancement ; traductions françaises : demander à riftboundfr.fr
+- [x] **Cartes au premier lancement** (21/11) : une appli sans le contenu des cartes démarre avec l’en-tête du catalogue seulement (`public/catalog-base.json`) et propose « Télécharger les cartes » (galerie officielle) ou « Importer un dossier… » (une sauvegarde, une clé USB) ; le téléphone les reçoit du PC
+- [ ] Facultatif : traductions françaises : demander à riftboundfr.fr
 
 ## Phase 12 — Scanner par grille
 

@@ -25,6 +25,9 @@ import { tx } from './i18n.js';
 const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
 const HASHES_URL = `/card-hashes.json?v=${__BUILD_TIME__}`;
+// App built without the card content: the catalog header only (no card); the
+// cards come on first launch (gallery download, « Importer un dossier », the PC).
+const BASE_URL = `/catalog-base.json?v=${__BUILD_TIME__}`;
 
 const ART_BOTTOM_DEFAULT = 0.55;
 // Below this centred score the photo looks like no card at all: « non reconnue »
@@ -122,7 +125,8 @@ class CardMatcher {
       if (!resp.ok) throw new Error(tx('Failed to load card DB: {status}', { status: resp.status }));
       return resp.json();
     };
-    let data = await load(HASHES_URL);
+    let data;
+    try { data = await load(HASHES_URL); } catch { data = await load(BASE_URL); }
     this.catalogInfo = { source: 'bundled', ignored: null };
     const downloadedUrl = await catalogUrl();
     if (downloadedUrl) {
@@ -176,6 +180,8 @@ class CardMatcher {
     this.uniqueArtBottoms = this.index.bottoms;
     this.ready = true;
     console.log(`[CardMatcher] Loaded ${this.cards.length} cards (${this.gridSize}x${this.gridSize} grid, ${this.uniqueArtBottoms.length} crop regions)`);
+    // NoCards.jsx: the « no card yet » panel follows the catalog
+    if (typeof window !== 'undefined' && typeof Event === 'function') window.dispatchEvent?.(new Event('rb:catalog'));
   }
 
   /**

@@ -51,6 +51,7 @@ contextBridge.exposeInMainWorld('riftboundDesktop', {
     install: (kind, layer) => ipcRenderer.invoke('content:install', kind, layer),
     fetchImage: (url) => ipcRenderer.invoke('content:fetchImage', url),
     installCards: (layer, files) => ipcRenderer.invoke('content:installCards', layer, files),
+    importFolder: () => ipcRenderer.invoke('content:importFolder'),
     weeklyCheck: (kind, urls) => ipcRenderer.invoke('content:weeklyCheck', kind, urls),
     saveValidators: (kind, validators) => ipcRenderer.invoke('content:saveValidators', kind, validators),
     setWeekly: (kind, on) => ipcRenderer.invoke('content:setWeekly', kind, on),

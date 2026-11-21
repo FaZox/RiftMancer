@@ -179,3 +179,74 @@ test('cards layer: corrections (patches) and new cards added on top of the previ
   assert.throws(() => content.installCards({ createdAt: '2026-11-21T10:00:00.000Z', data: { cards: [], patches: [{ id: 'ogn-001-298', f: 'pirate' }] } }), /correction refusée/);
   assert.throws(() => content.installCards({ createdAt: '2026-11-21T10:00:00.000Z', data: { cards: [], patches: [{ id: 'ogn-001-298', energy: '5' }] } }), /correction refusée/);
 });
+
+/** An app built without the card content: dist/catalog-base.json only (header, no card). */
+function setupEmpty() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rb-content-empty-'));
+  const dist = path.join(root, 'dist');
+  fs.mkdirSync(dist);
+  fs.writeFileSync(path.join(dist, 'catalog-base.json'), JSON.stringify({
+    gridSize: 16, generatedAt: null, cards: [],
+    embeddings: { modelSha256: 'm', detectorSha256: '06df918b37a7dcb64305c5f4681d02f87904ffac6a67d30af14cbbd13d89f417' },
+  }));
+  return { root, dist, content: createContent({ dir: path.join(root, 'catalogue'), distDir: dist }) };
+}
+/** A content folder like the backup: public/card-hashes.json and public/cards/. */
+function contentFolder(root, { modelSha256 = 'm', detectorSha256 = '980a89fd434d01cdbf33d095e649c006d76d4d7c51bcb02bbce048c48be5f0d1' } = {}) {
+  const pub = path.join(root, 'sauvegarde', 'public');
+  fs.mkdirSync(path.join(pub, 'cards', 'thumbs'), { recursive: true });
+  fs.writeFileSync(path.join(pub, 'card-hashes.json'), JSON.stringify({
+    gridSize: 16, generatedAt: '2026-11-17T19:00:00.000Z', embeddings: { modelSha256, detectorSha256 },
+    cards: [
+      { id: 'ogn-001-298', name: 'Blazing Scorcher', nameFr: 'Terreur enflammée', textFr: 'Texte', f: 'AAA', e: 'E1' },
+      { id: 'ogn-002-298', name: 'Brazen Buccaneer', f: 'BBB' },
+      { id: '../evil', name: 'Bad', f: 'X' },
+    ],
+  }));
+  fs.writeFileSync(path.join(pub, 'cards', 'ogn-001-298.webp'), 'FULL1');
+  fs.writeFileSync(path.join(pub, 'cards', 'thumbs', 'ogn-001-298.webp'), 'THUMB1');
+  fs.writeFileSync(path.join(pub, 'cards', 'ogn-002-298.webp'), 'FULL2');
+  return path.join(root, 'sauvegarde');
+}
+
+test('no card in the app: the header is served, the cards come from a layer', () => {
+  const { content } = setupEmpty();
+  const s = content.rebuild();
+  assert.equal(s.cards, 0);
+  assert.equal(s.base.cards, 0);
+  const served = read(content.resolve('/card-hashes.json'));
+  assert.deepEqual(served.cards, [], 'the header is served as /card-hashes.json (dist has none)');
+  assert.equal(served.embeddings.modelSha256, 'm');
+  // the gallery download installs every card on the empty base
+  content.installCards({ createdAt: '2026-11-21T10:00:00.000Z', source: { label: 'galerie officielle Riot' }, data: { cards: [newCard] } }, { 'cards/vnd-001-221.webp': Buffer.from('A') });
+  assert.deepEqual(read(content.resolve('/card-hashes.json')).cards.map(c => c.id), ['vnd-001-221']);
+  assert.ok(content.resolve('/cards/vnd-001-221.webp'));
+  // « Revenir au contenu d’origine »: back to no card, still served
+  content.reset();
+  assert.deepEqual(read(content.resolve('/card-hashes.json')).cards, []);
+});
+
+test('importFolder: the cards of a backup folder (public/ inside), with their French texts and images', () => {
+  const { root, content } = setupEmpty();
+  content.rebuild();
+  const s = content.importFolder(contentFolder(root));
+  assert.deepEqual(s.imported, { cards: 2, images: 2 });
+  const served = read(content.resolve('/card-hashes.json'));
+  assert.deepEqual(served.cards.map(c => c.id), ['ogn-001-298', 'ogn-002-298'], 'invalid id left out');
+  assert.equal(served.cards[0].textFr, 'Texte');
+  assert.equal(served.cards[0].e, 'E1');
+  assert.equal(fs.readFileSync(content.resolve('/cards/ogn-001-298.webp'), 'utf8'), 'FULL1');
+  assert.equal(fs.readFileSync(content.resolve('/cards/thumbs/ogn-001-298.webp'), 'utf8'), 'THUMB1');
+  assert.equal(content.resolve('/cards/thumbs/ogn-002-298.webp'), null, 'missing thumbnail: none');
+  assert.equal(s.layers.cartes.source.label, 'dossier importé');
+});
+
+test('importFolder: refused for another AI model, another detector or a folder without cards', () => {
+  const { root, content } = setupEmpty();
+  content.rebuild();
+  assert.throws(() => content.importFolder(contentFolder(root, { modelSha256: 'other' })), /autre modèle/);
+  fs.rmSync(path.join(root, 'sauvegarde'), { recursive: true });
+  assert.throws(() => content.importFolder(contentFolder(root, { detectorSha256: 'other' })), /autre détecteur/);
+  assert.throws(() => content.importFolder(root), /ne contient pas de cartes/);
+  assert.equal(content.status().cards, 0, 'nothing installed');
+});

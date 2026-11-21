@@ -245,5 +245,5 @@ function readPack(buf, { publicKeys = null, publicKeyPem = null, current }) {
 
 module.exports = {
   buildPack, signPack, readPack, generateKeys, keyFingerprint, writeZip, readZip, zipIndex, signManifest, verifyManifest,
-  isEncryptedKey, loadPrivateKey, encryptPrivateKey, publicKeyOf, packKeys,
+  isEncryptedKey, loadPrivateKey, encryptPrivateKey, publicKeyOf, packKeys, canonDetector,
 };

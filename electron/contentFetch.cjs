@@ -17,7 +17,8 @@ const { etx } = require('./i18n.cjs');
  */
 const ALLOWED = [
   /^https:\/\/playriftbound\.com\/[a-z]{2}-[a-z]{2}\/news\/[a-z0-9-]+\/[a-z0-9-]+\/?$/,
-  /^https:\/\/riftbound\.leagueoflegends\.com\/[a-z]{2}-[a-z]{2}\/card-gallery\/?$/,
+  /^https:\/\/playriftbound\.com\/[a-z]{2}-[a-z]{2}\/card-gallery\/?$/, // the gallery since November 2026
+  /^https:\/\/riftbound\.leagueoflegends\.com\/[a-z]{2}-[a-z]{2}\/card-gallery\/?$/, // its former address (redirects to the one above)
   /^https:\/\/cmsassets\.rgpub\.io\/[\w./%-]+\.(png|jpe?g|webp)$/,
   /^https:\/\/riftboundfr\.fr\/(repertoire-cartes|textes-cartes)\.json$/,
 ];

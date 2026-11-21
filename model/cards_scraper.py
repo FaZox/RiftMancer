@@ -21,7 +21,7 @@ DB_PATH = os.path.join(BASE_DIR, "riftbound.db")
 PUBLIC_DIR = os.path.join(BASE_DIR, "..", "public")
 CARDS_DIR = os.path.join(PUBLIC_DIR, "cards")
 HASHES_PATH = os.path.join(PUBLIC_DIR, "card-hashes.json")
-GALLERY_URL = "https://riftbound.leagueoflegends.com/en-us/card-gallery/"
+GALLERY_URL = "https://playriftbound.com/en-us/card-gallery/"
 
 # French card names/texts. Riot's fr-fr gallery only translates UI labels, so the
 # French data comes from the two static JSON files published by riftboundfr.fr.

@@ -224,7 +224,8 @@ Feature freeze until 2.1.0 and the friends’ first feedback: only these correct
 - [x] **Part 2 · Renamed RiftMancer** (21/11): name shown everywhere, Android id `com.riftmancer.app`, PC data folder taken over on first launch
 - [x] Part 2 · Card content out of the public copy (`npm run public:export`, `npm run content:import`, tests and release without / with content) — content backed up in `../sauvegarde-contenu` (21/11)
 - [x] Part 2 · Personal data cleaned, secrets search (gitleaks: nothing real), **public repository https://github.com/FaZox/RiftMancer** published on 21/11/2026 (fresh history, masked e-mail address, 465 files)
-- [ ] Optional: card content downloaded by the app on first launch; French translations: ask riftboundfr.fr
+- [x] **Cards on first launch** (21/11): an app without the card content starts with the catalog header only (`public/catalog-base.json`) and offers « Download the cards » (official gallery) or « Import a folder… » (a backup, a USB key); the phone gets them from the PC
+- [ ] Optional: French translations: ask riftboundfr.fr
 
 ## Phase 12 — Grid scanner
 

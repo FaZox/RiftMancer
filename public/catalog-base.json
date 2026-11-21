@@ -1,0 +1,30 @@
+{
+  "gridSize": 16,
+  "featureFormat": "u8b64",
+  "embeddings": {
+    "engine": "dinov2s-ft-fp16-mean-168",
+    "region": "art",
+    "model": "dinov2s-ft-fp16.onnx",
+    "modelSha256": "45c10e5eb0c60316499d3b68d14fc51f6dab448e553fa439d9f7273bfc3b1fab",
+    "dim": 384,
+    "views": [
+      "normal",
+      "rot180"
+    ],
+    "alpha": 0.5,
+    "decision": {
+      "320": {
+        "abs": 0.457,
+        "margin": 0.15
+      },
+      "416": {
+        "abs": 0.467,
+        "margin": 0.115
+      }
+    },
+    "detector": "yolo11s-pose-riftbound-dyn.onnx",
+    "detectorSha256": "980a89fd434d01cdbf33d095e649c006d76d4d7c51bcb02bbce048c48be5f0d1"
+  },
+  "generatedAt": null,
+  "cards": []
+}

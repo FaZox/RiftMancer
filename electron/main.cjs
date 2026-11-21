@@ -283,15 +283,21 @@ async function start() {
     let total = 0;
     for (const [rel, bytes] of Object.entries(files || {})) {
       const b = Buffer.from(bytes);
-      if (b.length > 4 * 1024 * 1024) throw new Error(`Image trop grosse : ${rel}.`);
+      if (b.length > 4 * 1024 * 1024) throw new Error(etx('Image trop grosse : {rel}.', { rel }));
       total += b.length;
       buffers[rel] = b;
     }
     if (total > 400 * 1024 * 1024) throw new Error(etx('Mise à jour trop grosse : refusée.'));
     return contentChanged(content.installCards(layer, buffers));
   });
+  // « Importer un dossier » (first launch without cards, a friend's USB key): checked in content.cjs.
+  ipcMain.handle('content:importFolder', async () => {
+    const r = await dialog.showOpenDialog(mainWindow, { title: etx('Importer un dossier de cartes'), properties: ['openDirectory'] });
+    if (r.canceled || !r.filePaths[0]) return null;
+    return contentChanged(content.importFolder(r.filePaths[0]));
+  });
   // Content packs (lot 4.5): export the active layers; import a signed pack after a summary.
-  const catalogInUse = () => JSON.parse(fs.readFileSync(content.resolve('/card-hashes.json') || path.join(distDir, 'card-hashes.json'), 'utf8'));
+  const catalogInUse = () => JSON.parse(fs.readFileSync(content.resolve('/card-hashes.json') || path.join(distDir, 'card-hashes.json'), 'utf8')); // resolve: always set without cards in the base
   const modelOf = () => { const e = catalogInUse().embeddings || {}; return { modelSha256: e.modelSha256 || null, detectorSha256: e.detectorSha256 || null }; };
   ipcMain.handle('pack:export', async () => {
     const buf = buildPack({ layers: content.exportLayers(), model: modelOf(), appVersion: app.getVersion() });

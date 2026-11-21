@@ -668,7 +668,7 @@ That's it. After the run finishes, hard-refresh the web app (`Ctrl+Shift+R`) and
 
 What the scraper does, in order:
 
-1. Fetches `https://riftbound.leagueoflegends.com/en-us/card-gallery/` and parses `__NEXT_DATA__`.
+1. Fetches `https://playriftbound.com/en-us/card-gallery/` and parses `__NEXT_DATA__`.
 2. Inserts new rows into `model/riftbound.db` (`INSERT OR REPLACE`, so existing rows are updated).
 3. **Wipes and recreates** `public/cards/` with all current cards as WebP. Landscape battlefields are rotated to portrait at this step.
 4. Regenerates `public/card-hashes.json` with adaptive crop per card type.

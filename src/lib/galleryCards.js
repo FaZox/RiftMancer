@@ -8,7 +8,7 @@
 import { PageReadError } from './banUpdate.js';import { tx } from './i18n.js';
 
 
-export const GALLERY_URL = 'https://riftbound.leagueoflegends.com/en-us/card-gallery/';
+export const GALLERY_URL = 'https://playriftbound.com/en-us/card-gallery/';
 const UNREADABLE = tx('La galerie officielle a changé et n’a pas pu être lue. Rien n’a été modifié.');
 
 /** The gallery's cards (raw), wherever the page keeps them (__NEXT_DATA__). */

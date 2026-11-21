@@ -11,6 +11,7 @@ import Sidebar from './Sidebar.jsx';
 import CollectionPage from './pages/CollectionPage.jsx';
 import GlobalSearch from '../components/common/GlobalSearch.jsx';
 import Welcome from '../components/common/Welcome.jsx';
+import NoCards from '../components/common/NoCards.jsx';
 import ShortcutsDialog from '../components/common/ShortcutsDialog.jsx';
 import { keyToAction, isTyping } from '../lib/shortcuts.js';
 import { tx } from '../lib/i18n.js';
@@ -71,6 +72,7 @@ export default function DesktopApp() {
         counts={{ collection: c.collection.totalCopies, scan: c.pendingCards.length }} />
 
       <main className="flex-1 min-w-0 flex flex-col relative">
+        <NoCards />
         <ErrorBoundary key={page} where={page} page>
         <Suspense fallback={<PageLoading />}>
         {page === 'collection' && (

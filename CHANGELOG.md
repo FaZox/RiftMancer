@@ -3,6 +3,13 @@
 Entries are in English from 21/11/2026; the earlier history is in French (*l’historique antérieur est en français*).
 
 
+## [Unreleased] - 2026-11-21 · Cards on first launch
+
+- **An app built without the card content works**: it ships only the catalog header, `public/catalog-base.json` (grid, AI model, recognition thresholds, detector; no card, nothing from Riot Games), made by `npm run catalog:base` and checked against the full catalog by a test. The scanner, the PC (`electron/content.cjs`) and the phone fall back to it when `card-hashes.json` is missing.
+- **« Get the cards » panel** (PC, as long as there is no card): **« Download the cards »** runs the usual gallery flow on the empty catalog (summary, then pictures, fingerprints and AI signatures of every card; about 170 MB); a French app then offers the French translations. **« Import a folder… »** takes a folder holding `card-hashes.json` and `cards/` (or `public/` inside, like the content backup): the cards, their French names and texts and their pictures become the cards layer, checked like any update and refused when made for another AI model or detector. Also in Settings → Content. Phone: « No cards yet: sync with the PC app ».
+- **The official gallery moved** to `https://playriftbound.com/en-us/card-gallery/` (the former address redirects there and was refused by the allowed-address list): new address in the app, the scraper and the README; both allowed.
+- Checked in the real PC app built without the content, on a blank profile: the panel shows; the import of the backup takes 4 s (1,415 cards, 1,415 French names, 880 French texts, pictures and thumbnails); « AI ready »; a test photo of Ahri is recognised at 100 % with its French name and text; the gallery download reaches its summary (1,408 new cards, Unleashed included). The full download was not run. Tests: 304 passed, lint OK.
+
 ## [Unreleased] - 2026-11-21 · LICENSE and NOTICE
 
 - **`LICENSE` now holds the GNU AGPL-3.0 text alone**, identical to the FSF's, so that GitHub recognises the licence (it showed « Other »). **`NOTICE`** holds the rest: the app's notice (Copyright (C) 2026 FaZox, AGPL-3.0 or later), the MIT notice of riftbound-scanner (Nekoraru22) word for word, the note on the detector and the Riot sentence (EN/FR).

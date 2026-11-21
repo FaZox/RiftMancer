@@ -25,6 +25,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { etx } = require('./i18n.cjs');
+const { canonDetector } = require('./pack.cjs');
 
 const KINDS = ['cartes', 'traductions', 'bannies'];
 const LABEL = { cartes: 'Cartes', traductions: 'Traductions françaises', bannies: 'Cartes bannies' }; // French keys of electron/i18n.cjs
@@ -167,7 +168,14 @@ function createContent({ dir, distDir }) {
   /** Weekly checks (lot 4.2 / 4.3): { traductions: { weekly, lastCheck, validators, lastReminder }, … } */
   function getState() { try { return readJSON(stateFile); } catch { return {}; } }
   function setState(s) { fs.mkdirSync(dir, { recursive: true }); fs.writeFileSync(stateFile, JSON.stringify(s)); }
-  const base = () => readJSON(path.join(distDir, 'card-hashes.json'));
+  // The catalog shipped with the app; an app built without the card content
+  // ships only its header (dist/catalog-base.json, no card): the cards come
+  // on first launch (gallery download or importFolder below).
+  const baseFile = () => {
+    const full = path.join(distDir, 'card-hashes.json');
+    return fs.existsSync(full) ? full : path.join(distDir, 'catalog-base.json');
+  };
+  const base = () => readJSON(baseFile());
   const baseBanlist = () => { try { return readJSON(path.join(distDir, 'banlist.json')); } catch { return null; } };
   const errataFile = path.join(dir, 'errata.json');
   function getErrata() { try { return readJSON(errataFile); } catch { return {}; } }
@@ -214,7 +222,8 @@ function createContent({ dir, distDir }) {
       active[kind] = layer;
     }
     fs.rmSync(activeDir, { recursive: true, force: true });
-    if (active.cartes || active.traductions) {
+    // Without cards in the base, the served catalog is always written here (dist/card-hashes.json does not exist).
+    if (active.cartes || active.traductions || !b.cards.length) {
       fs.mkdirSync(activeDir, { recursive: true });
       fs.writeFileSync(path.join(activeDir, 'card-hashes.json'), JSON.stringify(applyErrata(mergeCatalog(b, active), getErrata())));
     }
@@ -301,6 +310,43 @@ function createContent({ dir, distDir }) {
     }, { ...keep, ...files });
   }
 
+  /**
+   * « Importer un dossier » (first launch, or a friend's USB key): a folder
+   * holding card-hashes.json and cards/ (or public/card-hashes.json and
+   * public/cards/, like the content backup). Its cards become the cards layer
+   * (with their French names and texts), checked like any layer; the cards
+   * downloaded since are kept. Refused when made for another AI model or detector.
+   */
+  function importFolder(folder) {
+    const root = [folder, path.join(folder, 'public')].find(r => fs.existsSync(path.join(r, 'card-hashes.json')) && fs.existsSync(path.join(r, 'cards')));
+    if (!root) throw new Error(etx('Ce dossier ne contient pas de cartes : il faut card-hashes.json et le dossier cards (ou un dossier public qui les contient).'));
+    let catalog;
+    try { catalog = readJSON(path.join(root, 'card-hashes.json')); } catch { throw new Error(etx('card-hashes.json est illisible.')); }
+    if (!Array.isArray(catalog?.cards) || !catalog.cards.length) throw new Error(etx('card-hashes.json ne contient aucune carte.'));
+    const mine = base().embeddings || {};
+    const theirs = catalog.embeddings || {};
+    if (mine.modelSha256 && theirs.modelSha256 !== mine.modelSha256) throw new Error(etx('Ces cartes ont été préparées pour un autre modèle d’IA : utilisez un dossier fait par cette version de l’appli, ou téléchargez les cartes depuis la galerie.'));
+    if (mine.detectorSha256 && canonDetector(theirs.detectorSha256) !== canonDetector(mine.detectorSha256)) throw new Error(etx('Ces cartes ont été préparées pour un autre détecteur : utilisez un dossier fait par cette version de l’appli, ou téléchargez les cartes depuis la galerie.'));
+    const cards = catalog.cards.filter(c => CARD_ID.test(c?.id || ''));
+    const files = {};
+    for (const c of cards) {
+      for (const rel of [`cards/${c.id}.webp`, `cards/thumbs/${c.id}.webp`]) {
+        const file = path.join(root, rel);
+        let size;
+        try { size = fs.statSync(file).size; } catch { continue; }
+        if (size > 4 * 1024 * 1024) throw new Error(etx('Image trop grosse : {rel}.', { rel }));
+        files[rel] = fs.readFileSync(file);
+      }
+    }
+    installCards({
+      createdAt: new Date().toISOString(),
+      source: { label: 'dossier importé' },
+      count: cards.length,
+      data: { cards, patches: [], removed: [] },
+    }, files);
+    return { ...status(), imported: { cards: cards.length, images: Object.keys(files).filter(r => !r.includes('/thumbs/')).length } };
+  }
+
   /** Active layers for a pack (lot 4.5): { kind: { json: Buffer, files: { 'cards/…': Buffer } } }. */
   function exportLayers() {
     const out = {};
@@ -359,7 +405,7 @@ function createContent({ dir, distDir }) {
     };
   }
 
-  return { rebuild, resolve, install, installCards, restorePrevious, reset, status, getState, setState, exportLayers, importLayers, layerDates };
+  return { rebuild, resolve, install, installCards, importFolder, restorePrevious, reset, status, getState, setState, exportLayers, importLayers, layerDates };
 }
 
 module.exports = { createContent, mergeCatalog, layerProblem, textChanges, applyErrata, KINDS };
