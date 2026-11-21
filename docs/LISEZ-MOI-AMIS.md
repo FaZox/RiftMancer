@@ -35,6 +35,7 @@ Si une empreinte ne correspond pas, n’installez pas ce fichier : téléchargez
 2. Windows peut afficher « Windows a protégé votre ordinateur » (SmartScreen) : l’appli n’est pas signée par un éditeur connu de Microsoft. Cliquez sur **Informations complémentaires**, puis **Exécuter quand même**.
 3. Suivez l’installation. Un raccourci « RiftMancer » est créé sur le bureau.
 4. Au premier lancement, Windows peut demander d’autoriser l’appli sur le réseau : acceptez pour les **réseaux privés** (votre Wi-Fi à la maison), c’est ce qui permet la synchronisation avec le téléphone.
+5. **Version téléchargée sur GitHub** (https://github.com/FaZox/RiftMancer/releases) : elle est livrée sans les cartes, qui appartiennent à Riot Games. L’appli affiche « Récupérez les cartes » : cliquez sur **Télécharger les cartes** (galerie officielle, environ 170 Mo, une dizaine de minutes), ou sur **Importer un dossier…** si on vous a donné un dossier de cartes (il contient `card-hashes.json` et un dossier `cards`). Le téléphone les reçoit du PC à la synchro.
 
 ## 3. Installer l’appli Android
 
@@ -51,7 +52,7 @@ Le PC et le téléphone doivent être sur le **même Wi-Fi**.
 2. Sur le téléphone : **Plus → Réglages → Synchronisation → Scanner le QR code du PC**, et visez l’écran du PC (ou collez le code d’appairage affiché sous le QR code).
 3. Le PC affiche « Appareil appairé récemment ». C’est fait : le QR code ne sert plus.
 
-Après l’installation, faites une première synchronisation : le téléphone reçoit alors les grandes images des cartes (en attendant, le zoom montre une image réduite).
+Après l’installation, faites une première synchronisation : le téléphone reçoit alors les grandes images des cartes (en attendant, le zoom montre une image réduite). Avec la version de GitHub, le téléphone n’a aucune carte avant cette première synchronisation.
 
 ## 5. Synchroniser
 
@@ -113,4 +114,4 @@ RiftMancer a été créé selon la politique « Legal Jibber Jabber » de Riot G
 
 > RiftMancer was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.
 
-RiftMancer est un logiciel libre sous licence GNU AGPL-3.0 (son code source est disponible auprès de la personne qui vous a donné l’appli). L'appli est basée sur riftbound-scanner de Nekoraru22 (licence MIT, https://github.com/Nekoraru22/riftbound-scanner), largement modifié et étendu. Les textes des licences sont dans le paquet (LICENSE.txt, NOTICE.txt, THIRD_PARTY_LICENSES.txt) et dans l'appli : Réglages → À propos → Licences.
+RiftMancer est un logiciel libre sous licence GNU AGPL-3.0 (son code source : https://github.com/FaZox/RiftMancer). L'appli est basée sur riftbound-scanner de Nekoraru22 (licence MIT, https://github.com/Nekoraru22/riftbound-scanner), largement modifié et étendu. Les textes des licences sont dans le paquet (LICENSE.txt, NOTICE.txt, THIRD_PARTY_LICENSES.txt) et dans l'appli : Réglages → À propos → Licences.

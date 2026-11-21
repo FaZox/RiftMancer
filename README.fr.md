@@ -14,6 +14,15 @@ Reconnaissance des cartes par intelligence artificielle (YOLO11 + empreintes cou
 
 **Documentation** : [sécurité](SECURITY.md) · [guide pour les amis](docs/LISEZ-MOI-AMIS.md) ([anglais](docs/FRIENDS-GUIDE.md)) (installer, appairer, synchroniser, mettre à jour) · [nouveautés par version](docs/NOUVEAUTES.md) ([anglais](docs/WHATS-NEW.md)) · [bilan de la distribution aux amis, M0 à M14](docs/PHASE-10.fr.md) · [feuille de route](ROADMAP.fr.md) · [journal des changements](CHANGELOG.md) · études : [modèles d’IA](docs/RAPPORT-MODELES-IA.md), [langue détectée](docs/ETUDE-LANGUE.md), [variantes](docs/ETUDE-VARIANTES.md).
 
+## Télécharger
+
+La dernière version est sur la page **[Releases](https://github.com/FaZox/RiftMancer/releases)** :
+
+- **PC (Windows)** : `RiftMancer-Setup-<version>.exe`. L’installateur n’est pas signé par un éditeur connu de Microsoft : sur « Windows a protégé votre ordinateur », cliquez sur **Informations complémentaires**, puis **Exécuter quand même**.
+- **Android** : `RiftMancer-<version>.apk`, à ouvrir sur le téléphone (autorisez l’installation depuis cette source quand Android le demande).
+
+Les applis sont livrées **sans les cartes** (images, noms et textes appartiennent à Riot Games). Au premier lancement, l’appli PC propose **Télécharger les cartes** (galerie officielle, environ 170 Mo) ou **Importer un dossier…** ; le téléphone les reçoit du PC à la synchro. `EMPREINTES.txt` donne le SHA-256 de chaque fichier. Pas à pas : [guide pour les amis](docs/LISEZ-MOI-AMIS.md).
+
 ---
 
 ## Sommaire

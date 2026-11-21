@@ -14,6 +14,15 @@ Card recognition by artificial intelligence (YOLO11 + colour fingerprints, then 
 
 **Documentation**: [security policy](SECURITY.md) · [friends’ guide](docs/FRIENDS-GUIDE.md) (install, pair, sync, update; [French](docs/LISEZ-MOI-AMIS.md)) · [what’s new per version](docs/WHATS-NEW.md) ([French](docs/NOUVEAUTES.md)) · [roadmap](ROADMAP.md) ([French](ROADMAP.fr.md)) · [changelog](CHANGELOG.md) · studies: [AI models](docs/AI-MODELS-REPORT.md), [detected language](docs/STUDY-LANGUAGE.md), [variants](docs/STUDY-VARIANTS.md) (French versions next to them).
 
+## Download
+
+Get the latest version from the **[Releases](https://github.com/FaZox/RiftMancer/releases)** page:
+
+- **PC (Windows)**: `RiftMancer-Setup-<version>.exe`. The installer is not signed by a publisher known to Microsoft: on « Windows protected your PC », click **More info**, then **Run anyway**.
+- **Android**: `RiftMancer-<version>.apk`, opened on the phone (allow installing apps from that source when Android asks).
+
+The apps come **without the cards** (pictures, names and texts belong to Riot Games). On first launch, the PC app offers **Download the cards** (official gallery, about 170 MB) or **Import a folder…**; the phone receives them from the PC when it syncs. `EMPREINTES.txt` lists the SHA-256 of every file. Step by step: [friends’ guide](docs/FRIENDS-GUIDE.md).
+
 ---
 
 ## Contents

@@ -11,6 +11,7 @@ import { createHash } from 'node:crypto';
 import { inflateRawSync } from 'node:zlib';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { cardContentIn } from './content.mjs';
 
 // ── Versions ───────────────────────────────────────────────────────────────
 
@@ -215,7 +216,12 @@ export function licenceProblems(dir, files) {
   return problems;
 }
 
-export function checkReleaseDir(dir, { version, winUnpacked } = {}) {
+/**
+ * `publicPackage` (GitHub release, release/v<version>-public/): no card
+ * picture nor catalog inside the APK and the PC app (Riot Games), and the
+ * catalog header that lets the app start without them.
+ */
+export function checkReleaseDir(dir, { version, winUnpacked, publicPackage = false } = {}) {
   const problems = [], notes = [];
   const bad = (list) => { for (const x of list) problems.push(`${x.path} : ${x.why}`); };
   const files = listFiles(dir);
@@ -228,6 +234,11 @@ export function checkReleaseDir(dir, { version, winUnpacked } = {}) {
       const names = zipEntries(buf).map(e => e.name);
       bad(forbiddenIn(names, `${f} → `));
       for (const n of ['LICENSE.txt', 'NOTICE.txt']) if (!names.includes(`assets/public/${n}`)) problems.push(`${f} : ${n} absent de l’appli (Réglages → À propos → Licences)`);
+      if (publicPackage) {
+        const content = cardContentIn(names, 'assets/public/');
+        if (content.length) problems.push(`${f} : contenu des cartes de Riot Games dans un paquet public (${content.length} fichiers, ex. ${content[0]})`);
+        if (!names.includes('assets/public/catalog-base.json')) problems.push(`${f} : catalog-base.json absent (l’appli sans cartes ne démarrerait pas)`);
+      }
     }
   }
   if (files.some(f => f.toLowerCase().endsWith('.exe'))) {
@@ -246,6 +257,11 @@ export function checkReleaseDir(dir, { version, winUnpacked } = {}) {
           if (!existsSync(join(winUnpacked, 'resources', n))) problems.push(`appli PC : ${n} absent du dossier installé`);
         }
         bad(forbiddenIn(asar.files, 'appli PC → '));
+        if (publicPackage) {
+          const content = cardContentIn(asar.files, 'dist/');
+          if (content.length) problems.push(`appli PC : contenu des cartes de Riot Games dans un paquet public (${content.length} fichiers, ex. ${content[0]})`);
+          if (!asar.files.includes('dist/catalog-base.json')) problems.push('appli PC : catalog-base.json absent (l’appli sans cartes ne démarrerait pas)');
+        }
         bad(forbiddenIn(listFiles(winUnpacked), 'appli PC (dossier) → '));
       }
     }

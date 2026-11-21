@@ -5,6 +5,14 @@ Texte pour les utilisateurs de l’appli, une section par version distribuée
 docs/WHATS-NEW.md). `npm run release -- <version>` en tire `NOUVEAUTES.txt` et refuse
 de construire un paquet tant que la section de la version n’est pas écrite, dans les deux fichiers.
 
+## 2.2.0 — RiftMancer, en anglais, cartes au premier lancement
+
+- **Nouveau nom : RiftMancer.** L’appli change de nom et d’identité Android : elle s’installe comme une nouvelle appli. Synchronisez d’abord le téléphone avec le PC, puis désinstallez l’ancienne appli « Riftbound Scanner ».
+- **Anglais et français** : toute l’appli est en anglais, ou en français quand votre téléphone ou votre PC est en français. Changez-la dans Réglages → Affichage → « Language · Langue ». Les noms et textes des cartes suivent la langue de l’appli.
+- **Cartes au premier lancement** : la version publiée sur GitHub est livrée sans les cartes (elles appartiennent à Riot Games). Sur le PC, « Récupérez les cartes » propose « Télécharger les cartes » depuis la galerie officielle (environ 170 Mo, une dizaine de minutes) ou « Importer un dossier… » (un dossier de cartes déjà téléchargées, une clé USB). Le téléphone les reçoit du PC à la synchro.
+- **Galerie officielle** : Riot l’a déplacée sur playriftbound.com ; « Rechercher de nouvelles cartes » fonctionne de nouveau.
+- **Logiciel libre** : RiftMancer est sous licence GNU AGPL-3.0 ; son code est sur github.com/FaZox/RiftMancer.
+
 ## 2.1.1 — scanner par grille, classeur, crédits
 
 - **Scanner par grille** : nouveau mode « Grille » dans l’onglet Scanner (bouton à quatre carrés). Tenez le téléphone au-dessus d’une page de classeur ou de cartes posées à plat : un cadre s’affiche sur chaque carte, la photo se prend toute seule quand rien ne bouge, puis vous vérifiez la page (vert : reconnue, orange : à choisir) et touchez « Ajouter · page suivante ». La même page n’est jamais prise deux fois.

@@ -3,6 +3,13 @@
 Entries are in English from 21/11/2026; the earlier history is in French (*l’historique antérieur est en français*).
 
 
+## [Unreleased] - 2026-11-21 · Public package for the GitHub releases
+
+- **`npm run release -- <version>` now builds two packages**: `release/v<version>/` for the friends (with the cards, as before; never on GitHub) and `release/v<version>-public/` for a GitHub release: the same app and APK **without any card picture nor catalog** (`--public` of `desktop-exe.mjs` and `build-mobile.mjs`, `stripCardContent()` in `scripts/lib/content.mjs`), starting with `catalog-base.json`. `release:check` looks inside the public APK and PC app: no file of the cards, the catalog header present.
+- electron-builder no longer tries to upload to GitHub by itself when started from `npm run release` (`publish: 'never'`), and is run once more when its icon tool crashes on exit.
+- Release notes of **2.2.0** written (English and French): new name, English, cards on first launch, gallery address, AGPL. Friends' guides: the version from GitHub and its first launch, the address of the source code. README: « Download » section (Releases page, SmartScreen, the cards on first launch).
+- Trial `npm run release -- 2.2.0 --essai`: both packages built and checked. Public: APK 82.5 MB (121.3 MB with the cards), installer 203.5 MB (372.3 MB), 0 card file inside; the public PC app starts on a blank profile with 0 card and the « Get the cards » panel. Tests: 305 passed.
+
 ## [Unreleased] - 2026-11-21 · Cards on first launch
 
 - **An app built without the card content works**: it ships only the catalog header, `public/catalog-base.json` (grid, AI model, recognition thresholds, detector; no card, nothing from Riot Games), made by `npm run catalog:base` and checked against the full catalog by a test. The scanner, the PC (`electron/content.cjs`) and the phone fall back to it when `card-hashes.json` is missing.

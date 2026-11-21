@@ -10,6 +10,10 @@
  *   NOTICE.txt                              NOTICE (MIT notice of the original project: in every copy)
  *   THIRD_PARTY_LICENSES.txt                THIRD_PARTY_LICENSES.md
  *   EMPREINTES.txt                          SHA-256 of every file
+ * and the public package, for the GitHub release, in release/v<version>-public/:
+ * the same files, but the app and the APK hold NO card content (pictures,
+ * catalog: Riot Games); they start with catalog-base.json and get the cards
+ * on first launch. Checked from the inside (APK, PC app).
  * Steps: clean Git tree, version higher than every one distributed (tags v*),
  * notes written, signing key present → package.json version → tests, lint,
  * installer, APK → release:check → commit « Version <version> » + tag v<version>
@@ -85,14 +89,10 @@ if (current !== version) {
 }
 
 const out = resolve('release', `${trial ? 'essai-' : ''}v${version}`);
-try {
-  run('npm test');
-  run('npm run lint');
-  run('npm run desktop:exe');
-  run('npm run build:mobile');
-  run('node scripts/android-apk.mjs --release');
+const outPublic = `${out}-public`;
 
-  // 5. The folder given to friends (rebuilt from scratch: it only holds this script's output).
+/** 5–6. A package folder (rebuilt from scratch: it only holds this script's output), then checked. */
+function assemble(out, publicPackage) {
   rmSync(out, { recursive: true, force: true });
   mkdirSync(out, { recursive: true });
   const crlf = (s) => s.replace(/\r?\n/g, '\r\n');
@@ -109,9 +109,28 @@ try {
   writeFileSync(join(out, 'EMPREINTES.txt'), checksumsText(files));
 
   // 6. Nothing forbidden inside.
-  const { problems, notes: remarks } = checkReleaseDir(out, { version, winUnpacked: resolve('release', 'win-unpacked') });
+  const { problems, notes: remarks } = checkReleaseDir(out, { version, winUnpacked: resolve('release', 'win-unpacked'), publicPackage });
   for (const n of remarks) console.log(`  · ${n}`);
-  if (problems.length) throw new Error(`paquet refusé :\n  ${problems.join('\n  ')}`);
+  if (problems.length) throw new Error(`paquet${publicPackage ? ' public' : ''} refusé :\n  ${problems.join('\n  ')}`);
+}
+
+try {
+  run('npm test');
+  run('npm run lint');
+  // The friends' package (with the cards)
+  run('npm run desktop:exe');
+  run('npm run build:mobile');
+  run('node scripts/android-apk.mjs --release');
+  assemble(out, false);
+  // The public package (GitHub release): the same app without the card content
+  run('npm run build');
+  run('node scripts/make-icons.mjs');
+  run('node scripts/desktop-exe.mjs --public');
+  run('node scripts/copy-ort.mjs');
+  run('node scripts/build-mobile.mjs --public');
+  run('node scripts/android-apk.mjs --release');
+  assemble(outPublic, true);
+  run('npm run build'); // dist/ with the cards again (PC app started from the project)
 } catch (e) {
   restore();
   fail(`${e.message}\nVersion du projet remise à ${current}.`);
@@ -120,7 +139,7 @@ try {
 if (trial) {
   restore();
   console.log(`
-Essai réussi : release/essai-v${version}/ (rien d’enregistré, version du projet inchangée, à ne pas distribuer).`);
+Essai réussi : release/essai-v${version}/ et release/essai-v${version}-public/ (rien d’enregistré, version du projet inchangée, à ne pas distribuer).`);
   for (const f of readdirSync(out).sort()) console.log(`  ${f}`);
   process.exit(0);
 }
@@ -128,8 +147,11 @@ Essai réussi : release/essai-v${version}/ (rien d’enregistré, version du pro
 // 7. Record the version (local commit and tag).
 if (current !== version) git(`commit -m "Version ${version}" -- package.json package-lock.json`);
 git(`tag v${version}`);
-console.log(`\nPaquet prêt : release/v${version}/`);
+console.log(`\nPaquet des amis (avec les cartes) : release/v${version}/`);
 for (const f of readdirSync(out).sort()) console.log(`  ${f}`);
+console.log(`\nPaquet public (sans les cartes) : release/v${version}-public/`);
+for (const f of readdirSync(outPublic).sort()) console.log(`  ${f}`);
 console.log('\nÀ faire :');
-console.log(`  - envoyer la version sur GitHub : git push origin main v${version}`);
-console.log('  - copier le dossier entier dans le Drive partagé.');
+console.log(`  - envoyer la version sur le dépôt privé : git push origin main v${version}`);
+console.log('  - copier release/v' + version + '/ dans le Drive partagé (jamais sur GitHub : il contient les cartes) ;');
+console.log(`  - dépôt public : npm run public:export, commit, tag v${version}, puis une Release GitHub avec les fichiers de release/v${version}-public/.`);

@@ -281,3 +281,70 @@ test('Réglages → À propos: credit to Nekoraru22 with the link, Riot Games me
   const guide = read('docs/LISEZ-MOI-AMIS.md');
   assert.ok(guide.includes('Riot Games does not endorse or sponsor this project.') && guide.includes('Nekoraru22'));
 });
+
+test('public package (GitHub release): no card picture nor catalog in the APK and the PC app, the catalog header present', async () => {
+  const { stripCardContent, cardContentIn } = await import('../scripts/lib/content.mjs');
+  const dir = mkdtempSync(join(tmpdir(), 'rb-public-'));
+  const pc = mkdtempSync(join(tmpdir(), 'rb-public-win-'));
+  try {
+    const put = (name, content) => writeFileSync(join(dir, name), content);
+    const sums = () => put('EMPREINTES.txt', R.checksumsText(['RiftMancer-2.2.0.apk', 'RiftMancer-Setup-2.2.0.exe', 'LICENSE.txt', 'NOTICE.txt', 'THIRD_PARTY_LICENSES.txt']
+      .filter(f => existsSync(join(dir, f))).map(name => ({ name, sha256: R.sha256(readFileSync(join(dir, name))) }))));
+    const lic = [['assets/public/LICENSE.txt', 'l', false], ['assets/public/NOTICE.txt', 'n', false]];
+    put('LICENSE.txt', `${R.APP_LICENCE_TITLE}\r\n`);
+    put('NOTICE.txt', `${R.ORIGIN_COPYRIGHT}\r\n`);
+    put('THIRD_PARTY_LICENSES.txt', 't');
+    put('RiftMancer-Setup-2.2.0.exe', 'MZ');
+    const res = join(pc, 'resources');
+    mkdirSync(res, { recursive: true });
+    writeFileSync(join(res, 'LICENSE.txt'), 'l');
+    writeFileSync(join(res, 'NOTICE.txt'), 'n');
+    const asar = (extra) => writeFileSync(join(res, 'app.asar'), makeAsar({ 'package.json': '{"version":"2.2.0","variant":"daily"}', 'dist/LICENSE.txt': 'l', 'dist/NOTICE.txt': 'n', ...extra }));
+
+    // The friends' package build, given as public: refused
+    put('RiftMancer-2.2.0.apk', makeZip([...lic, ['assets/public/card-hashes.json', '{}', false], ['assets/public/cards/thumbs/ogn-001-298.webp', 'w', false]]));
+    asar({ 'dist/card-hashes.json': '{}', 'dist/cards/ogn-001-298.webp': 'w' });
+    sums();
+    let r = R.checkReleaseDir(dir, { version: '2.2.0', winUnpacked: pc, publicPackage: true });
+    assert.deepEqual(r.problems, [
+      'RiftMancer-2.2.0.apk : contenu des cartes de Riot Games dans un paquet public (2 fichiers, ex. assets/public/card-hashes.json)',
+      'RiftMancer-2.2.0.apk : catalog-base.json absent (l’appli sans cartes ne démarrerait pas)',
+      'appli PC : contenu des cartes de Riot Games dans un paquet public (2 fichiers, ex. dist/card-hashes.json)',
+      'appli PC : catalog-base.json absent (l’appli sans cartes ne démarrerait pas)',
+    ]);
+    assert.deepEqual(R.checkReleaseDir(dir, { version: '2.2.0', winUnpacked: pc }).problems, [], 'the same files are fine for the friends');
+
+    // The public build: accepted
+    put('RiftMancer-2.2.0.apk', makeZip([...lic, ['assets/public/catalog-base.json', '{}', false]]));
+    asar({ 'dist/catalog-base.json': '{}' });
+    sums();
+    r = R.checkReleaseDir(dir, { version: '2.2.0', winUnpacked: pc, publicPackage: true });
+    assert.deepEqual(r.problems, []);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+    rmSync(pc, { recursive: true, force: true });
+  }
+
+  // stripCardContent: the built app without its cards, refused without the header
+  const built = mkdtempSync(join(tmpdir(), 'rb-strip-'));
+  try {
+    mkdirSync(join(built, 'cards', 'thumbs'), { recursive: true });
+    writeFileSync(join(built, 'cards', 'a.webp'), 'w');
+    writeFileSync(join(built, 'cards', 'thumbs', 'a.webp'), 'w');
+    writeFileSync(join(built, 'card-hashes.json'), '{}');
+    writeFileSync(join(built, 'index.html'), 'x');
+    assert.throws(() => stripCardContent(built), /catalog-base\.json absent/);
+    writeFileSync(join(built, 'catalog-base.json'), '{}');
+    assert.ok(existsSync(join(built, 'card-hashes.json')), 'nothing removed when refused');
+    assert.equal(stripCardContent(built), 3);
+    assert.ok(!existsSync(join(built, 'cards')) && existsSync(join(built, 'index.html')) && existsSync(join(built, 'catalog-base.json')));
+  } finally {
+    rmSync(built, { recursive: true, force: true });
+  }
+  assert.deepEqual(cardContentIn(['dist/cards/x.webp', 'dist/card-hashes.json', 'dist/catalog-base.json', 'dist/cardsX.js'], 'dist/'), ['dist/cards/x.webp', 'dist/card-hashes.json']);
+  // npm run release builds both packages
+  const rel = read('scripts/release.mjs');
+  assert.match(rel, /desktop-exe\.mjs --public/);
+  assert.match(rel, /build-mobile\.mjs --public/);
+  assert.match(rel, /assemble\(outPublic, true\)/);
+});

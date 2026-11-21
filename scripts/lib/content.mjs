@@ -6,7 +6,7 @@
  * gallery (`npm run catalog:update`). What is never published:
  * PUBLIC_EXCLUDED (scripts/public-export.mjs).
  */
-import { existsSync, openSync, readSync, closeSync } from 'node:fs';
+import { existsSync, openSync, readSync, closeSync, readdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
 /** Paths kept out of the public repository (prefixes, relative to the root, « / » separators). */
@@ -43,6 +43,30 @@ export function hasCardContent(root) {
 }
 
 /** A test file that reads the card content: it says so (« @needs-card-content » at the top), or loads the catalog. */
+/**
+ * Public build (GitHub release): the built app (`dist/`, `dist-mobile/`)
+ * without the card content — pictures and catalog. It starts with
+ * catalog-base.json and gets the cards on first launch (NoCards.jsx).
+ * Returns the number of files removed.
+ */
+export function stripCardContent(dir) {
+  if (!existsSync(join(dir, 'catalog-base.json'))) throw new Error(`${dir}/catalog-base.json absent : l’appli sans cartes ne démarrerait pas (npm run catalog:base).`);
+  let removed = 0;
+  const cards = join(dir, 'cards');
+  if (existsSync(cards)) {
+    const count = (d) => readdirSync(d, { withFileTypes: true }).reduce((n, e) => n + (e.isDirectory() ? count(join(d, e.name)) : 1), 0);
+    removed += count(cards);
+    rmSync(cards, { recursive: true, force: true });
+  }
+  if (existsSync(join(dir, 'card-hashes.json'))) { rmSync(join(dir, 'card-hashes.json')); removed++; }
+  return removed;
+}
+
+/** Card content inside a built app: paths under `prefix` (« assets/public/ » in the APK, « dist/ » in the PC app). */
+export function cardContentIn(paths, prefix) {
+  return paths.filter(p => p.startsWith(prefix) && (p.startsWith(`${prefix}cards/`) || p === `${prefix}card-hashes.json`));
+}
+
 export function needsCardContent(src) {
   return /@needs-card-content|loadCatalog\(/.test(src);
 }

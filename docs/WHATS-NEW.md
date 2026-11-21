@@ -6,6 +6,14 @@ version is docs/NOUVEAUTES.md). `npm run release -- <version>` takes
 `WHATS-NEW.txt` from it and refuses to build a package until the section of the
 version is written, in both files.
 
+## 2.2.0 — RiftMancer, in English, cards on first launch
+
+- **New name: RiftMancer.** The app has a new name and a new Android identity: it installs as a new app. Sync your phone with the PC first, then uninstall the old « Riftbound Scanner » app.
+- **English and French**: the whole app is in English, or in French when your phone or PC is in French. Change it in Settings → Display → « Language · Langue ». Card names and texts follow the app's language.
+- **Cards on first launch**: the version published on GitHub comes without the cards (they belong to Riot Games). On the PC, « Get the cards » offers « Download the cards » from the official gallery (about 170 MB, ten minutes or so) or « Import a folder… » (a folder of cards already downloaded, a USB key). The phone receives them from the PC at the sync.
+- **Official gallery**: Riot moved it to playriftbound.com; « Search for new cards » works again.
+- **Free software**: RiftMancer is under the GNU AGPL-3.0 licence; its code is at github.com/FaZox/RiftMancer.
+
 ## 2.1.1 — grid scanner, binder, credits
 
 - **Grid scanner**: new « Grid » mode in the Scanner tab (button with four squares). Hold the phone above a binder page or cards laid flat: a frame shows on each card, the photo is taken by itself when nothing moves, then you check the page (green: recognised, orange: to choose) and tap « Add · next page ». The same page is never taken twice.
