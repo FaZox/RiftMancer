@@ -3,6 +3,11 @@
 Entries are in English from 21/11/2026; the earlier history is in French (*l’historique antérieur est en français*).
 
 
+## [2.3.0] - 2026-11-21
+
+- Released: friends' package `release/v2.3.0/`, public package `release/v2.3.0-public/` (GitHub release), tag `v2.3.0`.
+- The public build also leaves out the game's symbols (`public/sym`, Riot Games), like the card content, and `release:check` refuses a public package holding one; the public package of 2.3.0 was rebuilt this way after the tag (same code but for this build step).
+
 ## [Unreleased] - 2026-11-21 · Recycle cost, prices refreshed from Settings → Content
 
 - **Recycle cost on the card sheet**: next to the energy, the runes to recycle to play the card (« power »), as many icons of the card's domain as runes, as rifthunt shows them (Icathian Rain: 7 energy, 3 Fury runes). Card field `power`, from rifthunt, written with the next « Search » without being listed as a change (like the print links); allowed in the content layers.

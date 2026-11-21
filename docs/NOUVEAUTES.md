@@ -5,6 +5,15 @@ Texte pour les utilisateurs de l’appli, une section par version distribuée
 docs/WHATS-NEW.md). `npm run release -- <version>` en tire `NOUVEAUTES.txt` et refuse
 de construire un paquet tant que la section de la version n’est pas écrite, dans les deux fichiers.
 
+## 2.3.0 — impressions et promos, rulings, une collection plus pratique
+
+- **Toutes les impressions de chaque carte** : Réglages → Contenu → Cartes → « Rechercher » apporte maintenant les promos (Organized Play, Judge, lancement, Metal…), les cartes K/DA et toutes les variantes (illustration alternative, overnumbered, signature, showcase), avec leurs images et, dès l’installation, le nom français de la même carte. Dans la fiche d’une carte, « Impressions et variantes » les liste toutes avec leur prix et combien vous en avez.
+- **Rulings** : les questions et réponses de Riftbound FAQ dans la fiche de chaque carte (touchez une question pour lire la réponse, avec les liens vers les règles). À installer depuis Réglages → Contenu → Rulings ; non officiels, en anglais.
+- **Les symboles du jeu** : gemme de rareté devant le nom de la carte, runes, « n’importe quelle rune », Épuisement et Puissance comme sur les cartes, icônes des domaines, et le coût de recyclage (en runes) à côté de l’énergie.
+- **Collection** : un bouton « Ajouter » à côté du tri (une carte par son nom ou son numéro), les domaines dans un menu déroulant, plus de trait de couleur au-dessus des cartes. En ouvrant une carte, vous voyez combien vous en avez, avec − et + pour en retirer ou en ajouter une, et « Promo » pour marquer les promos (badge PROMO et filtre « Promo »).
+- **Scanner du PC** : le mode « Grille » du téléphone (une page de classeur sous la webcam).
+- **Contenu** : la liste des cartes et les cartes bannies viennent d’abord de rifthunt.com (les pages de Riot quand il ne répond pas) ; Réglages → Contenu → « Prix Cardmarket » montre leur date et peut les mettre à jour tout de suite.
+
 ## 2.2.0 — RiftMancer, en anglais, cartes au premier lancement
 
 - **Nouveau nom : RiftMancer.** L’appli change de nom et d’identité Android : elle s’installe comme une nouvelle appli. Synchronisez d’abord le téléphone avec le PC, puis désinstallez l’ancienne appli « Riftbound Scanner ».

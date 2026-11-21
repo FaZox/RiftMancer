@@ -60,12 +60,15 @@ export function stripCardContent(dir) {
     rmSync(cards, { recursive: true, force: true });
   }
   if (existsSync(join(dir, 'card-hashes.json'))) { rmSync(join(dir, 'card-hashes.json')); removed++; }
+  // the game's symbols (Riot Games, public/sym): out of the public build too; the app keeps its former signs
+  const sym = join(dir, 'sym');
+  if (existsSync(sym)) { removed += readdirSync(sym).length; rmSync(sym, { recursive: true, force: true }); }
   return removed;
 }
 
 /** Card content inside a built app: paths under `prefix` (« assets/public/ » in the APK, « dist/ » in the PC app). */
 export function cardContentIn(paths, prefix) {
-  return paths.filter(p => p.startsWith(prefix) && (p.startsWith(`${prefix}cards/`) || p === `${prefix}card-hashes.json`));
+  return paths.filter(p => p.startsWith(prefix) && (p.startsWith(`${prefix}cards/`) || p.startsWith(`${prefix}sym/`) || p === `${prefix}card-hashes.json`));
 }
 
 export function needsCardContent(src) {

@@ -341,7 +341,7 @@ test('public package (GitHub release): no card picture nor catalog in the APK an
   } finally {
     rmSync(built, { recursive: true, force: true });
   }
-  assert.deepEqual(cardContentIn(['dist/cards/x.webp', 'dist/card-hashes.json', 'dist/catalog-base.json', 'dist/cardsX.js'], 'dist/'), ['dist/cards/x.webp', 'dist/card-hashes.json']);
+  assert.deepEqual(cardContentIn(['dist/cards/x.webp', 'dist/card-hashes.json', 'dist/catalog-base.json', 'dist/cardsX.js', 'dist/sym/might.svg'], 'dist/'), ['dist/cards/x.webp', 'dist/card-hashes.json', 'dist/sym/might.svg']);
   // npm run release builds both packages
   const rel = read('scripts/release.mjs');
   assert.match(rel, /desktop-exe\.mjs --public/);

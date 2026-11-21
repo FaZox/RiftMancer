@@ -6,6 +6,15 @@ version is docs/NOUVEAUTES.md). `npm run release -- <version>` takes
 `WHATS-NEW.txt` from it and refuses to build a package until the section of the
 version is written, in both files.
 
+## 2.3.0 — prints and promos, rulings, a handier collection
+
+- **Every printing of every card**: Settings → Content → Cards → « Search » now brings the promos (Organized Play, Judge, Launch, Metal…), the K/DA cards and every variant (alternate art, overnumbered, signature, showcase), with their pictures and, as soon as they are installed, the French name of the same card. In a card's sheet, « Prints & variants » lists them all with their price and how many you own.
+- **Rulings**: the questions and answers of Riftbound FAQ in each card's sheet (tap a question to read the answer, with links to the rules). Install them from Settings → Content → Rulings; unofficial, in English.
+- **The game's symbols**: rarity gem before the card's name, runes, « any rune », Exhaust and Might as printed on the cards, domain icons, and the recycle cost (runes) next to the energy.
+- **Collection**: an « Add » button next to the sort (a card by its name or number), the domains in a dropdown, no more coloured line above the cards. Opening a card shows how many you own, with − and + to remove or add one, and « Promo » to mark promos (PROMO badge and « Promo » filter).
+- **PC scanner**: the « Grid » mode of the phone (a binder page under the webcam).
+- **Content**: the card list and the banned cards come from rifthunt.com first (Riot's pages when it does not answer); Settings → Content → « Cardmarket prices » shows their date and can update them at once.
+
 ## 2.2.0 — RiftMancer, in English, cards on first launch
 
 - **New name: RiftMancer.** The app has a new name and a new Android identity: it installs as a new app. Sync your phone with the PC first, then uninstall the old « Riftbound Scanner » app.
