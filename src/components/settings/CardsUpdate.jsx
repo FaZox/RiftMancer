@@ -6,11 +6,13 @@ import DiffList from '../common/DiffList.jsx';
 import { Stepper, ProgressRow } from '../common/Progress.jsx';
 import { getMatcher } from '../../lib/cardMatcher.js';
 import { startRecognition } from '../../lib/recognition.js';
-import { GALLERY_URL, extractGalleryCards, galleryChanges, galleryText } from '../../lib/galleryCards.js';
+import { GALLERY_URL, galleryText } from '../../lib/galleryCards.js';
+import { RIFTHUNT_CARDS_URL, RIFTHUNT_SITE, cardSourceChanges } from '../../lib/rifthunt.js';
 import { cardImages, cardFeatures, checkParity, paritySample, commonFingerprint } from '../../lib/cardPipeline.js';
 import { computeGroups, groupPatches, COMMON_BOTTOM } from '../../lib/artGroups.js';
 import { clearNotice } from '../../lib/contentNotices.js';
-import { tx } from '../../lib/i18n.js';
+import { tx, tp } from '../../lib/i18n.js';
+import { frenchFromPrints } from '../../lib/prints.js';
 
 /**
  * « Rechercher de nouvelles cartes » (lot 4.2) in the B.6.2 flow. Nothing is
@@ -44,9 +46,10 @@ export default function CardsUpdateSheet({ open, onClose, pageText = null, valid
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
   const [progress, setProgress] = useState(null); // { label, done, total }
+  const [skippedNames, setSkipped] = useState([]);
 
   const analyse = useCallback((text) => {
-    const r = galleryChanges(extractGalleryCards(text), getMatcher().cards);
+    const r = cardSourceChanges(text, getMatcher().cards);
     setResult(r);
     setStep(1);
   }, []);
@@ -54,6 +57,11 @@ export default function CardsUpdateSheet({ open, onClose, pageText = null, valid
   const search = useCallback(async () => {
     setStep(0); setError(null); setResult(null);
     try {
+      // rifthunt first (all printings, structured data), Riot's gallery when it does not answer
+      const rh = await api.content.fetch(RIFTHUNT_CARDS_URL);
+      if (rh.ok) {
+        try { analyse(rh.text); return; } catch (err) { console.warn('[cards] rifthunt unreadable, Riot gallery used:', err); }
+      }
       const page = await api.content.fetch(GALLERY_URL);
       if (!page.ok) { setError({ text: page.message, reason: page.reason }); return; }
       analyse(page.text);
@@ -74,7 +82,7 @@ export default function CardsUpdateSheet({ open, onClose, pageText = null, valid
     setStep(2); setError(null);
     try {
       const m = getMatcher();
-      const cards = [], files = {};
+      const cards = [], files = {}, skipped = [];
       if (result.added.length) {
         const engine = await aiEngine();
         // 1. Parity on 50 cards of the shipped catalog: or nothing is installed.
@@ -88,8 +96,9 @@ export default function CardsUpdateSheet({ open, onClose, pageText = null, valid
         for (let i = 0; i < result.added.length; i++) {
           const { card, imageUrl } = result.added[i];
           setProgress({ label: tx('Nouvelles cartes'), done: i, total: result.added.length });
-          const img = await api.content.fetchImage(imageUrl);
-          if (!img.ok) throw new Error(`${card.name} : ${img.message}`);
+          const img = imageUrl ? await api.content.fetchImage(imageUrl) : { ok: false, message: tx('image introuvable') };
+          // one picture missing does not stop the others (it will be proposed again next time)
+          if (!img.ok) { skipped.push(`${card.name} : ${img.message}`); continue; }
           const { card: webp, thumb } = await cardImages(img.bytes);
           const feats = await cardFeatures(webp, card.artBottom, engine);
           cards.push({ ...card, ...feats });
@@ -99,6 +108,9 @@ export default function CardsUpdateSheet({ open, onClose, pageText = null, valid
       }
       // 3. Reprint groups with the new cards.
       const patches = new Map(result.changed.map(({ card, fields }) => [card.id, Object.fromEntries([['id', card.id], ...fields.map(k => [k, card[k] ?? null])])]));
+      // Prints of one card (rifthunt): written with the changes, not listed
+      for (const l of result.links || []) patches.set(l.id, { ...patches.get(l.id), ...l });
+      if (result.added.length && !cards.length && skipped.length) throw new Error(tx('Aucune image n’a pu être téléchargée : {first}', { first: skipped[0] }));
       if (cards.length) {
         const all = [...m.cards.filter(c => !result.manualOfficial.includes(c.id) && !cards.some(n => n.id === c.id)), ...cards];
         const newBytes = new Map(cards.map(c => [c.id, files[`cards/${c.id}.webp`]]));
@@ -115,14 +127,18 @@ export default function CardsUpdateSheet({ open, onClose, pageText = null, valid
         }
       }
       setProgress({ label: tx('Enregistrement'), done: 0, total: null });
+      // French of another printing of the same card, at once (riftboundfr.fr does not list promos)
+      const withFrench = frenchFromPrints(cards, m.cards, result.links || []);
+      cards.splice(0, cards.length, ...withFrench);
       await api.content.installCards({
         createdAt: new Date().toISOString(),
-        source: { label: 'galerie officielle Riot', url: GALLERY_URL },
+        source: result.source === 'rifthunt' ? { label: 'rifthunt.com', url: RIFTHUNT_SITE } : { label: 'galerie officielle Riot', url: GALLERY_URL },
         count: cards.length + patches.size,
         data: { cards, patches: [...patches.values()], removed: result.manualOfficial },
       }, files);
       if (validators) await api.content.saveValidators('cartes', validators);
       clearNotice('cartes');
+      setSkipped(skipped);
       setStep(3);
     } catch (err) {
       setStep(1);
@@ -140,13 +156,13 @@ export default function CardsUpdateSheet({ open, onClose, pageText = null, valid
       ...result.manualOfficial.map(id => ({ op: '-', label: id, detail: tx('ajout manuel remplacé par la carte officielle') })),
     ];
   }, [result]);
-  const nothing = result && !items.length;
+  const nothing = result && !items.length && !result.links?.length;
 
   return (
     <Sheet open={open} onClose={step === 2 ? undefined : onClose} title={tx('Cartes')}>
       <div className="space-y-4">
         <Stepper steps={STEPS} current={step} />
-        {step === 0 && !error && <ProgressRow done={0} total={null} unit={tx('Lecture de la galerie officielle…')} />}
+        {step === 0 && !error && <ProgressRow done={0} total={null} unit={tx('Lecture de la liste des cartes…')} />}
         {error && (
           <Banner tone="bad">
             {error.text}
@@ -159,6 +175,8 @@ export default function CardsUpdateSheet({ open, onClose, pageText = null, valid
         {step === 1 && result && (
           <>
             <p className="text-[15px] text-rift-100">{galleryText(result)}</p>
+            <p className="text-[13px] text-rift-400">{result.source === 'rifthunt' ? tx('Source : rifthunt.com (données de Riot)') : tx('Source : galerie officielle Riot')}</p>
+            {result.links?.length > 0 && <p className="text-[13px] text-rift-400">{tp(result.links.length, '{n} carte reliée à ses autres impressions.', '{n} cartes reliées à leurs autres impressions.')}</p>}
             {items.length > 0 && <DiffList items={items} />}
             {result.added.length > 0 && (
               <p className="text-[13px] text-rift-400">
@@ -181,6 +199,7 @@ export default function CardsUpdateSheet({ open, onClose, pageText = null, valid
           <div className="text-center py-4 space-y-3">
             <span className="hex-cut inline-flex w-14 h-14 items-center justify-center bg-gold-400/15 text-gold-400"><CheckCircle2 size={28} /></span>
             <p className="text-[15px] text-rift-100">{galleryText(result)}</p>
+            {skippedNames.length > 0 && <p className="text-[13px] text-state-warn">{tp(skippedNames.length, '{n} image n’a pas pu être téléchargée : la carte sera proposée de nouveau.', '{n} images n’ont pas pu être téléchargées : ces cartes seront proposées de nouveau.')}</p>}
             <p className="text-[13px] text-rift-400">{tx('Le téléphone recevra ces changements à la prochaine synchro.')}</p>
             <button onClick={onClose} className="btn-primary text-[14px] py-2 px-4">{tx('Fermer')}</button>
           </div>

@@ -16,7 +16,7 @@ const VIEWS = [
  * condition, foil, quantity, location). Click a card to open it.
  */
 export default function CollectionPage({
-  scannedCards, wishlist, org, onMoveStack, onAddCopy, onUpdateCard, onRemoveCard, onDeleteStacks,
+  scannedCards, wishlist, org, onMoveStack, onAddCopy, onRemoveCopy, onUpdateCard, onRemoveCard, onDeleteStacks,
   onExport, onImportEntries, defaultLanguage,
 }) {
   const [view, setView] = useState('cards');
@@ -75,6 +75,8 @@ export default function CollectionPage({
           wanted={wishlist.byCard.get(zoom.cardId)?.quantity || 0}
           onSetWanted={wishlist.setWanted}
           onAddCopy={onAddCopy}
+          onRemoveCopy={onRemoveCopy}
+          onUpdateCard={onUpdateCard}
           onClose={() => setZoom(null)}
           onPrev={zoom.list && zoom.index > 0 ? () => stepZoom(-1) : null}
           onNext={zoom.list && zoom.index < zoom.list.length - 1 ? () => stepZoom(1) : null}

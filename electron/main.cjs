@@ -232,7 +232,8 @@ async function start() {
   // requests (ETag / Last-Modified) once the user has the content; a failure is not retried
   // until next week, and reminded at most once a month. Nothing installed here.
   const WEEK = 7 * 24 * 3600e3, MONTH = 30 * 24 * 3600e3;
-  ipcMain.handle('content:weeklyCheck', async (_e, kind, urls) => {
+  // `fallback`: addresses tried at once when the first ones do not answer (rifthunt first, Riot's page then)
+  ipcMain.handle('content:weeklyCheck', async (_e, kind, urls, fallback = null) => {
     const state = content.getState();
     const k = state[kind] || {};
     if (k.weekly === false) return { skipped: 'off' };
@@ -240,9 +241,12 @@ async function start() {
     k.lastCheck = Date.now();
     const texts = [], validators = {};
     let notModified = 0;
-    for (const url of urls) {
+    let list = urls;
+    for (let i = 0; i < list.length; i++) {
+      const url = list[i];
       const v = k.validators?.[url] || {};
       const r = await fetchContent(url, { version: app.getVersion(), etag: v.etag, lastModified: v.lastModified });
+      if (!r.ok && fallback?.length && list === urls) { list = fallback; texts.length = 0; notModified = 0; i = -1; continue; }
       if (!r.ok) {
         const remind = !k.lastReminder || Date.now() - k.lastReminder > MONTH;
         if (remind) k.lastReminder = Date.now();
@@ -254,12 +258,12 @@ async function start() {
       validators[url] = { etag: r.etag, lastModified: r.lastModified };
     }
     content.setState({ ...state, [kind]: k });
-    if (notModified === urls.length) return { notModified: true };
+    if (notModified === list.length) return { notModified: true };
     if (notModified) {
       // One file changed, the other not: download both again next time (no partial update).
       return { failed: true, reason: 'partial', remind: false };
     }
-    return { ok: true, texts, validators };
+    return { ok: true, texts, validators, url: list[0] };
   });
   ipcMain.handle('content:saveValidators', (_e, kind, validators) => {
     const state = content.getState();
@@ -333,7 +337,7 @@ async function start() {
   ipcMain.handle('pack:cancel', () => { pendingPack = null; });
   // Translations and banned cards: the layer built on screen after the user's « Installer » (checked again here).
   ipcMain.handle('content:install', (_e, kind, layer) => {
-    if (kind !== 'bannies' && kind !== 'traductions') throw new Error(etx('Type de contenu refusé.'));
+    if (kind !== 'bannies' && kind !== 'traductions' && kind !== 'rulings') throw new Error(etx('Type de contenu refusé.'));
     return contentChanged(content.install(kind, layer));
   });
 

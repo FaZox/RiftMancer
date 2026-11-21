@@ -27,7 +27,7 @@ const path = require('node:path');
 const CM_PRODUCTS = 'https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_22.json';
 const CM_PRICES = 'https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_22.json';
 const RIFTCODEX = 'https://api.riftcodex.com/cards';
-const HEADERS = { 'User-Agent': 'RiftboundScanner/1.0 (local collection app)' };
+const HEADERS = { 'User-Agent': 'RiftMancer (local collection app; https://github.com/FaZox/RiftMancer)' };
 const REFRESH_EVERY = 20 * 60 * 60 * 1000; // ~ daily
 const NAMES_EVERY = 7 * 24 * 60 * 60 * 1000;
 
@@ -73,7 +73,20 @@ function cardmarketName(card, rcNames) {
 }
 
 /** Link our cards to Cardmarket products. Returns { cardId: idProduct }. */
-function buildMapping(cards, products, rcNames) {
+function buildMapping(cards, products, index) {
+  // index: { names, cardmarket } (rifthunt: each printing's Cardmarket product), or Riftcodex's names alone
+  const rcNames = index?.names || index || {};
+  const direct = index?.cardmarket || {};
+  const mapping = {};
+  const productIds = new Set(products.map(p => p.idProduct));
+  const used = new Set();
+  for (const c of cards) {
+    const idp = direct[c.id];
+    if (idp && productIds.has(idp) && !used.has(idp)) { mapping[c.id] = idp; used.add(idp); }
+  }
+  // The others (rifthunt not reached, or a card it does not link): by name, as before
+  products = products.filter(p => !used.has(p.idProduct));
+  cards = cards.filter(c => !mapping[c.id]);
   const namesByExp = new Map();
   const byExpName = new Map();
   for (const p of [...products].sort((a, b) => a.idProduct - b.idProduct)) {
@@ -105,7 +118,6 @@ function buildMapping(cards, products, rcNames) {
     if (!groups.has(k)) groups.set(k, []);
     groups.get(k).push(c);
   }
-  const mapping = {};
   for (const [k, list] of groups) {
     list.sort((a, b) => printKind(a) - printKind(b) || a.id.localeCompare(b.id));
     const prods = byExpName.get(k) || [];
@@ -190,25 +202,27 @@ function buildPromoPrices(mapping, products, guideById) {
 
 function createPrices({ userData, distDir, onUpdated, catalogFile = null }) {
   const file = path.join(userData, 'prices.json');
-  const namesFile = path.join(userData, 'riftcodex-names.json');
+  const indexFile = path.join(userData, 'card-index.json'); // rifthunt (or Riftcodex) links and names, a week
+  const namesFile = path.join(userData, 'riftcodex-names.json'); // former cache, read when nothing else
   let current = null;
   let running = null;
 
   try { current = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { /* none yet */ }
 
   async function loadNames() {
-    try {
-      const cached = JSON.parse(fs.readFileSync(namesFile, 'utf8'));
-      if (Date.now() - cached.fetchedAt < NAMES_EVERY) return cached.names;
-    } catch { /* refetch */ }
-    try {
-      const names = await fetchRiftcodexNames();
-      fs.writeFileSync(namesFile, JSON.stringify({ fetchedAt: Date.now(), names }));
-      return names;
-    } catch (err) {
-      console.warn('[prices] Riftcodex unavailable, using cached/short names:', err.message);
-      try { return JSON.parse(fs.readFileSync(namesFile, 'utf8')).names; } catch { return {}; }
+    let cached = null;
+    try { cached = JSON.parse(fs.readFileSync(indexFile, 'utf8')); } catch { /* none yet */ }
+    // a cache made from rifthunt's ids is not used any more
+    if (cached && cached.index?.source === 'riftcodex' && Date.now() - cached.fetchedAt < NAMES_EVERY) return cached.index;
+    // Riftcodex's names, products found by name (rifthunt's Cardmarket ids gave links that did not work)
+    let index = null;
+    try { index = { source: 'riftcodex', names: await fetchRiftcodexNames(), cardmarket: {} }; } catch (err) { console.warn('[prices] Riftcodex unavailable:', err.message); }
+    if (index) {
+      fs.writeFileSync(indexFile, JSON.stringify({ fetchedAt: Date.now(), index }));
+      return index;
     }
+    if (cached) return cached.index;
+    try { return JSON.parse(fs.readFileSync(namesFile, 'utf8')).names; } catch { return {}; }
   }
 
   async function doRefresh() {

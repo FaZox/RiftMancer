@@ -268,7 +268,8 @@ erDiagram
 ## 7. Le catalogue des cartes (hors de la base)
 
 `card-hashes.json` : lu en mémoire par `src/lib/cardMatcher.js`, jamais écrit
-par l’utilisateur. Dans la version publique, l’appli démarre avec son seul
+par l’utilisateur. Avec les rulings installés, il porte aussi `rulings`
+(Riftbound FAQ via rifthunt : `{ source, license, licenseUrl, updatedAt, cards: [{ name, url, authors, ids, rulings: [{ id, question, html }] }] }`). Dans la version publique, l’appli démarre avec son seul
 en-tête (`catalog-base.json`) et récupère les cartes au premier lancement.
 
 **En-tête** : `gridSize`, `featureFormat`, `generatedAt`, `embeddings`
@@ -289,6 +290,7 @@ sur le PC `content` (les mises à jour installées).
 | `illustrator`, `orientation` | illustration |
 | `artBottom` | où finit l’illustration (reconnaissance) |
 | `artGroup?` | rééditions à la même illustration |
+| `oracle?`, `variant?`, `printLabel?` | impressions d’une même carte (identifiant oracle de rifthunt), type d’impression (base, alternate, overnumbered, signature, showcase, promo), étiquette (« Metal »…) |
 | `f` | empreinte couleur (base64) |
 | `e` | signature IA (base64) |
 | `errata?` | textes modifiés par une mise à jour |
@@ -296,7 +298,7 @@ sur le PC `content` (les mises à jour installées).
 Images : `cards/<id>.webp` (grande taille) et `cards/thumbs/<id>.webp`.
 
 **Mises à jour du contenu sur le PC** (`electron/content.cjs`) : des couches
-au-dessus du catalogue livré, dans `catalogue/couches/{cartes,traductions,bannies}/layer.json`
+au-dessus du catalogue livré, dans `catalogue/couches/{cartes,traductions,bannies,rulings}/layer.json`
 (+ images), fusionnées dans `catalogue/actif/card-hashes.json`, servi à
 l’appli et au téléphone. Chaque couche a `kind`, `format: 1`, `createdAt`,
 `source`, `count`, `data`, `files` (SHA-256 de chaque image) ; la précédente
@@ -327,7 +329,7 @@ Clé → valeur JSON, **jamais synchronisé** (chaque appareil a le sien).
 | `banlist`, `banlistVersion` | téléphone | cartes bannies reçues du PC |
 | `prices` | téléphone | prix Cardmarket reçus du PC |
 | `fullImages` | téléphone | télécharger les images en grande taille |
-| `riftcodexNames` | téléphone | noms anglais complets (Riftcodex) : `{ fetchedAt, names }` ; sur le PC : `riftcodex-names.json` |
+| `cardIndex` | téléphone | liens Cardmarket et noms anglais complets, une semaine : `{ fetchedAt, index: { source, names, cardmarket } }` (rifthunt, sinon Riftcodex) ; sur le PC : `card-index.json` (`riftcodexNames` / `riftcodex-names.json` : ancien cache, lu faute de mieux) |
 
 ## 9. Synchronisation téléphone ↔ PC
 
@@ -386,7 +388,7 @@ collection part vers ce PC.
 | Quoi | Où | Contenu |
 |---|---|---|
 | Prix Cardmarket (PC) | `prices.json` | `{ updatedAt, priceDate, source, matched, total, cards: { [cardId]: [trend, trendFoil, idProduct, avg7, avg30, …] }, hist }` (`electron/prices.cjs`) |
-| Noms anglais complets (PC) | `riftcodex-names.json` | noms Riftcodex |
+| Liens Cardmarket et noms anglais complets (PC) | `card-index.json` | `{ fetchedAt, index: { source: 'rifthunt' \| 'riftcodex', names, cardmarket: { cardId → idProduct } } }`, une semaine |
 | Sauvegardes en fichiers | IndexedDB `riftbound-backups` (navigateur) | magasin `files` |
 | Banc de test | IndexedDB `rb-bench` | magasins `items` (clé `name`) et `photos` |
 | Préférences de l’interface | `localStorage` (chaque appareil) | `rb.lang` (langue), `rb.displayFrench`, `rb.prefs`, `rb.collection.sort`, `rb.collectionLayout`, `rb.pc.*` (mise en page PC), `rb.playerName`, `rb.recentSearches`, `rb.counter.running` (compteur de score en cours), `rb.lastSpeed`, `rb.scanStats`, `rb.errors` (rapport de diagnostic), `rb.friends.myId`, `rb.prices.summarized`, `rb.startupMs`, `riftbound_trade_threshold` |
@@ -406,7 +408,7 @@ catalogue\actif\           le catalogue fusionné servi à l’appli et au tél�
 catalogue\errata.json      textes modifiés par les mises à jour
 catalogue\etat.json        vérifications hebdomadaires
 prices.json                prix Cardmarket
-riftcodex-names.json       noms anglais complets
+card-index.json            liens Cardmarket et noms anglais complets (rifthunt)
 ```
 
 **Téléphone (Android)** : le stockage privé de l’appli (IndexedDB de la vue

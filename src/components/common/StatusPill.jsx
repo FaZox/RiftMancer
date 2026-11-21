@@ -5,6 +5,7 @@ import { tx } from '../../lib/i18n.js';
 export const PILLS = {
   bannie: { label: tx('Bannie'), cls: 'text-state-bad bg-state-bad/15 border-state-bad/50' },
   foil: { label: tx('Foil'), cls: 'text-gold-400 bg-gold-400/15 border-gold-400/50' },
+  promo: { label: tx('Promo'), cls: 'text-[#d7a8ff] bg-[#d7a8ff]/15 border-[#d7a8ff]/50' },
   estime: { label: tx('≈ Estimé'), cls: 'text-state-warn bg-state-warn/15 border-state-warn/50' },
   nouveau: { label: tx('Nouveau'), cls: 'text-state-info bg-state-info/15 border-state-info/50' },
   'texte-modifie': { label: tx('Texte modifié'), cls: 'text-state-info bg-state-info/15 border-state-info/50' },

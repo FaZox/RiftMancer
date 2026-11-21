@@ -61,7 +61,9 @@ export default function useCollectionFilter(scannedCards, allFrench) {
       if (filters.rarity !== 'all' && d.rarity !== filters.rarity) return false;
       if (filters.domain !== 'all' && !(d.domains?.length ? d.domains : [d.domain]).includes(filters.domain)) return false;
       if (filters.finish === 'foil' && !card.foil) return false;
-      if (filters.finish === 'standard' && card.foil) return false;
+      const promo = card.promo || d.variant === 'promo';
+      if (filters.finish === 'standard' && (card.foil || promo)) return false;
+      if (filters.finish === 'promo' && !promo) return false;
       if (filters.location !== 'all') {
         const loc = filters.location;
         if (loc === 'none' && (card.boxId || card.deckId || card.loanId)) return false;

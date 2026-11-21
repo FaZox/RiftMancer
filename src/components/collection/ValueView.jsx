@@ -124,7 +124,7 @@ export function ValueView({ scannedCards, onOpen, wishItems = [] }) {
                 <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
                   {data.all.slice(0, shown).map(t => (
                     <CardTile key={t.key} cardData={t.cardData} badge={`${t.estimated ? '≈ ' : ''}${euro(t.v)}`} badgeClass={t.estimated ? 'bg-state-warn text-rift-900' : 'bg-gold-500 text-rift-900'} onOpen={onOpen}
-                      pills={[t.foil && { kind: 'foil' }, t.promo && { kind: 'auto', label: tx('Promo') }].filter(Boolean)} />
+                      pills={[t.foil && { kind: 'foil' }, t.promo && { kind: 'promo' }].filter(Boolean)} />
                   ))}
                 </div>
                 {data.all.length > shown && (

@@ -95,7 +95,9 @@ export function normalizeGalleryCard(raw) {
 }
 
 const COMPARED = ['name', 'number', 'code', 'set', 'setName', 'domains', 'rarity', 'type', 'superTypes', 'energy', 'might', 'tags', 'illustrator', 'text', 'orientation'];
-const same = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+// Same value: tags in any order, names whatever the capitals (« Ride The Wind » = « Ride the Wind »)
+const comparable = (k, v) => (k === 'tags' && Array.isArray(v) ? [...v].sort() : k === 'name' && typeof v === 'string' ? v.toLowerCase() : v);
+const same = (k, a, b) => JSON.stringify(comparable(k, a) ?? null) === JSON.stringify(comparable(k, b) ?? null);
 const letters = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
 /**
@@ -105,18 +107,26 @@ const letters = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
  * now publishes is to be removed (the official card replaces it).
  */
 export function galleryChanges(rawCards, catalog) {
+  return catalogChanges(rawCards.map(normalizeGalleryCard), catalog);
+}
+
+/**
+ * Cards of a source ([{ card, imageUrl }], null skipped) against the catalog:
+ * the gallery's, or rifthunt's (rifthunt.js). `onlyFilled`: a field the source
+ * does not have is not a change.
+ */
+export function catalogChanges(normalized, catalog, { onlyFilled = false } = {}) {
   const byId = new Map(catalog.map(c => [c.id, c]));
   const added = [], changed = [];
   const codes = new Set();
   let total = 0;
-  for (const raw of rawCards) {
-    const n = normalizeGalleryCard(raw);
+  for (const n of normalized) {
     if (!n) continue;
     total++;
     codes.add(String(n.card.code).toUpperCase().split('/')[0]);
     const cur = byId.get(n.card.id);
     if (!cur || cur.manual) { added.push(n); continue; }
-    const fields = COMPARED.filter(k => !same(n.card[k], cur[k]));
+    const fields = COMPARED.filter(k => (!onlyFilled || n.card[k] !== undefined) && !same(k, n.card[k], cur[k]));
     // Full English name: filled when the catalog lacks it (« Ekko - Recurrent » = « Ekko, Recurrent »)
     if (n.card.nameEn && letters(n.card.nameEn) !== letters(cur.nameEn)) fields.push('nameEn');
     if (fields.length) changed.push({ ...n, fields });

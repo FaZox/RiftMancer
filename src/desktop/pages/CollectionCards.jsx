@@ -7,11 +7,12 @@ import PriceText from '../../components/common/PriceText.jsx';
 import { euro, priceChange, unitPrice, priceRef, pct } from '../../lib/prices.js';
 import { EXPORT_FORMATS } from '../../lib/exporters/index.js';
 import { SORTS } from '../../lib/catalog.js';
-import { LANGUAGES, CONDITIONS, DOMAIN_COLORS, domainLabel, rarityLabel, typeLabel, isFoilOnly } from '../../data/sampleCards.js';
+import { LANGUAGES, CONDITIONS, domainLabel, rarityLabel, typeLabel, isFoilOnly } from '../../data/sampleCards.js';
 import { thumbSrc, handleImageError } from '../../lib/nativeAssets.js';
 import MoveDialog from '../../components/organize/MoveDialog.jsx';
 import ImportCsvDialog from '../../components/collection/ImportCsvDialog.jsx';
-import { GridTile, placeOf, PLACE_STYLE } from '../../components/collection/CollectionTab.jsx';import { tx } from '../../lib/i18n.js';
+import { GridTile, placeOf, PLACE_STYLE } from '../../components/collection/CollectionTab.jsx';
+import { requestOpen } from '../../lib/navRequest.js';import { tx } from '../../lib/i18n.js';
 
 
 export const SIZES = [['s', tx('Petites'), 140], ['m', tx('Moyennes'), 180], ['l', tx('Grandes'), 230]];
@@ -99,6 +100,10 @@ export function CardsPanel({
               placeholder={tx('Nom, numéro…')} className="input-field !pl-9 h-10" />
           </div>
           <Sel label={tx('Tri')} value={sort} onChange={setSort} options={SORTS.map(s => [s.value, s.label])} noAll />
+          {/* Add a card by its name or number (the global search in « add » mode) */}
+          <button onClick={() => requestOpen({ kind: 'search', mode: 'add' })} className="btn-primary h-10 px-4 text-sm" title={tx('Ajouter une carte par son nom ou son numéro')}>
+            <Plus className="w-4 h-4" /> {tx('Ajouter')}
+          </button>
           <div className="ml-auto flex items-center gap-2">
             <button onClick={() => setAllFrench(!allFrench)} aria-pressed={allFrench} title={tx('Afficher tous les noms en français')}
               className={`h-10 px-3 text-sm border ${allFrench ? 'bg-gold-500/15 border-gold-500/60 text-gold-400' : 'border-rift-600 text-rift-300 hover:text-rift-100'}`}>
@@ -128,21 +133,14 @@ export function CardsPanel({
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <button className="chip" aria-pressed={filters.domain === 'all'} onClick={() => setFilter('domain', 'all')}>
-            <span className="w-2 h-2 rounded-full bg-gold-500" />{tx('Tous domaines')}
-          </button>
-          {['fury', 'calm', 'mind', 'body', 'chaos', 'order', 'colorless'].filter(d => options.domains.has(d) || filters.domain === d).map(d => (
-            <button key={d} className="chip" aria-pressed={filters.domain === d} onClick={() => setFilter('domain', filters.domain === d ? 'all' : d)}>
-              <span className="w-2 h-2 rounded-full" style={{ background: DOMAIN_COLORS[d]?.hex }} />{domainLabel(d)}
-            </button>
-          ))}
-          <span className="w-px h-6 bg-rift-600 mx-1" />
+          <Sel label={tx('Domaine')} value={filters.domain} onChange={v => setFilter('domain', v)}
+            options={['fury', 'calm', 'mind', 'body', 'chaos', 'order', 'colorless'].filter(d => options.domains.has(d) || filters.domain === d).map(d => [d, domainLabel(d)])} />
           <Sel label={tx('Extension')} value={filters.set} onChange={v => setFilter('set', v)} options={[...options.sets]} />
           <Sel label={tx('Type')} value={filters.type} onChange={v => setFilter('type', v)} options={[...options.types].map(v => [v, typeLabel(v)])} />
           <Sel label={tx('Rareté')} value={filters.rarity} onChange={v => setFilter('rarity', v)} options={[...options.rarities].map(v => [v, rarityLabel(v)])} />
           <Sel label={tx('Langue')} value={filters.language} onChange={v => setFilter('language', v)}
             options={[...options.languages].map(([v, n]) => [v, `${LANGUAGES.find(l => l.value === v)?.label || v} (${n})`])} />
-          <Sel label={tx('Finition')} value={filters.finish} onChange={v => setFilter('finish', v)} options={[['foil', tx('Foil')], ['standard', tx('Standard')]]} />
+          <Sel label={tx('Finition')} value={filters.finish} onChange={v => setFilter('finish', v)} options={[['foil', tx('Foil')], ['promo', tx('Promo')], ['standard', tx('Standard')]]} />
           <Sel label={tx('Emplacement')} value={filters.location} onChange={v => setFilter('location', v)} options={locationOptions} />
           {isFiltered && (
             <button onClick={() => { setFilters(EMPTY_FILTERS); setSearchQuery(''); }} className="h-9 px-2 text-sm text-rift-300 hover:text-rift-100 underline-offset-2 hover:underline">
@@ -268,6 +266,7 @@ export function StackTable({ cards, org, nameOf, priceOf, estimatedOf, onOpen, o
           <th className={th}>{tx('Langue')}</th>
           <th className={th}>{tx('État')}</th>
           <th className={`${th} text-center`}>{tx('Foil')}</th>
+          <th className={`${th} text-center`}>{tx('Promo')}</th>
           <th className={`${th} text-center`}>{tx('Quantité')}</th>
           <th className={th}>{tx('Emplacement')}</th>
           <th className={`${th} text-right`} title={tx('Prix payé pour un exemplaire (sert à la plus-value)')}>{tx('Payé')}</th>
@@ -319,6 +318,10 @@ export function StackTable({ cards, org, nameOf, priceOf, estimatedOf, onOpen, o
               <td className={`${td} text-center`}>
                 <input type="checkbox" checked={!!card.foil} disabled={foilOnly} onChange={e => set(card, 'foil', e.target.checked)}
                   aria-label={tx('Foil')} className="w-4 h-4 accent-[#c8aa6e]" />
+              </td>
+              <td className={`${td} text-center`}>
+                <input type="checkbox" checked={!!card.promo} onChange={e => set(card, 'promo', e.target.checked)}
+                  aria-label={tx('Promo')} className="w-4 h-4 accent-[#c8aa6e]" />
               </td>
               <td className={td}>
                 <div className="flex items-center justify-center">

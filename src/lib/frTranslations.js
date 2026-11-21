@@ -51,18 +51,18 @@ export function buildTranslations(repertoire, textes, cards) {
     if (typeof t === 'string' && t.trim()) texts[id] = sanitizeHtml(t.trim()).slice(0, MAX);
   }
   // Prints without French data (or an English fallback name) take another print's.
-  const key = (c) => `${c.type}|${c.nameEn || c.name}`;
+  // the same card: rifthunt's oracle link first (promos, variants), else type and English name
+  const keys = (c) => [c.oracle && `o|${c.oracle}`, `${c.type}|${c.nameEn || c.name}`].filter(Boolean);
   const english = (c, n) => !n || n === c.name || (c.nameEn && n.replace(/, /g, ' - ') === c.nameEn);
   const byCard = new Map();
   for (const c of cards) {
     const n = names[c.id];
     if (english(c, n)) continue;
-    const k = key(c);
-    if (!byCard.has(k) || (!texts[byCard.get(k)] && texts[c.id])) byCard.set(k, c.id);
+    for (const k of keys(c)) if (!byCard.has(k) || (!texts[byCard.get(k)] && texts[c.id])) byCard.set(k, c.id);
   }
   for (const c of cards) {
     if (!english(c, names[c.id])) continue;
-    const src = byCard.get(key(c));
+    const src = keys(c).map(k => byCard.get(k)).find(Boolean);
     if (!src) continue;
     names[c.id] = names[src];
     if (!texts[c.id] && texts[src]) texts[c.id] = texts[src];

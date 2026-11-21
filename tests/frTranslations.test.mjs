@@ -66,3 +66,17 @@ test('the site down (402, as on 18/11/2026) is « unavailable », not a refusal'
   const r = await fetchContent(F.FR_URLS[0], { fetchImpl: down });
   assert.deepEqual(r, { ok: false, reason: 'unavailable', status: 402 });
 });
+
+test('a printing without French takes the one of a printing linked by rifthunt (oracle), else by name', () => {
+  const cards = [
+    { id: 'ogn-255-298', name: 'Ahri', nameEn: 'Ahri - Nine-Tailed Fox', type: 'unit', oracle: 'x' },
+    { id: 'opp-255-298-metal', name: 'Ahri', nameEn: 'Ahri - Nine-Tailed Fox (Metal)', type: 'unit', oracle: 'x' },
+    { id: 'ogn-001-298', name: 'Blazing Scorcher', type: 'unit' },
+    { id: 'sfd-001-221', name: 'Blazing Scorcher', type: 'unit' },
+  ];
+  const repertoire = { c: [{ i: 'a', b: 'ogn-255-298', n: 'Ahri - Renarde à neuf queues' }, { i: 'b', b: 'ogn-001-298', n: 'Brûleur ardent' }] };
+  const tr = F.buildTranslations(repertoire, { t: { a: { fr: 'Texte' } } }, cards);
+  assert.equal(tr.names['opp-255-298-metal'], 'Ahri - Renarde à neuf queues', 'oracle link, though the English names differ');
+  assert.equal(tr.texts['opp-255-298-metal'], 'Texte');
+  assert.equal(tr.names['sfd-001-221'], 'Brûleur ardent', 'no link: same type and name');
+});

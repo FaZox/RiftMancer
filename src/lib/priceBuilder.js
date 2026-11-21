@@ -36,7 +36,20 @@ function cardmarketName(card, rcNames) {
 }
 
 /** Link our cards to Cardmarket products. Returns { cardId: idProduct }. */
-export function buildMapping(cards, products, rcNames) {
+export function buildMapping(cards, products, index) {
+  // index: { names, cardmarket } (rifthunt: each printing's Cardmarket product), or Riftcodex's names alone
+  const rcNames = index?.names || index || {};
+  const direct = index?.cardmarket || {};
+  const mapping = {};
+  const productIds = new Set(products.map(p => p.idProduct));
+  const used = new Set();
+  for (const c of cards) {
+    const idp = direct[c.id];
+    if (idp && productIds.has(idp) && !used.has(idp)) { mapping[c.id] = idp; used.add(idp); }
+  }
+  // The others (rifthunt not reached, or a card it does not link): by name, as before
+  products = products.filter(p => !used.has(p.idProduct));
+  cards = cards.filter(c => !mapping[c.id]);
   const namesByExp = new Map();
   const byExpName = new Map();
   for (const p of [...products].sort((a, b) => a.idProduct - b.idProduct)) {
@@ -68,7 +81,6 @@ export function buildMapping(cards, products, rcNames) {
     if (!groups.has(k)) groups.set(k, []);
     groups.get(k).push(c);
   }
-  const mapping = {};
   for (const [k, list] of groups) {
     list.sort((a, b) => printKind(a) - printKind(b) || a.id.localeCompare(b.id));
     const prods = byExpName.get(k) || [];
@@ -146,6 +158,15 @@ export function buildPromoPrices(mapping, products, guideById) {
     if (list) out[cardId] = [r2(median(list.map(x => x.t))), r2(median(list.map(x => x.tf))), list.length];
   }
   return out;
+}
+
+/**
+ * Names for the Cardmarket links: Riftcodex's full English names, products
+ * found by name (rifthunt's Cardmarket ids were tried on 21/11/2026 and given
+ * up: the links they gave did not work). Same shape as before: { source, names, cardmarket: {} }.
+ */
+export async function fetchCardIndex(getJSON) {
+  return { source: 'riftcodex', names: await fetchRiftcodexNames(getJSON), cardmarket: {} };
 }
 
 /** Riftcodex: { riftbound_id → full English name }. */

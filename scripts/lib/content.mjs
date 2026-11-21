@@ -13,6 +13,7 @@ import { join } from 'node:path';
 export const PUBLIC_EXCLUDED = [
   ['public/cards/', 'images des cartes (Riot Games)'],
   ['public/card-hashes.json', 'catalogue : noms et textes des cartes (Riot Games, riftboundfr.fr)'],
+  ['public/sym/', 'symboles du jeu : gemmes de rareté, puissance (Riot Games)'],
   ['model/textures/', 'textures DTD (licence de recherche seulement)'],
   ['model/distractors/', 'images d’arrière-plan de licence inconnue'],
   ['model/manual-cards/', 'image d’une carte (Riot Games)'],

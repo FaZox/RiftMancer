@@ -65,6 +65,7 @@ export default function App() {
     handleClearAll,
     handleAddCardToExport,
     handleAddCopy,
+    handleRemoveCopy,
     handleAddCardsToExport,
     handleExport,
   } = useAppController();
@@ -135,6 +136,7 @@ export default function App() {
             onAddCopy={handleAddCopy}
             onUpdateCard={handleUpdateCard}
             onRemoveCard={handleRemoveCard}
+            onRemoveCopy={handleRemoveCopy}
             onDeleteStacks={handleDeleteStacks}
             onClearAll={handleClearAll}
             onExport={handleExport}

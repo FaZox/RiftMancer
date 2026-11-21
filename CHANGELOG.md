@@ -3,6 +3,60 @@
 Entries are in English from 21/11/2026; the earlier history is in French (*l’historique antérieur est en français*).
 
 
+## [Unreleased] - 2026-11-21 · Recycle cost, prices refreshed from Settings → Content
+
+- **Recycle cost on the card sheet**: next to the energy, the runes to recycle to play the card (« power »), as many icons of the card's domain as runes, as rifthunt shows them (Icathian Rain: 7 energy, 3 Fury runes). Card field `power`, from rifthunt, written with the next « Search » without being listed as a change (like the print links); allowed in the content layers.
+- **Settings → Content → « Cardmarket prices »**: date of the prices, how many cards have one, and « Update » to download them now (PC and phone), as for the cards or the French translations.
+- Checked in the PC app: Icathian Rain's sheet; prices updated from Settings → Content (1,303 of 1,415 cards priced with the links by name, against 1,408 with rifthunt's ids). Tests: 321 passed.
+
+## [Unreleased] - 2026-11-21 · Cardmarket links back by name, the game's icons
+
+- **Cardmarket links and prices: back to the former way** (Riftcodex's full names, products found by name in Cardmarket's files): the links given by rifthunt's Cardmarket ids did not work. A cache made from rifthunt's ids is not used any more (`card-index.json` / `cardIndex`); the cards, banned cards, printings and rulings still come from rifthunt first.
+- **Every symbol of the card texts with the game's icon** (from rifthunt.com/sym, like its card pages): the runes in their domain's colours (fury, calm, mind, body, chaos, order), « any rune » (the rainbow one), Exhaust and Might in the colour of the text (CSS mask, as printed); the energy stays a number in a circle (rifthunt draws it the same way). The « [>] » after a keyword is shown as the small arrow printed on the card. The card sheet's domain tags carry the domain's icon. Same in the rulings. All in `public/sym/`, kept out of the public repository; without them, the former signs.
+- Checked in the PC app: Malzahar, Fanatic (Exhaust, two « any rune »), Akali, Deadly Weapon (fury rune, Might, the arrow), the domain icons in the tags. Tests: 320 passed.
+
+## [Unreleased] - 2026-11-21 · Collection: « Add », domains, game symbols
+
+- **« Add » button** (gold) right of the sort, on the PC and the phone: opens the search in « add » mode — a card by its French or English name or its number (« OGN-066 »), added to the collection at once.
+- **Domains in a dropdown** (PC: first of the filters; phone: next to the sort) instead of the row of chips.
+- **The game's symbols**: the rarity gem (common, uncommon, rare, epic, showcase) before the card's name in its sheet, and the Might icon in the sheet's stats and in the card texts and rulings (instead of ⚔). Files from rifthunt.com/sym in `public/sym/`; like the card pictures (Riot Games) they stay out of the public repository, and an app without them keeps its former signs (`src/lib/symbols.js`, checked once at start).
+- Checked in the PC app (test variant, demo data): button and dropdown in the toolbar, « OGN-066 » found in the add search, Jinx's sheet with the rare gem and the Might icon. Tests: 320 passed.
+
+## [Unreleased] - 2026-11-21 · Rulings
+
+- **Card sheet → Infos → « Rulings »**: the questions of Riftbound FAQ (riftboundfaq.com, by Christian « Near » Ivicevic) about the card or another printing of it; a tap on a question shows or hides the whole answer, with its links to the Core Rules and the cards, and the game symbols as icons (`symbolsHtml`, shared with the card texts). Under the list: unofficial, in English, link to the FAQ page, author, licence (CC BY-SA 4.0, as rifthunt gives it). `RulingsList.jsx`.
+- **Settings → Content → Rulings**: « Install » / « Update » reads rifthunt's file `/bulk/rulings` (167 rulings on 71 cards) and finds the cards through rifthunt's printings (by name when its card file does not answer); all printings of a card follow. New content kind « rulings » (`electron/content.cjs`): checked, kept when the app is updated, written into the served catalog (`rulings`), so **the phone gets them at the sync** without anything new; friends' packs can carry them.
+- **The answers' HTML is sanitized twice** (when installed and when shown): plain tags, links to riftboundfaq.com, rifthunt.com (its relative card links) and playriftbound.com only, every other tag, attribute or address removed (`sanitizeRulingHtml`); a lone « < » in a text is no longer taken for a tag.
+- Checked in the PC app: 167 rulings installed on 71 cards (all found; 5 would have been missed by name alone), Lux, Crownguard's ruling opened with its links and the energy icon. Tests: 319 passed (`tests/rulings.test.mjs`).
+
+## [Unreleased] - 2026-11-21 · Prints and promos
+
+- **Every printing in the catalog**: « Search » (Settings → Content → Cards) now proposes the 318 printings it lacked — the promo sets (Organized Play 204, Promotional 11, Judge 4, Worlds Bundle 4, Secret Garden 3, K/DA 5) and the variants of the sets (Radiance signatures and showcases, alternate arts, alternate runes) — plus the 6 Unleashed runes added by hand, replaced by the official ones (324 new cards). Their pictures come from rifthunt's image server (`images.rifthunt.com`, 744 × 1039 WebP) when Riot's has none; a missing picture no longer stops the install (the card is proposed again).
+- **Printings sharing a number** get their own id: `opp-255-298` and `opp-255-298-metal`, `… -champion`, `… -top-8` (`printingIds`), the same for the prices.
+- **Prints of one card linked**: card fields `oracle` (rifthunt's oracle id), `variant` (base, alternate, overnumbered, signature, showcase, promo) and `printLabel` (« Metal », « Top 8 », « Launch Exclusive »…); written for the 1,408 cards already there with the next « Search » (« N cards linked to their other printings », not listed as changes). Allowed as corrections in `electron/content.cjs`.
+- **Card sheet → Infos → « Prints & variants »**: every printing of the card (normal first), with set, number, kind, copies owned and price; a tap shows that printing in the same sheet (`PrintsList.jsx`, `src/lib/prints.js`). E.g. Jinx, Demolitionist: Origins #030 (0.22 €), #030a alternate art (2.64 €), Vendetta #168 overnumbered (148.99 €).
+- **French at once**: new printings take the French name and text of another printing of the same card when they are installed (oracle link, `frenchFromPrints`), without waiting for the translations update: 311 of the 324 (the others are Radiance tokens and one promo); the translations update matches printings by the oracle link first, then by type and English name.
+- **Promo printings** show the PROMO badge on the tiles and count in the « Promo » finish filter; each printing gets its own Cardmarket price through rifthunt's ids.
+- Checked on real data and in the PC app: summary « 324 new cards (11 sets), 304 changed », pictures downloaded by the app (about 100 KB each), the prints section after installing links (the 324 pictures were not downloaded in the trial). Tests: 313 passed.
+
+## [Unreleased] - 2026-11-21 · rifthunt first
+
+- **rifthunt.com (api.rifthunt.com) is the first source** of the cards, the banned cards and the Cardmarket links; the former sources take over when it does not answer (`src/lib/rifthunt.js`). Free, no key, any use allowed by its terms; its data comes from Riot's.
+- **Cards** (Settings → Content → Cards, weekly check, first launch): rifthunt's card file (`/bulk/cards`), Riot's gallery when rifthunt does not answer or cannot be read. Its printings are put in the catalog's shape (names, codes, lower-case values, Legends named by their title); a field rifthunt does not have is never a change; a new card needs its picture on Riot's server; a manual addition stays when rifthunt has no Riot picture of it. Promo sets are left for « Prints and promos ». The summary says the source. The gallery comparison is shared (`catalogChanges`) and ignores the order of tags and capitals in names.
+- **Banned cards**: rifthunt's searches `banned:standard`, `banned:2v2`, `banned:upcoming`, each ban with its own date (the announced ones included); Riot's tournament rules page when rifthunt does not answer. « Dreaming Tree » and « The Dreaming Tree » are the same card.
+- **Prices**: each card is linked to its Cardmarket product by the id rifthunt gives, then by name for the rest (rifthunt's full names, Riftcodex's when rifthunt does not answer). The prices themselves still come from Cardmarket's files. Cache `card-index.json` (PC) / `cardIndex` (phone), a week.
+- The weekly check takes a fallback address (`content:weeklyCheck`), so Riot's gallery is read at once when rifthunt does not answer. Allowed addresses: rifthunt's card file and the three ban searches only.
+- Checked on real data and in the PC app: 303 card corrections proposed then installed (tags, full names, illustrators, domains/types/texts of Radiance), no false new card; ban list identical to the current one; **1,408 of 1,408 official cards priced** (1,356 by name before; the overnumbered Ahri and its signature among the 52 gained, two Radiance prints no longer swapped). Tests: 310 passed (`tests/rifthunt.test.mjs`).
+
+## [Unreleased] - 2026-11-21 · Collection, PC grid scanner, promos (feedback on 2.2.0)
+
+- **Collection tiles**: no more coloured line above the card (it followed the domain: Fury, Calm…).
+- **Card sheet opened from the collection**: the action bar shows how many copies you have in the language shown, with **−** (one copy less; a bin at the last one) and **+**; « Cancel » for a few seconds after a deletion. In « My collection », each stack has its own **−** and a **Promo** switch, and « Add a promo ». (`handleRemoveCopy` in `useAppController.js`, `onRemoveCopy` / `onUpdateCard` of `CardZoom`.)
+- **Promos easier to mark and to see**: « Promo » column in the PC table, « Promo » choice in the Finish filter (Standard = neither foil nor promo), **PROMO** badge on the tiles and in the value lists.
+- **PC scanner: « Grid » mode**, the same as the phone's: a binder page or cards laid flat under the webcam, the photo taken by itself when nothing moves, the page checked then added to the collection (with page and pocket when « Store in » is a binder). The single-card automatic scan is turned off in this mode; switching between Webcam and Grid keeps the webcam on.
+- Checked in the PC app (test variant, demo data): tiles without the line, − / + and « Cancel », Promo switch and badge, Grid tab. Not checked: the grid capture itself (no webcam on this PC). Tests: 305 passed.
+- Promo cards in the catalog: Riftcodex lists 149 (sets PR, JDG, OPP) with their own number and picture on Riot's image server; to do next.
+
 ## [Unreleased] - 2026-11-21 · Data and database documentation
 
 - **`docs/DATABASE.md`** (English) and **`docs/BASE-DE-DONNEES.md`** (French): where the data lives and in what shape, written from the code. SQLite schema of the PC and IndexedDB stores of the phone (with their versions), rules common to every record (`updatedAt`, `deleted`, `dirty`), the nine synced collections field by field, links between them (diagram), the card catalog and the content layers, every `meta` key, the sync step by step (merge, conflicts, clock skew), backups and restore on both devices, other files (`prices.json`, `localStorage` keys), where everything is on disk, and how to change the schema.

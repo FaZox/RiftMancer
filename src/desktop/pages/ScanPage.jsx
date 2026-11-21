@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import DetectorStatus from '../../components/scanner/DetectorStatus.jsx';
 import {
-  ImagePlus, Camera, Search, MapPin, Loader2, Check, AlertCircle, ChevronsRight, Trash2, X, Plus, RotateCcw, Image as ImageIcon,
+  ImagePlus, Camera, Search, MapPin, Loader2, Check, AlertCircle, ChevronsRight, Trash2, X, Plus, RotateCcw, Image as ImageIcon, LayoutGrid,
 } from 'lucide-react';
+import GridScanView from '../../components/scan/GridScanView.jsx';
+import usePhotoScan from '../../components/scan/usePhotoScan.js';
 import ScannerCamera from '../../components/scanner/ScannerCamera.jsx';
 import ScanResultCard from '../../components/scanner/ScanResultCard.jsx';
 import PendingRow from '../../components/scanner/PendingRow.jsx';
@@ -29,14 +31,21 @@ export default function ScanPage(props) {
     camera, detection, onSnapScan, scanFeedback, onUndoScan, onCorrectScan, onConfirmDuplicate, onDismissScan,
     onUpdatePending, onManualAdd, onClearScan, pendingCards, onConfirmAllPending, onRemovePending, onClearPending,
     onAddCardsToExport, showNotification, batchDefaults, onUpdateDefaults, org, autoScanEnabled, onToggleAutoScan, handsFree = null,
+    onAddCardToExport, onAddCardsToCollection, copies,
   } = props;
   const [mode, setMode] = useState('photos');
+  // « Grille » (same as the phone): a binder page or cards on a table under the webcam; the page checked is added to the collection
+  const gridPhoto = usePhotoScan({ showNotification, onAddCardToExport, onAddCardsToExport: onAddCardsToCollection, batchDefaults });
   const [searching, setSearching] = useState(false);
 
   const switchMode = (m) => {
     if (m === mode) return;
-    if (m !== 'webcam') camera.stopCamera();
+    const wasActive = camera.isActive;
+    camera.stopCamera();
+    // the single-card automatic scan would compete with the grid for the same webcam
+    if (m === 'grid' && autoScanEnabled) onToggleAutoScan();
     setMode(m);
+    if (wasActive && (m === 'webcam' || m === 'grid')) camera.startCamera();
   };
   // Leaving the page turns the webcam off
   useEffect(() => () => camera.stopCamera(), []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -59,9 +68,10 @@ export default function ScanPage(props) {
             <span className="w-2 h-2 rounded-full" style={{ background: ai[1] }} />{ai[0]}
           </p>
         </div>
-        <div className="seg w-[300px]" role="tablist" aria-label={tx('Mode de scan')}>
+        <div className="seg w-[420px]" role="tablist" aria-label={tx('Mode de scan')}>
           <button role="tab" aria-selected={mode === 'photos'} onClick={() => switchMode('photos')}><ImageIcon className="w-4 h-4" /> {tx('Photos')}</button>
           <button role="tab" aria-selected={mode === 'webcam'} onClick={() => switchMode('webcam')}><Camera className="w-4 h-4" /> {tx('Webcam')}</button>
+          <button role="tab" aria-selected={mode === 'grid'} onClick={() => switchMode('grid')} title={tx('Grille : une page de classeur ou plusieurs cartes')}><LayoutGrid className="w-4 h-4" /> {tx('Grille')}</button>
         </div>
         <div className="ml-auto flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2 h-10 pl-3 border border-gold-500/30 bg-rift-800 w-[300px]">
@@ -86,6 +96,9 @@ export default function ScanPage(props) {
         <div className="flex-1 min-w-0 flex flex-col">
           {mode === 'photos' ? (
             <PhotosMode language={batchDefaults.language} onAddCards={onAddCardsToExport} showNotification={showNotification} detectorReady={ds === 'ready'} />
+          ) : mode === 'grid' ? (
+            <GridScanView camera={camera} photo={gridPhoto} header={null} language={batchDefaults.language} detectorState={ds}
+              showNotification={showNotification} batchDefaults={batchDefaults} org={org} copies={copies} />
           ) : (
             <div className="flex-1 relative">
               <ScannerCamera

@@ -27,8 +27,8 @@ const crypto = require('node:crypto');
 const { etx } = require('./i18n.cjs');
 const { canonDetector } = require('./pack.cjs');
 
-const KINDS = ['cartes', 'traductions', 'bannies'];
-const LABEL = { cartes: 'Cartes', traductions: 'Traductions françaises', bannies: 'Cartes bannies' }; // French keys of electron/i18n.cjs
+const KINDS = ['cartes', 'traductions', 'bannies', 'rulings'];
+const LABEL = { cartes: 'Cartes', traductions: 'Traductions françaises', bannies: 'Cartes bannies', rulings: 'Rulings' }; // French keys of electron/i18n.cjs
 const FILE_PATH = /^cards\/(thumbs\/)?[a-z0-9][a-z0-9-]{1,60}\.webp$/;
 const CARD_ID = /^[a-z0-9][a-z0-9-]{1,60}$/;
 const MAX_TEXT = 4000;
@@ -39,6 +39,9 @@ const PATCH_FIELDS = {
   domains: 'array', domain: 'string', rarity: 'string', type: 'string', superTypes: 'array', signature: 'boolean',
   energy: 'number', might: 'number', tags: 'array', illustrator: 'string', text: 'string', orientation: 'string',
   artGroup: 'string',
+  // prints of one card (rifthunt): oracle id, kind of printing, its label (« Metal », « Top 8 »)
+  oracle: 'string', variant: 'string', printLabel: 'string',
+  power: 'number', // recycle cost (rifthunt)
 };
 const typeOf = (v) => (Array.isArray(v) ? 'array' : typeof v);
 
@@ -80,6 +83,13 @@ function layerProblem(layer, kind, dir) {
   } else if (kind === 'bannies') {
     if (!d.formats || typeof d.formats !== 'object' || !d.formats.standard || !Array.isArray(d.formats.standard.banned)) return 'liste des cartes bannies invalide';
     if (!isDate(d.updatedAt)) return 'date de la liste manquante';
+  } else if (kind === 'rulings') {
+    // Riftbound FAQ through rifthunt (src/lib/rulings.js): shown sanitized again in the card sheet
+    if (!Array.isArray(d.cards) || d.cards.length > 3000) return 'liste des rulings invalide';
+    for (const e of d.cards) {
+      if (!e || typeof e.name !== 'string' || !Array.isArray(e.ids) || e.ids.some(id => !CARD_ID.test(id || '')) || !Array.isArray(e.rulings) || e.rulings.length > 100) return 'ruling invalide';
+      if (e.rulings.some(r => !r || typeof r.question !== 'string' || r.question.length > 500 || typeof r.html !== 'string' || r.html.length > 20000)) return `ruling invalide (${e.name.slice(0, 40)})`;
+    }
   }
   for (const [rel, hash] of Object.entries(layer.files || {})) {
     if (!FILE_PATH.test(rel)) return etx('nom de fichier refusé ({rel})', { rel });
@@ -118,6 +128,8 @@ function mergeCatalog(base, layers) {
   const dates = [base.generatedAt, ...Object.values(layers).map(l => l.createdAt)].filter(isDate).sort();
   out.generatedAt = dates.at(-1) || base.generatedAt;
   // What the phone shows in Réglages → Contenu (read only).
+  // Rulings (Riftbound FAQ): in the served catalog, so the phone gets them at the sync
+  if (layers.rulings?.data) out.rulings = layers.rulings.data;
   out.content = Object.fromEntries(Object.entries(layers).map(([k, l]) => [k, { createdAt: l.createdAt, source: l.source || null, count: l.count ?? null }]));
   return out;
 }
@@ -180,7 +192,8 @@ function createContent({ dir, distDir }) {
   const errataFile = path.join(dir, 'errata.json');
   function getErrata() { try { return readJSON(errataFile); } catch { return {}; } }
   /** The catalog as served now (base and active layers). */
-  const mergedNow = () => (active.cartes || active.traductions ? mergeCatalog(base(), active) : base());
+  const merges = () => !!(active.cartes || active.traductions || active.rulings);
+  const mergedNow = () => (merges() ? mergeCatalog(base(), active) : base());
   /** After an install: the texts it changed are kept (5 changes per card at most). */
   function recordErrata(before) {
     const changes = textChanges(before, mergedNow(), new Date().toISOString());
@@ -195,6 +208,7 @@ function createContent({ dir, distDir }) {
   /** Is the layer older than what this app version ships? (Its content is then in the base.) */
   function outdated(kind, layer, b, banlist) {
     if (kind === 'bannies') return !!banlist?.updatedAt && layer.data.updatedAt <= banlist.updatedAt;
+    if (kind === 'rulings') return false; // never shipped with the app
     return isDate(b.generatedAt) && layer.createdAt <= b.generatedAt;
   }
 
@@ -223,7 +237,7 @@ function createContent({ dir, distDir }) {
     }
     fs.rmSync(activeDir, { recursive: true, force: true });
     // Without cards in the base, the served catalog is always written here (dist/card-hashes.json does not exist).
-    if (active.cartes || active.traductions || !b.cards.length) {
+    if (merges() || !b.cards.length) {
       fs.mkdirSync(activeDir, { recursive: true });
       fs.writeFileSync(path.join(activeDir, 'card-hashes.json'), JSON.stringify(applyErrata(mergeCatalog(b, active), getErrata())));
     }
@@ -386,13 +400,14 @@ function createContent({ dir, distDir }) {
   function status() {
     const b = base();
     const banlist = active.bannies?.data || baseBanlist();
-    const merged = active.cartes || active.traductions ? mergeCatalog(b, active) : b;
+    const merged = merges() ? mergeCatalog(b, active) : b;
     const layer = (k) => (active[k] ? { createdAt: active[k].createdAt, source: active[k].source || null, count: active[k].count ?? null } : null);
     return {
       base: { generatedAt: b.generatedAt, cards: b.cards.length },
       cards: merged.cards.length,
       namesFr: merged.cards.filter(c => c.nameFr).length,
       textsFr: merged.cards.filter(c => c.textFr).length,
+      rulings: merged.rulings ? { cards: merged.rulings.cards.length, count: merged.rulings.cards.reduce((n, e) => n + e.rulings.length, 0), updatedAt: merged.rulings.updatedAt || null } : null,
       errata: Object.keys(getErrata()).length,
       lastSet: merged.cards.at(-1)?.setName || null,
       banlist: banlist ? { updatedAt: banlist.updatedAt, formats: banlist.formats } : null,

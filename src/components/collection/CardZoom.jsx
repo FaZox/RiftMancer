@@ -8,6 +8,9 @@ import RiftStage from './RiftStage.jsx';
 import { fullImageSrc, downloadedImageSrc, thumbSrc, isNative } from '../../lib/nativeAssets.js';
 import { getLocalizedName, getLocalizedText, rulesTextHtml, displayLanguage } from '../../lib/cardLocale.js';
 import ErrataNote from '../common/ErrataNote.jsx';
+import PrintsList from './PrintsList.jsx';
+import { MIGHT_ICON, rarityIcon, symbolsReady, domainIcon } from '../../lib/symbols.js';
+import RulingsList from './RulingsList.jsx';
 import { useBackHandler } from '../../lib/backButton.js';
 import { usePrefs } from '../../lib/uiPrefs.js';
 import {
@@ -26,9 +29,13 @@ const TABS = [
  * « Vitrine » card view: the card large on a halo of its domain colour, then
  * Infos / Prix / Ma collection, and « Ajouter » always at hand.
  */
-export default function CardZoom({ cardId, language: initialLanguage, stacks, wanted, onSetWanted, onAddCopy, onClose, onPrev = null, onNext = null, position = null, deckControls = null }) {
+// onRemoveCopy (collection): one copy of a stack less; onUpdateCard: change a stack (promo)
+export default function CardZoom({ cardId: openedId, language: initialLanguage, stacks, wanted, onSetWanted, onAddCopy, onRemoveCopy = null, onUpdateCard = null, onClose, onPrev = null, onNext = null, position = null, deckControls = null }) {
   useBackHandler(true, onClose);
   const [prefs] = usePrefs();
+  // « Impressions et variantes »: another printing can be shown in the same sheet
+  const [cardId, setCardId] = useState(openedId);
+  useEffect(() => { setCardId(openedId); }, [openedId]);
   const cardData = getMatcher().getCardData(cardId);
   const [language, setLanguage] = useState(displayLanguage(initialLanguage) === 'English' ? 'English' : 'French');
   const [tab, setTab] = useState('infos');
@@ -82,6 +89,14 @@ export default function CardZoom({ cardId, language: initialLanguage, stacks, wa
   const text = getLocalizedText(cardData, language);
   const owned = stacks.filter(s => s.cardData.id === cardId);
   const ownedTotal = owned.reduce((n, s) => n + s.quantity, 0);
+  // Copies in the language shown (FR / EN): the « − » takes a plain one first
+  const inLanguage = owned.filter(s => (s.language || 'English') === language);
+  const langCount = inLanguage.reduce((n, s) => n + s.quantity, 0);
+  const removeOne = () => {
+    const pick = [...inLanguage].sort((a, b) => (a.foil || a.promo) - (b.foil || b.promo) || b.quantity - a.quantity)[0];
+    if (pick) onRemoveCopy(pick);
+  };
+  const langShort = language === 'French' ? tx('FR') : tx('EN');
   const ownedValue = prices ? owned.reduce((v, s) => v + (unitPrice(prices, cardId, s.foil, priceRef(), s.promo) || 0) * s.quantity, 0) : null;
   const domains = (cardData.domains?.length ? cardData.domains : (cardData.domain ? [cardData.domain] : [])).filter(Boolean);
   const colors = (domains.length ? domains : ['colorless']).map(d => (DOMAIN_COLORS[d] || DOMAIN_COLORS.colorless).hex);
@@ -164,12 +179,18 @@ export default function CardZoom({ cardId, language: initialLanguage, stacks, wa
           <section className="px-5 pt-1 relative space-y-2">
             <div className="flex flex-wrap gap-1.5">
               {domains.map(d => (
-                <span key={d} className="px-2.5 py-0.5 text-xs font-bold text-white" style={{ background: (DOMAIN_COLORS[d] || DOMAIN_COLORS.colorless).hex }}>{domainLabel(d)}</span>
+                <span key={d} className="px-2.5 py-0.5 text-xs font-bold text-white inline-flex items-center gap-1" style={{ background: (DOMAIN_COLORS[d] || DOMAIN_COLORS.colorless).hex }}>
+                  {domainIcon(d) && <img src={domainIcon(d)} alt="" className="w-3.5 h-3.5 -ml-1" />}{domainLabel(d)}
+                </span>
               ))}
               <span className="px-2.5 py-0.5 text-xs bg-rift-700 border border-rift-600 text-rift-100">{typeLabel(cardData.type)}</span>
               <span className="px-2.5 py-0.5 text-xs bg-rift-800 border border-gold-400 text-gold-400">{rarityLabel(cardData.rarity)}</span>
             </div>
-            <h2 className="font-display text-[26px] leading-tight font-bold text-gold-400">{name}</h2>
+            <h2 className="font-display text-[26px] leading-tight font-bold text-gold-400 flex items-center gap-2">
+              {/* the rarity's gem, as printed on the card */}
+              {rarityIcon(cardData.rarity) && <img src={rarityIcon(cardData.rarity)} alt={rarityLabel(cardData.rarity)} title={rarityLabel(cardData.rarity)} className="w-6 h-6 flex-shrink-0 object-contain" />}
+              <span className="min-w-0">{name}</span>
+            </h2>
             <p className="text-[13px] text-rift-400">
               {otherName !== name && <>{otherName} · </>}{cardData.setName} #{cardData.collectorNumber}
               {cardData.illustrator && <> {tx('· illustré par')} {cardData.illustrator}</>}
@@ -186,17 +207,29 @@ export default function CardZoom({ cardId, language: initialLanguage, stacks, wa
           <section className="px-5 py-4 space-y-3">
             {tab === 'infos' && (
               <>
-                {(cardData.energy != null || cardData.might != null) && (
-                  <div className="grid grid-cols-2 gap-2">
+                {(cardData.energy != null || cardData.might != null || cardData.power) && (
+                  <div className={`grid gap-2 ${cardData.power && cardData.might != null && cardData.energy != null ? 'grid-cols-3' : 'grid-cols-2'}`}>
                     {cardData.energy != null && (
                       <div className="flex items-center gap-3 p-2.5 bg-rift-800">
                         <span className="hexagon w-9 h-9 flex items-center justify-center bg-[#1d3a5c] text-[#8fd0ff] font-bold">{cardData.energy}</span>
                         <span className="text-[13px] text-rift-400">{tx('Énergie')}</span>
                       </div>
                     )}
+                    {cardData.power > 0 && (
+                      // recycle cost: runes of the card's (first) domain, as printed under the energy
+                      <div className="flex items-center gap-3 p-2.5 bg-rift-800" title={tx('Coût de recyclage : {n} rune(s) {domain}', { n: cardData.power, domain: domainLabel(cardData.domain || domains[0] || 'colorless') })}>
+                        <span className="flex items-center gap-0.5">
+                          {Array.from({ length: cardData.power }, (_, i) => (domainIcon(cardData.domain || domains[0])
+                            ? <img key={i} src={domainIcon(cardData.domain || domains[0])} alt="" className="w-5 h-5" />
+                            : <span key={i} className="w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center text-white" style={{ background: (DOMAIN_COLORS[cardData.domain] || DOMAIN_COLORS.colorless).hex }}>◆</span>))}
+                        </span>
+                        <span className="text-[13px] text-rift-400">{tx('Recyclage')}</span>
+                      </div>
+                    )}
                     {cardData.might != null && (
                       <div className="flex items-center gap-3 p-2.5 bg-rift-800">
                         <span className="hexagon w-9 h-9 flex items-center justify-center bg-[#5a1d19] text-[#ffb4ab] font-bold">{cardData.might}</span>
+                        {symbolsReady() && <img src={MIGHT_ICON} alt="" className="w-4 h-4 -mr-1.5" />}
                         <span className="text-[13px] text-rift-400">{tx('Puissance')}</span>
                       </div>
                     )}
@@ -213,6 +246,8 @@ export default function CardZoom({ cardId, language: initialLanguage, stacks, wa
                 {cardData.tags?.length > 0 && (
                   <p className="text-[13px] text-rift-400">{tx('Mots-clés :')} {cardData.tags.join(' · ')}</p>
                 )}
+                <RulingsList cardData={cardData} />
+                <PrintsList cardData={cardData} stacks={stacks} prices={prices} onOpen={setCardId} />
               </>
             )}
 
@@ -253,13 +288,32 @@ export default function CardZoom({ cardId, language: initialLanguage, stacks, wa
                   </p>
                   {owned.length === 0 && <p className="text-[13px] text-rift-400">{tx('Vous n’avez pas encore cette carte.')}</p>}
                   {owned.map(s => (
-                    <p key={s.key} className="text-[13px] text-rift-300 flex items-center gap-1.5">
-                      {s.quantity} × {LANGUAGES.find(l => l.value === s.language)?.short || s.language}
-                      {' · '}{conditionShort(s.condition)}
-                      {s.foil && <Sparkles className="w-3.5 h-3.5 text-purple-400" />}
-                      {s.promo && <span className="text-state-warn">{tx('Promo')}</span>}
-                    </p>
+                    <div key={s.key} className="text-[13px] text-rift-300 flex items-center gap-1.5 min-h-[36px]">
+                      <span className="mr-auto flex items-center gap-1.5">
+                        {s.quantity} × {LANGUAGES.find(l => l.value === s.language)?.short || s.language}
+                        {' · '}{conditionShort(s.condition)}
+                        {s.foil && <Sparkles className="w-3.5 h-3.5 text-purple-400" />}
+                      </span>
+                      {onUpdateCard ? (
+                        <button onClick={() => onUpdateCard(s, { ...s, promo: !s.promo })} aria-pressed={!!s.promo}
+                          title={s.promo ? tx('Ce ne sont pas des promos') : tx('Marquer comme promo')}
+                          className={`h-8 px-2 text-[11px] font-bold uppercase tracking-wider border ${s.promo ? 'text-[#d7a8ff] bg-[#d7a8ff]/15 border-[#d7a8ff]/50' : 'text-rift-500 border-rift-600'}`}>
+                          {tx('Promo')}
+                        </button>
+                      ) : s.promo && <span className="text-[#d7a8ff]">{tx('Promo')}</span>}
+                      {onRemoveCopy && (
+                        <button onClick={() => onRemoveCopy(s)} aria-label={s.quantity === 1 ? tx('Supprimer cet exemplaire') : tx('Un exemplaire de moins')}
+                          className={`w-8 h-8 flex items-center justify-center border ${s.quantity === 1 ? 'border-state-bad/60 text-state-bad' : 'border-rift-600 text-rift-100'}`}>
+                          {s.quantity === 1 ? <Trash2 className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
+                        </button>
+                      )}
+                    </div>
                   ))}
+                  {onRemoveCopy && (
+                    <button onClick={() => onAddCopy(cardId, language, { promo: true })} className="btn-ghost text-[13px] py-1.5 px-2 -ml-2">
+                      <Plus className="w-4 h-4" /> {tx('Ajouter une promo')} {langShort}
+                    </button>
+                  )}
                 </div>
                 <div className="panel p-3 flex items-center gap-2">
                   <Heart className={`w-4 h-4 ${wanted > 0 ? 'text-[#ff8ab8] fill-[#ff8ab8]' : 'text-rift-400'}`} />
@@ -294,6 +348,21 @@ export default function CardZoom({ cardId, language: initialLanguage, stacks, wa
               </button>
               <span className="w-8 text-center font-display text-xl font-bold text-gold-400">{deckControls.count}</span>
               <button onClick={deckControls.onPlus} aria-label={tx('Un exemplaire de plus dans le deck')}
+                className="w-11 h-11 flex items-center justify-center bg-gold-500 text-rift-900"><Plus className="w-5 h-5" /></button>
+            </div>
+          ) : onRemoveCopy ? (
+            // Opened from the collection: how many copies (in this language), one less, one more
+            <div className="flex-1 lg:flex-none flex items-center gap-3 min-h-[50px] px-3 bg-rift-800 border border-gold-500/50">
+              <span className="text-sm text-rift-300 mr-auto lg:mr-2">
+                {tx('Dans ma collection')} · {langShort}
+                {ownedTotal > langCount && <span className="block text-[12px] text-rift-500">{tx('{ownedTotal} en tout', { ownedTotal })}</span>}
+              </span>
+              <button onClick={removeOne} disabled={!langCount} aria-label={langCount === 1 ? tx('Supprimer cet exemplaire') : tx('Un exemplaire de moins')}
+                className={`w-11 h-11 flex items-center justify-center border disabled:opacity-30 ${langCount === 1 ? 'border-state-bad/60 text-state-bad' : 'border-rift-600 text-rift-100'}`}>
+                {langCount === 1 ? <Trash2 className="w-5 h-5" /> : <Minus className="w-5 h-5" />}
+              </button>
+              <span className="w-8 text-center font-display text-xl font-bold text-gold-400">{langCount}</span>
+              <button onClick={() => onAddCopy(cardId, language)} aria-label={tx('Ajouter un exemplaire')}
                 className="w-11 h-11 flex items-center justify-center bg-gold-500 text-rift-900"><Plus className="w-5 h-5" /></button>
             </div>
           ) : (

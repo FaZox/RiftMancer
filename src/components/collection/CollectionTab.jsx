@@ -27,6 +27,7 @@ export default function CollectionTab({
   onMoveStack,
   onUpdateCard,
   onRemoveCard,
+  onRemoveCopy,
   onDeleteStacks,
   onClearAll,
   onExport,
@@ -132,6 +133,8 @@ export default function CollectionTab({
           wanted={wishlist.byCard.get(zoom.cardId)?.quantity || 0}
           onSetWanted={wishlist.setWanted}
           onAddCopy={onAddCopy}
+          onRemoveCopy={onRemoveCopy}
+          onUpdateCard={onUpdateCard}
           onClose={() => setZoom(null)}
           onPrev={zoom.list && zoom.index > 0 ? () => stepZoom(-1) : null}
           onNext={zoom.list && zoom.index < zoom.list.length - 1 ? () => stepZoom(1) : null}

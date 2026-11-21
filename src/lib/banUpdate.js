@@ -145,10 +145,10 @@ export function buildBanList(current, rules, announcement, cards) {
   for (const fmt of Object.keys({ ...current?.formats, ...rules.formats })) {
     const cur = current?.formats?.[fmt] || {};
     const page = rules.formats[fmt];
-    const byName = new Map((cur.banned || []).map(e => [normName(entryName(e)), e]));
+    const byName = new Map((cur.banned || []).map(e => [withoutThe(entryName(e)), e]));
     const out = new Map();
     const add = (name, kind, since) => {
-      const key = normName(name);
+      const key = withoutThe(name);
       if (out.has(key)) return;
       const prev = byName.get(key);
       if (prev && typeof prev === 'object') { out.set(key, prev); return; }
@@ -162,10 +162,11 @@ export function buildBanList(current, rules, announcement, cards) {
       entry.since = since;
       out.set(key, entry);
     };
-    if (page) for (const kind of ['legends', 'cards', 'battlefields']) for (const n of page[kind]) add(n, kind, rules.updatedAt);
+    // an entry is a name (rules page) or { name, since } (rifthunt: each ban with its own date)
+    if (page) for (const kind of ['legends', 'cards', 'battlefields']) for (const n of page[kind]) add(entryName(n), kind, n?.since || rules.updatedAt);
     // Bans announced after the rules page was updated, already in the list: kept.
     for (const e of cur.banned || []) {
-      if (typeof e === 'object' && e.since && e.since > rules.updatedAt) out.set(normName(e.name), e);
+      if (typeof e === 'object' && e.since && e.since > rules.updatedAt) out.set(withoutThe(e.name), e);
     }
     if (announcement?.formats.includes(fmt)) {
       for (const kind of ['legends', 'cards', 'battlefields']) for (const n of announcement[kind]) add(n, kind, announcement.effective);
@@ -175,7 +176,7 @@ export function buildBanList(current, rules, announcement, cards) {
   }
   const sources = [...(current?.sources || [])];
   const addSource = (s) => { if (!sources.some(x => x.url === s.url && x.date === s.date)) sources.push(s); };
-  addSource({ date: rules.updatedAt, url: RULES_URL, label: tx('Règlement officiel des tournois (Constructed Format Legality)') });
+  addSource({ date: rules.updatedAt, url: rules.source?.url || RULES_URL, label: rules.source?.label || tx('Règlement officiel des tournois (Constructed Format Legality)') });
   if (announcement) addSource({ date: announcement.effective, url: announcement.url, label: announcement.title || tx('Annonce de bannissements') });
   const list = { ...current, version: 2, updatedAt: [current?.updatedAt, date].filter(Boolean).sort().at(-1), sources, formats };
   return { list, unknown: [...unknown], date };
@@ -186,8 +187,8 @@ export function diffBans(current, next) {
   const out = {};
   let changed = false;
   for (const fmt of Object.keys({ ...current?.formats, ...next?.formats })) {
-    const a = new Map((current?.formats?.[fmt]?.banned || []).map(e => [normName(entryName(e)), entryName(e)]));
-    const b = new Map((next?.formats?.[fmt]?.banned || []).map(e => [normName(entryName(e)), entryName(e)]));
+    const a = new Map((current?.formats?.[fmt]?.banned || []).map(e => [withoutThe(entryName(e)), entryName(e)]));
+    const b = new Map((next?.formats?.[fmt]?.banned || []).map(e => [withoutThe(entryName(e)), entryName(e)]));
     const added = [...b].filter(([k]) => !a.has(k)).map(([, v]) => v);
     const removed = [...a].filter(([k]) => !b.has(k)).map(([, v]) => v);
     if (added.length || removed.length) changed = true;

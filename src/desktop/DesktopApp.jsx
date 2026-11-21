@@ -84,6 +84,7 @@ export default function DesktopApp() {
             onAddCopy={c.handleAddCopy}
             onUpdateCard={c.handleUpdateCard}
             onRemoveCard={c.handleRemoveCard}
+            onRemoveCopy={c.handleRemoveCopy}
             onDeleteStacks={c.handleDeleteStacks}
             onExport={c.handleExport}
             defaultLanguage={c.batchDefaults.language}
@@ -114,6 +115,8 @@ export default function DesktopApp() {
             onClearPending={c.handleClearPending}
             onAddCardToExport={c.handleAddCardToExport}
             onAddCardsToExport={c.handleAddToPending}
+            onAddCardsToCollection={c.handleAddCardsToExport}
+            copies={c.collection.copies}
             showNotification={c.showNotification}
             batchDefaults={c.batchDefaults}
             onUpdateDefaults={c.setBatchDefaults}

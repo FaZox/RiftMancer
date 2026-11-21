@@ -262,7 +262,8 @@ erDiagram
 ## 7. The card catalog (not in the database)
 
 `card-hashes.json`: read into memory by `src/lib/cardMatcher.js`, never
-written by the user. In the public version, the app starts with its header
+written by the user. With the rulings installed, it also carries `rulings`
+(Riftbound FAQ through rifthunt: `{ source, license, licenseUrl, updatedAt, cards: [{ name, url, authors, ids, rulings: [{ id, question, html }] }] }`). In the public version, the app starts with its header
 only (`catalog-base.json`) and gets the cards on first launch.
 
 **Header**: `gridSize`, `featureFormat`, `generatedAt`, `embeddings` (`engine`,
@@ -283,6 +284,7 @@ thresholds per picture size, `detector`, `detectorSha256`), and on the PC
 | `illustrator`, `orientation` | picture |
 | `artBottom` | where the illustration ends (recognition) |
 | `artGroup?` | reprints with the same illustration |
+| `oracle?`, `variant?`, `printLabel?` | prints of one card (rifthunt's oracle id), kind of printing (base, alternate, overnumbered, signature, showcase, promo), label (« Metal »…) |
 | `f` | colour fingerprint (base64) |
 | `e` | AI signature (base64) |
 | `errata?` | texts changed by an update |
@@ -290,7 +292,7 @@ thresholds per picture size, `detector`, `detectorSha256`), and on the PC
 Pictures: `cards/<id>.webp` (full size) and `cards/thumbs/<id>.webp`.
 
 **Content updates on the PC** (`electron/content.cjs`): layers over the shipped
-catalog, in `catalogue/couches/{cartes,traductions,bannies}/layer.json`
+catalog, in `catalogue/couches/{cartes,traductions,bannies,rulings}/layer.json`
 (+ pictures), merged into `catalogue/actif/card-hashes.json`, which the app
 and the phone are served. Each layer has `kind`, `format: 1`, `createdAt`,
 `source`, `count`, `data`, `files` (SHA-256 of each picture); the previous
@@ -321,7 +323,7 @@ Key → JSON value, **never synced** (each device has its own).
 | `banlist`, `banlistVersion` | phone | banned cards received from the PC |
 | `prices` | phone | Cardmarket prices received from the PC |
 | `fullImages` | phone | download the full-size pictures |
-| `riftcodexNames` | phone | full English names (Riftcodex): `{ fetchedAt, names }`; on the PC: `riftcodex-names.json` |
+| `cardIndex` | phone | Cardmarket links and full English names, a week: `{ fetchedAt, index: { source, names, cardmarket } }` (rifthunt, else Riftcodex); on the PC: `card-index.json` (`riftcodexNames` / `riftcodex-names.json`: former cache, read when nothing else) |
 
 ## 9. Sync between the phone and the PC
 
@@ -373,7 +375,7 @@ collection goes to that PC.
 | What | Where | Content |
 |---|---|---|
 | Cardmarket prices (PC) | `prices.json` | `{ updatedAt, priceDate, source, matched, total, cards: { [cardId]: [trend, trendFoil, idProduct, avg7, avg30, …] }, hist }` (`electron/prices.cjs`) |
-| Full English names (PC) | `riftcodex-names.json` | Riftcodex names |
+| Cardmarket links and full English names (PC) | `card-index.json` | `{ fetchedAt, index: { source: 'rifthunt' \| 'riftcodex', names, cardmarket: { cardId → idProduct } } }`, a week |
 | Backups of the files | IndexedDB `riftbound-backups` (browser) | store `files` |
 | Test bench | IndexedDB `rb-bench` | stores `items` (key `name`) and `photos` |
 | Interface preferences | `localStorage` (each device) | `rb.lang` (language), `rb.displayFrench`, `rb.prefs`, `rb.collection.sort`, `rb.collectionLayout`, `rb.pc.*` (PC layout), `rb.playerName`, `rb.recentSearches`, `rb.counter.running` (score counter in progress), `rb.lastSpeed`, `rb.scanStats`, `rb.errors` (diagnostic report), `rb.friends.myId`, `rb.prices.summarized`, `rb.startupMs`, `riftbound_trade_threshold` |
@@ -393,7 +395,7 @@ catalogue\actif\           the merged catalog served to the app and the phone
 catalogue\errata.json      texts changed by updates
 catalogue\etat.json        weekly checks
 prices.json                Cardmarket prices
-riftcodex-names.json       full English names
+card-index.json            Cardmarket links and full English names (rifthunt)
 ```
 
 **Phone (Android)**: the app's private storage (IndexedDB of the web view,

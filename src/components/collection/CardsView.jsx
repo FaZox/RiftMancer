@@ -1,7 +1,7 @@
 // « Mes cartes »: list / grid of the collection with filters, selection, export, import.
 import React, { useState, useRef, useLayoutEffect, useCallback } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Download, Trash2, Layers, Search, X, ChevronDown, SlidersHorizontal, Upload, LayoutGrid, List, ArrowUpDown } from 'lucide-react';
+import { Download, Trash2, Layers, Search, X, ChevronDown, SlidersHorizontal, Upload, LayoutGrid, List, ArrowUpDown, Plus } from 'lucide-react';
 import { useBackHandler } from '../../lib/backButton.js';
 import { euro } from '../../lib/prices.js';
 import ImportCsvDialog from './ImportCsvDialog.jsx';
@@ -12,7 +12,8 @@ import { LANGUAGES, DOMAIN_COLORS, domainLabel, rarityLabel, typeLabel } from '.
 import { displayLanguage, useDisplayFrench } from '../../lib/cardLocale.js';
 import { SORTS } from '../../lib/catalog.js';
 import useCollectionFilter from '../../hooks/useCollectionFilter.js';
-import { GridTile, locationOf, placeOf, selectClass } from './collectionShared.jsx';import { tx } from '../../lib/i18n.js';
+import { GridTile, locationOf, placeOf, selectClass } from './collectionShared.jsx';
+import { requestOpen } from '../../lib/navRequest.js';import { tx } from '../../lib/i18n.js';
 
 
 // ─── Cards: search, filters, sort, virtualized list ─────────────────────
@@ -148,26 +149,29 @@ export function CardsView({ scannedCards, onUpdateCard, onRemoveCard, onDeleteSt
           </button>
         </div>
 
-        {/* Domain chips: one tap filter */}
-        <div className="flex gap-1.5 overflow-x-auto -mx-4 px-4 lg:-mx-8 lg:px-8 pb-0.5" role="group" aria-label={tx('Filtrer par domaine')}>
-          <button className="chip" aria-pressed={filters.domain === 'all'} onClick={() => setFilter('domain', 'all')}>
-            <span className="w-2 h-2 rounded-full bg-gold-500" />{tx('Tout')}
-          </button>
-          {['fury', 'calm', 'mind', 'body', 'chaos', 'order', 'colorless'].filter(d => options.domains.has(d) || filters.domain === d).map(d => (
-            <button key={d} className="chip" aria-pressed={filters.domain === d} onClick={() => setFilter('domain', filters.domain === d ? 'all' : d)}>
-              <span className="w-2 h-2 rounded-full" style={{ background: DOMAIN_COLORS[d]?.hex }} />{domainLabel(d)}
-            </button>
-          ))}
-        </div>
-
-        {/* Sort: always visible (price, name, set…) */}
+        {/* Domain: a dropdown (the chips took a whole row) */}
         <label className="flex items-center gap-2 text-xs text-rift-400">
-          <ArrowUpDown className="w-4 h-4 text-gold-400 flex-shrink-0" />
-          <span className="flex-shrink-0">{tx('Trier par')}</span>
-          <select value={sort} onChange={e => setSort(e.target.value)} aria-label={tx('Trier par')} className={`${selectClass} flex-1 min-w-0`}>
-            {SORTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+          <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 mx-[3px]" style={{ background: filters.domain === 'all' ? '#c8aa6e' : DOMAIN_COLORS[filters.domain]?.hex }} />
+          <span className="flex-shrink-0">{tx('Domaine')}</span>
+          <select value={filters.domain} onChange={e => setFilter('domain', e.target.value)} aria-label={tx('Filtrer par domaine')} className={`${selectClass} flex-1 min-w-0`}>
+            <option value="all">{tx('Tous domaines')}</option>
+            {['fury', 'calm', 'mind', 'body', 'chaos', 'order', 'colorless'].filter(d => options.domains.has(d) || filters.domain === d).map(d => <option key={d} value={d}>{domainLabel(d)}</option>)}
           </select>
         </label>
+
+        {/* Sort: always visible (price, name, set…), and « Ajouter » (a card by its name or number) */}
+        <div className="flex items-center gap-2">
+          <label className="flex-1 min-w-0 flex items-center gap-2 text-xs text-rift-400">
+            <ArrowUpDown className="w-4 h-4 text-gold-400 flex-shrink-0" />
+            <span className="flex-shrink-0">{tx('Trier par')}</span>
+            <select value={sort} onChange={e => setSort(e.target.value)} aria-label={tx('Trier par')} className={`${selectClass} flex-1 min-w-0`}>
+              {SORTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </select>
+          </label>
+          <button onClick={() => requestOpen({ kind: 'search', mode: 'add' })} className="btn-primary h-10 px-3 text-sm flex-shrink-0" title={tx('Ajouter une carte par son nom ou son numéro')}>
+            <Plus className="w-4 h-4" /> {tx('Ajouter')}
+          </button>
+        </div>
 
         {filtersOpen && (
           <div className="panel p-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
@@ -182,7 +186,7 @@ export function CardsView({ scannedCards, onUpdateCard, onRemoveCard, onDeleteSt
             <FilterSelect label={tx('Langue')} value={filters.language} onChange={v => setFilter('language', v)}
               options={[...options.languages].map(([v, n]) => [v, `${LANGUAGES.find(l => l.value === v)?.label || v} (${n})`])} />
             <FilterSelect label={tx('Finition')} value={filters.finish} onChange={v => setFilter('finish', v)}
-              options={[['foil', tx('Foil')], ['standard', tx('Standard')]]} />
+              options={[['foil', tx('Foil')], ['promo', tx('Promo')], ['standard', tx('Standard')]]} />
             <FilterSelect label={tx('Emplacement')} value={filters.location} onChange={v => setFilter('location', v)}
               options={[
                 ['none', tx('Sans emplacement')],

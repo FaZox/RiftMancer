@@ -11,6 +11,7 @@ import { gridHint, sessionLine } from '../../lib/gridScan.js';
 import { useBackHandler } from '../../lib/backButton.js';
 import { usePrefs } from '../../lib/uiPrefs.js';
 import { tx } from '../../lib/i18n.js';
+import { isDesktop } from '../../lib/collectionDB.js';
 
 const COLORS = { settling: '#7fd6a4', fire: '#7fd6a4', aiming: '#e8c973', few: '#f0c27a', seen: '#9aa4b2' };
 
@@ -124,7 +125,9 @@ export default function GridScanView({ camera, photo, header, language, detector
             <span className="hexagon w-16 h-16 bg-rift-800 flex items-center justify-center"><LayoutGrid className="w-7 h-7 text-gold-400" /></span>
             <h2 className="h-title text-[19px]">{tx('Scanner une page entière')}</h2>
             <p className="text-[14px] text-rift-300 max-w-[340px]">
-              {tx('Une page de classeur ou des cartes posées à plat, sans qu’elles se touchent. Tenez le téléphone au-dessus : la photo est prise toute seule quand rien ne bouge, puis vous vérifiez chaque carte.')}
+              {isDesktop
+                ? tx('Une page de classeur ou des cartes posées à plat, sans qu’elles se touchent. Placez-les sous la webcam : la photo est prise toute seule quand rien ne bouge, puis vous vérifiez chaque carte.')
+                : tx('Une page de classeur ou des cartes posées à plat, sans qu’elles se touchent. Tenez le téléphone au-dessus : la photo est prise toute seule quand rien ne bouge, puis vous vérifiez chaque carte.')}
             </p>
             {sessionLine(g.session) !== 'Page 1' && <p className="text-[14px] font-bold text-gold-400">{sessionLine(g.session)}</p>}
             <button onClick={camera.startCamera} className="btn-primary px-5 py-3"><Camera className="w-5 h-5" /> {tx('Activer la caméra')}</button>

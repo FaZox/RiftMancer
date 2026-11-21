@@ -10,6 +10,7 @@ import {
   RULES_URL, ANNOUNCEMENT_URL, parseRulesPage, parseBanAnnouncement, buildBanList, diffBans,
   banListProblem, banLayer, editBanList, catalogMatches, normName,
 } from '../../lib/banUpdate.js';
+import { RIFTHUNT_BAN_URLS, rifthuntBanRules } from '../../lib/rifthunt.js';
 import { tx, locale } from '../../lib/i18n.js';
 
 /**
@@ -32,6 +33,23 @@ function Done({ text, onClose }) {
   );
 }
 
+/** The three rifthunt searches, read as a rules page; null when rifthunt does not answer. */
+async function rifthuntRules(api) {
+  try {
+    const texts = {};
+    for (const [key, url] of Object.entries(RIFTHUNT_BAN_URLS)) {
+      const r = await api.content.fetch(url);
+      if (r.ok) texts[key] = r.text;
+      else if (r.status === 404) texts[key] = '{"object":"error"}'; // no card: rifthunt answers 404
+      else return null;
+    }
+    return rifthuntBanRules(texts);
+  } catch (err) {
+    console.warn('[bans] rifthunt unreadable, Riot rules page used:', err);
+    return null;
+  }
+}
+
 /** Rules page (+ announcement) → summary → install. */
 export function BanUpdateSheet({ open, onClose, onManual }) {
   const api = window.riftboundDesktop;
@@ -43,9 +61,13 @@ export function BanUpdateSheet({ open, onClose, onManual }) {
   const search = useCallback(async (announcementUrl = '') => {
     setStep(0); setError(null); setResult(null);
     try {
-      const page = await api.content.fetch(RULES_URL);
-      if (!page.ok) { setError({ text: page.message, reason: page.reason }); return; }
-      const rules = parseRulesPage(page.text);
+      // rifthunt first (each ban with its date, the ones announced too), Riot's rules page when it does not answer
+      let rules = await rifthuntRules(api);
+      if (!rules) {
+        const page = await api.content.fetch(RULES_URL);
+        if (!page.ok) { setError({ text: page.message, reason: page.reason }); return; }
+        rules = parseRulesPage(page.text);
+      }
       let announcement = null;
       if (announcementUrl) {
         const a = await api.content.fetch(announcementUrl);
@@ -56,7 +78,7 @@ export function BanUpdateSheet({ open, onClose, onManual }) {
       const built = buildBanList(current, rules, announcement, getMatcher().cards);
       const problem = banListProblem(current, built.list);
       if (problem) { setError({ text: problem, reason: 'unreadable' }); return; }
-      setResult({ ...built, rulesDate: rules.updatedAt, diff: diffBans(current, built.list) });
+      setResult({ ...built, rulesDate: rules.updatedAt, source: rules.source ? { label: 'rifthunt.com', url: rules.source.url } : null, diff: diffBans(current, built.list) });
       setStep(1);
     } catch (err) {
       setError({ text: err.message || tx('La page a changé et n’a pas pu être lue. Rien n’a été modifié.'), reason: 'unreadable' });
@@ -68,7 +90,7 @@ export function BanUpdateSheet({ open, onClose, onManual }) {
   const install = async () => {
     setStep(2);
     try {
-      await api.content.install('bannies', banLayer(result.list, { label: tx('règlement officiel des tournois'), url: RULES_URL }));
+      await api.content.install('bannies', banLayer(result.list, result.source || { label: tx('règlement officiel des tournois'), url: RULES_URL }));
       setStep(3);
     } catch (err) {
       setStep(1);
@@ -109,6 +131,7 @@ export function BanUpdateSheet({ open, onClose, onManual }) {
                 ? tx('{length} changement{v1} d’après le règlement officiel du {day}{v3}.', { length: items.length, v1: items.length > 1 ? 's' : '', day: day(result.rulesDate), v3: result.date !== result.rulesDate ? tx(' et l’annonce du {day}', { day: day(result.date) }) : '' })
                 : tx('Votre liste est à jour (règlement officiel du {day}).', { day: day(result.rulesDate) })}
             </p>
+            <p className="text-[13px] text-rift-400">{result.source ? tx('Source : rifthunt.com (listes officielles de Riot)') : tx('Source : règlement officiel des tournois (Riot)')}</p>
             {result.diff.changed && <DiffList items={items} />}
             {result.unknown.length > 0 && (
               <Banner tone="warn">

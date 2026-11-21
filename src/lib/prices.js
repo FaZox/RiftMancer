@@ -18,7 +18,7 @@ import { useEffect, useState } from 'react';
 import { Capacitor, CapacitorHttp } from '@capacitor/core';
 import { isDesktop, getMeta, setMeta } from './collectionDB.js';
 import { getMatcher } from './cardMatcher.js';
-import { buildPriceTable, fetchRiftcodexNames, CM_PRODUCTS, CM_PRICES } from './priceBuilder.js';
+import { buildPriceTable, fetchCardIndex, CM_PRODUCTS, CM_PRICES } from './priceBuilder.js';
 import { getPrefs } from './uiPrefs.js';import { tx, locale } from './i18n.js';
 
 
@@ -68,16 +68,17 @@ async function getJSON(url) {
   return typeof r.data === 'string' ? JSON.parse(r.data) : r.data;
 }
 
-async function riftcodexNames() {
-  const cached = await getMeta('riftcodexNames');
-  if (cached && Date.now() - cached.fetchedAt < NAMES_EVERY) return cached.names;
+/** Cardmarket links and names (rifthunt, else Riftcodex), kept a week. */
+async function cardIndex() {
+  const cached = await getMeta('cardIndex');
+  if (cached && cached.index?.source === 'riftcodex' && Date.now() - cached.fetchedAt < NAMES_EVERY) return cached.index;
   try {
-    const names = await fetchRiftcodexNames(getJSON);
-    await setMeta('riftcodexNames', { fetchedAt: Date.now(), names });
-    return names;
+    const index = await fetchCardIndex(getJSON);
+    await setMeta('cardIndex', { fetchedAt: Date.now(), index });
+    return index;
   } catch (err) {
-    console.warn('[prices] Riftcodex unavailable:', err);
-    return cached?.names || {};
+    console.warn('[prices] card index unavailable:', err);
+    return cached?.index || (await getMeta('riftcodexNames'))?.names || {};
   }
 }
 
@@ -96,7 +97,7 @@ export function refreshPrices(force = false) {
   running = (async () => {
     const catalog = getMatcher().cards;
     if (!catalog?.length) return false;
-    const [products, guide, names] = await Promise.all([getJSON(CM_PRODUCTS), getJSON(CM_PRICES), riftcodexNames()]);
+    const [products, guide, names] = await Promise.all([getJSON(CM_PRODUCTS), getJSON(CM_PRICES), cardIndex()]);
     const table = buildPriceTable(catalog, products, guide, names, cur?.demo ? null : cur);
     const payload = { prices: table, history: state.history };
     await setMeta('prices', payload);

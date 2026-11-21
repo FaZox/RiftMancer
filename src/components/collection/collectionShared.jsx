@@ -3,7 +3,7 @@ import React from 'react';
 import { Check } from 'lucide-react';
 import { euro } from '../../lib/prices.js';
 import { fullImageSrc } from '../../lib/nativeAssets.js';
-import { LANGUAGES, DOMAIN_COLORS } from '../../data/sampleCards.js';
+import { LANGUAGES } from '../../data/sampleCards.js';
 import CardImage from '../common/CardImage.jsx';
 import StatusPill from '../common/StatusPill.jsx';
 import { isBanned } from '../../lib/deckRules.js';
@@ -48,7 +48,6 @@ export const PLACE_STYLE = {
 // hd: full-size picture instead of the thumbnail (PC: sharp at big sizes)
 export const GridTile = React.memo(function GridTile({ card, name, price, place, onOpen, selecting, selected, onToggle, hd = false }) {
   const d = card.cardData;
-  const color = DOMAIN_COLORS[d.domain]?.hex || DOMAIN_COLORS.colorless.hex;
   const lang = LANGUAGES.find(l => l.value === card.language)?.short || 'EN';
   return (
     <button
@@ -57,7 +56,7 @@ export const GridTile = React.memo(function GridTile({ card, name, price, place,
       className={`flex flex-col gap-1 min-w-0 ${selecting && !selected ? 'opacity-60' : ''}`}
       title={name}
     >
-      <span className={`hex-cut-sm relative block w-full bg-rift-800 ${selected ? 'outline outline-[3px] -outline-offset-[3px] outline-gold-400' : ''}`} style={{ borderTop: `3px solid ${color}` }}>
+      <span className={`hex-cut-sm relative block w-full bg-rift-800 ${selected ? 'outline outline-[3px] -outline-offset-[3px] outline-gold-400' : ''}`}>
         {selecting && (
           <span className={`absolute right-1 top-1 z-10 w-6 h-6 flex items-center justify-center border-2 ${selected ? 'bg-gold-400 border-gold-400 text-rift-900' : 'bg-rift-900/80 border-rift-300'}`}>
             {selected && <Check className="w-4 h-4" strokeWidth={3} />}
@@ -67,6 +66,7 @@ export const GridTile = React.memo(function GridTile({ card, name, price, place,
         {isBanned(d) && <StatusPill kind="bannie" className="absolute left-1 top-1" title={tx('Bannie en Standard')} />}
         <span className="absolute right-0 bottom-0 px-2 py-0.5 bg-gold-500 text-rift-900 text-xs font-bold">×{card.quantity}</span>
         <span className="absolute left-1 bottom-1 px-1 bg-rift-900/85 text-[11px] font-bold text-gold-400">{lang}{card.foil ? ' · F' : ''}</span>
+        {(card.promo || d.variant === 'promo') && <StatusPill kind="promo" className="absolute left-1 bottom-6 bg-rift-900/90" />}
       </span>
       <span className="w-full px-1 py-1 border border-[#e8a33a]/55 bg-[#e8a33a]/10 text-center text-[12px] font-semibold leading-tight text-rift-100 line-clamp-2 min-h-[2.9em] flex items-center justify-center">
         {name}

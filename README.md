@@ -348,9 +348,9 @@ Every piece of data is a JSON record in a collection, the same on both apps; ful
 ## Updating the card catalog
 
 **From the PC app, without development tools**: Settings → **Content**.
-- *Cards* → « Search »: reads Riot’s official gallery, shows the new and changed cards, then, after « Install », checks fingerprint parity on 50 cards, downloads the pictures, works out colour fingerprints, AI signatures and reprint groups. Weekly check at start (can be turned off).
+- *Cards* → « Search »: reads the card list of [rifthunt.com](https://rifthunt.com/api) (Riot's data, every printing; Riot's official gallery when it does not answer), shows the new and changed cards, then, after « Install », checks fingerprint parity on 50 cards, downloads the pictures, works out colour fingerprints, AI signatures and reprint groups. Weekly check at start (can be turned off).
 - *French translations* → « Update » or « Import files… » (riftboundfr.fr).
-- *Banned cards* → « Update » (official tournament rules, + an announcement) or « Edit by hand ».
+- *Banned cards* → « Update » (rifthunt.com's lists, from Riot, each ban with its date and the announced ones; the official tournament rules page, + an announcement, when it does not answer) or « Edit by hand ».
 
 - *Packs* → « Export my content » / « Import a pack… »: a single friend does the update, the others import their pack (even without Internet). A pack is only accepted **signed by the app’s author** (see above).
 
@@ -727,7 +727,7 @@ The collection is local-first: the phone works on its own data and syncs with th
 
 #### Cardmarket prices
 
-The PC app downloads Cardmarket's public Riftbound files (`productCatalog/productList/products_singles_22.json` and `priceGuide/price_guide_22.json`) at most once a day and links products to cards (`electron/prices.cjs`; full English names from the Riftcodex API, cached a week). Trend price in EUR, foil price for foil copies. Stored in `%APPDATA%/riftbound-scanner/prices.json`, a daily collection value snapshot in SQLite (`valueHistory`), and sent to the phone at sync (`GET /api/prices`).
+The PC app downloads Cardmarket's public Riftbound files (`productCatalog/productList/products_singles_22.json` and `priceGuide/price_guide_22.json`) at most once a day and links products to cards (`electron/prices.cjs`): by each printing's Cardmarket id from [rifthunt](https://rifthunt.com/api) first, by name for the rest (full English names from rifthunt, or the Riftcodex API when rifthunt does not answer; cached a week). Trend price in EUR, foil price for foil copies. Stored in `%APPDATA%/riftbound-scanner/prices.json`, a daily collection value snapshot in SQLite (`valueHistory`), and sent to the phone at sync (`GET /api/prices`).
 
 #### Collection storage
 

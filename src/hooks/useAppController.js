@@ -442,6 +442,12 @@ export default function useAppController() {
     offerUndo(removeStack(stack));
   }, [removeStack, offerUndo]);
 
+  // Card sheet (CardZoom): one copy of a stack less, « Annuler » for a few seconds
+  const handleRemoveCopy = useCallback((stack) => {
+    if (!stack?.copyIds?.length) return;
+    offerUndo(deleteCopies(stack.copyIds.slice(-1)));
+  }, [deleteCopies, offerUndo]);
+
   const handleDeleteStacks = useCallback((stacks) => {
     offerUndo(deleteCopies(stacks.flatMap(s => s.copyIds)));
   }, [deleteCopies, offerUndo]);
@@ -469,15 +475,15 @@ export default function useAppController() {
   }, [showNotification, addEntries, targetPlace]);
 
   // Quick add of one copy from the card zoom view
-  const handleAddCopy = useCallback((cardId, language) => {
+  const handleAddCopy = useCallback((cardId, language, { promo = false } = {}) => {
     const cardData = getMatcher().getCardData(cardId);
     if (!cardData) return;
     const defaults = batchDefaultsRef.current;
     addEntries([{
       cardId, quantity: 1, language, condition: defaults.condition,
-      foil: isFoilOnly(cardData) || defaults.foil, promo: false,
+      foil: isFoilOnly(cardData) || defaults.foil, promo: !!promo,
     }]);
-    showNotification(`+ ${getLocalizedName(cardData, language)}`, 'success');
+    showNotification(`+ ${getLocalizedName(cardData, language)}${promo ? ` (${tx('Promo')})` : ''}`, 'success');
   }, [showNotification, addEntries]);
 
   // Add multiple cards to export list at once
@@ -597,6 +603,7 @@ export default function useAppController() {
     handleClearAll,
     handleAddCardToExport,
     handleAddCopy,
+    handleRemoveCopy,
     handleAddCardsToExport,
     handleExport,
   };

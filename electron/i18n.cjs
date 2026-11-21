@@ -22,6 +22,7 @@ const EN = {
   'Cartes': 'Cards',
   'Traductions françaises': 'French translations',
   'Cartes bannies': 'Banned cards',
+  'Rulings': 'Rulings',
   'liste des cartes retirées invalide': 'invalid list of removed cards',
   'nom de fichier refusé ({rel})': 'file name refused ({rel})',
   'fichier altéré ({rel})': 'file altered ({rel})',

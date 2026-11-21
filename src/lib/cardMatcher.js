@@ -96,6 +96,11 @@ export function toCardData(c) {
     illustrator: c.illustrator,
     text: c.text,
     errata: c.errata || null,
+    // prints of one card (rifthunt, « Impressions et variantes »)
+    oracle: c.oracle || null,
+    variant: c.variant || null,
+    printLabel: c.printLabel || null,
+    power: c.power || null, // recycle cost (runes of the card's domain)
   };
 }
 
@@ -161,6 +166,8 @@ class CardMatcher {
     this.entries = this.cards; // index → card (catalog first, then learned examples)
     // AI signatures of the catalog (checked here; the engine loads in startAI)
     this._aiHeader = data.embeddings || null;
+    // Rulings of Riftbound FAQ (content layer « rulings », src/lib/rulings.js)
+    this.rulings = data.rulings || null;
     this._aiVecs = null;
     this._aiCatalogError = null;
     try {

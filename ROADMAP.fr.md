@@ -225,6 +225,9 @@ Gel des fonctionnalités jusqu'à la 2.1.0 et aux premiers retours des amis : se
 - [x] Partie 2 · Contenu des cartes hors de la copie publique (`npm run public:export`, `npm run content:import`, tests et version sans / avec contenu) — contenu sauvegardé dans `../sauvegarde-contenu` (21/11)
 - [x] Partie 2 · Données personnelles nettoyées, recherche de secrets (gitleaks : rien de réel), **dépôt public https://github.com/FaZox/RiftMancer** publié le 21/11/2026 (historique neuf, adresse e-mail masquée, 465 fichiers)
 - [x] **Cartes au premier lancement** (21/11) : une appli sans le contenu des cartes démarre avec l’en-tête du catalogue seulement (`public/catalog-base.json`) et propose « Télécharger les cartes » (galerie officielle) ou « Importer un dossier… » (une sauvegarde, une clé USB) ; le téléphone les reçoit du PC
+- [x] **rifthunt en priorité** (21/11) : cartes, cartes bannies et liens Cardmarket depuis api.rifthunt.com, les anciennes sources (galerie Riot, page des règles de tournoi, Riftcodex) en secours
+- [x] **Impressions et promos** (21/11) : les 318 impressions manquantes (ensembles promos PR, OPP, JDG, RWB, SGN, KDA ; signatures, showcases, alternatives), une section « Impressions et variantes » dans la fiche de la carte, prix Cardmarket propre à chaque impression
+- [x] **Rulings** (21/11) : les rulings de riftboundfaq.com (via rifthunt, CC BY-SA 4.0, non officiels, en anglais) dans la fiche de la carte, questions qui s’ouvrent pour montrer la réponse
 - [ ] Facultatif : traductions françaises : demander à riftboundfr.fr
 
 ## Phase 12 — Scanner par grille

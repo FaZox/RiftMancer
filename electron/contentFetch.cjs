@@ -21,6 +21,11 @@ const ALLOWED = [
   /^https:\/\/riftbound\.leagueoflegends\.com\/[a-z]{2}-[a-z]{2}\/card-gallery\/?$/, // its former address (redirects to the one above)
   /^https:\/\/cmsassets\.rgpub\.io\/[\w./%-]+\.(png|jpe?g|webp)$/,
   /^https:\/\/riftboundfr\.fr\/(repertoire-cartes|textes-cartes)\.json$/,
+  // rifthunt.com, first source of the cards and banned cards (src/lib/rifthunt.js)
+  /^https:\/\/api\.rifthunt\.com\/bulk\/(cards|rulings)$/,
+  /^https:\/\/api\.rifthunt\.com\/cards\/search\?q=banned%3A(standard|2v2|upcoming)$/,
+  // pictures of the printings Riot's server has not (promos, variants): rifthuntImage()
+  /^https:\/\/images\.rifthunt\.com\/cards\/large\/front\/[a-z0-9]{2,8}\/[a-z0-9]{1,8}\/[a-z0-9-]{1,120}\.webp\?v=[0-9a-f]{6,64}$/,
 ];
 const MAX_BYTES = 30 * 1024 * 1024;
 const MAX_REDIRECTS = 3;

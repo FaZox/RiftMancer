@@ -106,7 +106,7 @@ test('« Revenir au contenu d’origine » removes every layer', () => {
   content.install('cartes', cardsLayer(), { 'cards/vnd-001-221.webp': Buffer.from('x') });
   content.install('bannies', { createdAt: '2026-11-23T10:00:00.000Z', data: { version: 2, updatedAt: '2026-11-23', formats: { standard: { banned: [] } } } });
   const s = content.reset();
-  assert.deepEqual(s.layers, { cartes: null, traductions: null, bannies: null });
+  assert.deepEqual(s.layers, { cartes: null, traductions: null, bannies: null, rulings: null });
   assert.equal(content.resolve('/card-hashes.json'), null);
   assert.equal(content.resolve('/banlist.json'), null);
   assert.equal(content.resolve('/cards/vnd-001-221.webp'), null);
@@ -120,7 +120,7 @@ test('a new app version with a more recent base removes the older layers', () =>
   fs.writeFileSync(path.join(a.dist, 'card-hashes.json'), JSON.stringify({ ...read(path.join(a.dist, 'card-hashes.json')), generatedAt: '2026-12-01T00:00:00.000Z' }));
   fs.writeFileSync(path.join(a.dist, 'banlist.json'), JSON.stringify({ version: 2, updatedAt: '2026-11-23', formats: { standard: { banned: [] } } }));
   const s = a.content.rebuild();
-  assert.deepEqual(s.layers, { cartes: null, traductions: null, bannies: null });
+  assert.deepEqual(s.layers, { cartes: null, traductions: null, bannies: null, rulings: null });
   assert.equal(s.messages.length, 2);
   assert.match(s.messages[0].text, /déjà dans cette version de l’appli, elle a été retirée/);
   assert.equal(fs.existsSync(path.join(a.root, 'catalogue', 'couches', 'cartes')), false);

@@ -35,3 +35,10 @@ test('npm test runs every test file, and sets aside only those that need the car
   assert.equal(needsCardContent(read('./i18n.test.mjs')), false);
   assert.equal(needsCardContent(read('./gridScan.test.mjs')), false);
 });
+
+test('the game symbols (rarity gems, Might) stay out of the public repository; the app keeps its own signs without them', () => {
+  for (const f of ['public/sym/might.svg', 'public/sym/rarity-rare.png', 'public/sym/fury.svg', 'public/sym/wild.svg', 'public/sym/exhaust.svg']) assert.ok(excludedReason(f), f);
+  const symbols = readFileSync(new URL('../src/lib/symbols.js', import.meta.url), 'utf8');
+  assert.match(symbols, /const rarityIcon = \(rarity\) => \(ready &&/);
+  assert.match(readFileSync(new URL('../src/lib/cardLocale.js', import.meta.url), 'utf8'), /key === 'might' && symbolsReady\(\)\) return mask/);
+});

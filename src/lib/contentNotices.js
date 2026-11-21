@@ -8,7 +8,8 @@
 import { useEffect, useState } from 'react';
 import { getMatcher } from './cardMatcher.js';
 import { FR_URLS, buildTranslations, readFrFile, translationChanges } from './frTranslations.js';
-import { GALLERY_URL, extractGalleryCards, galleryChanges } from './galleryCards.js';import { tx } from './i18n.js';
+import { GALLERY_URL } from './galleryCards.js';
+import { RIFTHUNT_CARDS_URL, cardSourceChanges } from './rifthunt.js';import { tx } from './i18n.js';
 
 
 let notices = {}; // cartes: { count, added, page, validators } · traductions: { count, files, validators } · reminder: { kind, text }
@@ -36,11 +37,22 @@ export async function runWeeklyChecks(api = window.riftboundDesktop) {
   if (!api?.content?.weeklyCheck) return;
   // New cards (lot 4.2): « N nouvelles cartes disponibles », nothing downloaded without a click.
   try {
-    const r = await api.content.weeklyCheck('cartes', [GALLERY_URL]);
+    const r = await api.content.weeklyCheck('cartes', [RIFTHUNT_CARDS_URL], [GALLERY_URL]);
     if (r.ok) {
-      const ch = galleryChanges(extractGalleryCards(r.texts[0]), getMatcher().cards);
-      const count = ch.added.length + ch.changed.length + ch.manualOfficial.length;
-      if (count) set({ cartes: { count, added: ch.added.length, page: r.texts[0], validators: r.validators } });
+      let page = r.texts[0];
+      let ch;
+      try {
+        ch = cardSourceChanges(page, getMatcher().cards);
+      } catch (err) {
+        // rifthunt answered something unreadable: Riot's gallery
+        if (r.url === GALLERY_URL) throw err;
+        const g = await api.content.fetch(GALLERY_URL);
+        if (!g.ok) return;
+        page = g.text;
+        ch = cardSourceChanges(page, getMatcher().cards);
+      }
+      const count = ch.added.length + ch.changed.length + ch.manualOfficial.length + (ch.links?.length || 0);
+      if (count) set({ cartes: { count, added: ch.added.length, page, validators: r.validators } });
       else await api.content.saveValidators('cartes', r.validators);
     }
   } catch (err) {

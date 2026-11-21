@@ -34,7 +34,7 @@ const canonDetector = (sha) => SAME_DETECTOR[sha] || sha || null;
 const MAX_PACK = 600 * 1024 * 1024;
 const MAX_ENTRIES = 12000;
 const MAX_MANIFEST = 4 * 1024 * 1024;
-const KINDS = ['cartes', 'traductions', 'bannies'];
+const KINDS = ['cartes', 'traductions', 'bannies', 'rulings'];
 const ENTRY = /^(manifest\.json|manifest\.sig|couches\/(cartes|traductions|bannies)\/layer\.json|couches\/cartes\/cards\/(thumbs\/)?[a-z0-9][a-z0-9-]{1,60}\.webp)$/;
 const sha256 = (buf) => crypto.createHash('sha256').update(buf).digest('hex');
 

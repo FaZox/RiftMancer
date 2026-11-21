@@ -225,6 +225,9 @@ Feature freeze until 2.1.0 and the friends’ first feedback: only these correct
 - [x] Part 2 · Card content out of the public copy (`npm run public:export`, `npm run content:import`, tests and release without / with content) — content backed up in `../sauvegarde-contenu` (21/11)
 - [x] Part 2 · Personal data cleaned, secrets search (gitleaks: nothing real), **public repository https://github.com/FaZox/RiftMancer** published on 21/11/2026 (fresh history, masked e-mail address, 465 files)
 - [x] **Cards on first launch** (21/11): an app without the card content starts with the catalog header only (`public/catalog-base.json`) and offers « Download the cards » (official gallery) or « Import a folder… » (a backup, a USB key); the phone gets them from the PC
+- [x] **rifthunt first** (21/11): cards, banned cards and Cardmarket links from api.rifthunt.com, the former sources (Riot gallery, tournament rules page, Riftcodex) as fallback
+- [x] **Prints and promos** (21/11): the 318 missing printings (promo sets PR, OPP, JDG, RWB, SGN, KDA; signatures, showcases, alternates), a « Prints & variants » section in the card sheet, own Cardmarket price per printing
+- [x] **Rulings** (21/11): riftboundfaq.com rulings (via rifthunt, CC BY-SA 4.0, unofficial, English) in the card sheet, questions that open to show the answer
 - [ ] Optional: French translations: ask riftboundfr.fr
 
 ## Phase 12 — Grid scanner

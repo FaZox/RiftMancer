@@ -1,8 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Ban, FileUp, FolderInput, Languages, Layers, Pencil, RefreshCw, RotateCcw } from 'lucide-react';
+import { Ban, BookOpen, FileUp, FolderInput, Languages, Layers, Pencil, RefreshCw, RotateCcw } from 'lucide-react';
+import { RULINGS_URL, parseRulings, buildRulings, rulingsLayer } from '../../lib/rulings.js';
+import { RIFTHUNT_CARDS_URL, parseRifthuntCards } from '../../lib/rifthunt.js';
 import { BanEditSheet, BanUpdateSheet } from './BanUpdate.jsx';
 import TranslationsSheet from './TranslationsUpdate.jsx';
 import CardsUpdateSheet from './CardsUpdate.jsx';
+import PricesCard from './PricesCard.jsx';
 import PacksRow from './PackUpdate.jsx';
 import { useContentNotices, clearNotice } from '../../lib/contentNotices.js';
 import { SectionCard } from '../common/SectionCard.jsx';
@@ -23,7 +26,7 @@ const day = (d) => (d ? new Date(d).toLocaleDateString(locale(), { day: 'numeric
 const n = (x) => (x ?? 0).toLocaleString(locale());
 const SHIPPED = tx('contenu livré avec l’appli');
 
-const SOURCE_LABEL = { 'galerie officielle Riot': tx('galerie officielle Riot'), 'dossier importé': tx('dossier importé') };
+const SOURCE_LABEL = { 'galerie officielle Riot': tx('galerie officielle Riot'), 'dossier importé': tx('dossier importé'), 'règlement officiel des tournois': tx('règlement officiel des tournois') };
 function sourceLine(layer, fallback) {
   if (!layer) return tx('Source : {fallback}', { fallback });
   // labels written by the app in French (« galerie officielle Riot », « dossier importé »): shown in the app's language
@@ -51,6 +54,17 @@ export function ContentCards({ info, actions = {}, cardsStatus = null }) {
         <p className="text-[14px] text-rift-200">{banSummary(info.banlist).text}</p>
         <p className="text-[13px] text-rift-400 mt-0.5">{sourceLine(L.bannies, tx('règlement officiel des tournois, {SHIPPED}', { SHIPPED }))}</p>
         {actions.bannies}
+      </SectionCard>
+      <SectionCard icon={BookOpen} title={tx('Rulings')} status={info.rulings ? <span className="text-state-ok">{tx('Installés')}</span> : null}>
+        <p className="text-[14px] text-rift-200">
+          {info.rulings
+            ? tx('{count} rulings sur {cards} cartes', { count: n(info.rulings.count), cards: n(info.rulings.cards) })
+            : tx('Les questions et réponses de Riftbound FAQ, dans la fiche de chaque carte (en anglais).')}
+        </p>
+        <p className="text-[13px] text-rift-400 mt-0.5">
+          {tx('Riftbound FAQ (riftboundfaq.com), Christian « Near » Ivicevic · licence CC BY-SA 4.0 · non officiel · via rifthunt.com')}
+        </p>
+        {actions.rulings}
       </SectionCard>
     </>
   );
@@ -93,6 +107,26 @@ function PcContent() {
     return api.content.reset();
   });
   const importFolder = () => run(async () => (await api.content.importFolder()) || info);
+  // Rulings: rifthunt's file, the cards found through its printings (by name when its card file does not answer)
+  const [rulingsMsg, setRulingsMsg] = useState(null);
+  const updateRulings = () => run(async () => {
+    setRulingsMsg(tx('Lecture des rulings…'));
+    try {
+      const r = await api.content.fetch(RULINGS_URL);
+      if (!r.ok) throw new Error(r.message || tx('Les rulings n’ont pas pu être lus.'));
+      let printings = null;
+      const c = await api.content.fetch(RIFTHUNT_CARDS_URL);
+      if (c.ok) { try { printings = parseRifthuntCards(c.text); } catch { /* by name */ } }
+      const { data, unknown } = buildRulings(parseRulings(r.text), getMatcher().cards, printings);
+      const s = await api.content.install('rulings', rulingsLayer(data));
+      const count = data.cards.reduce((k, e) => k + e.rulings.length, 0);
+      setRulingsMsg(tx('{count} rulings installés sur {cards} cartes.', { count, cards: data.cards.length }) + (unknown.length ? ` ${tx('{n} cartes de la FAQ absentes du catalogue.', { n: unknown.length })}` : ''));
+      return s;
+    } catch (err) {
+      setRulingsMsg(null);
+      throw err;
+    }
+  });
   const restoreBans = () => run(async () => {
     if (!await ask({ title: tx('Restaurer la liste précédente ?'), message: tx('La liste des cartes bannies installée avant celle-ci reprend sa place.'), confirmLabel: tx('Restaurer') })) return info;
     return api.content.restorePrevious('bannies');
@@ -146,7 +180,16 @@ function PcContent() {
             <button onClick={() => setSheet('bansManual')} className="btn-ghost text-[13px] py-2 px-3"><Pencil className="w-4 h-4" /> {tx('Modifier à la main')}</button>
           </div>
         ),
+        rulings: (
+          <>
+            {rulingsMsg && <p className="text-[13px] text-state-ok mt-2">{rulingsMsg}</p>}
+            <div className="flex flex-wrap justify-end gap-2 mt-3">
+              <button onClick={updateRulings} className="btn-secondary text-[13px] py-2 px-3"><RefreshCw className="w-4 h-4" /> {info.rulings ? tx('Mettre à jour') : tx('Installer')}</button>
+            </div>
+          </>
+        ),
       }} />
+      <PricesCard />
       <BanUpdateSheet open={sheet === 'bans'} onClose={() => setSheet(null)} onManual={() => setSheet('bansManual')} />
       <BanEditSheet open={sheet === 'bansManual'} onClose={() => setSheet(null)} />
       <PacksRow info={info} />
@@ -177,6 +220,7 @@ function PhoneContent() {
     base: { generatedAt: ci.generatedAt },
     banlist: { updatedAt: bl.updatedAt, formats: bl.formats },
     layers: ci.content || {},
+    rulings: m.rulings ? { cards: m.rulings.cards.length, count: m.rulings.cards.reduce((k, e) => k + e.rulings.length, 0) } : null,
   };
   return (
     <div className="space-y-4">
@@ -184,6 +228,7 @@ function PhoneContent() {
       {received && m.catalogInfo?.source === 'downloaded' && <p className="text-[13px] text-rift-400">{tx('Reçu du PC le')} {day(received)}.</p>}
       {m.catalogInfo?.ignored && <Banner tone="warn">{tx('Catalogue du PC ignoré (')}{m.catalogInfo.ignored}{tx(') : celui de l’appli est utilisé.')}</Banner>}
       <ContentCards info={info} />
+      <PricesCard />
     </div>
   );
 }
