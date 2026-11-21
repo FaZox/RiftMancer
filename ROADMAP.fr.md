@@ -223,7 +223,8 @@ Gel des fonctionnalités jusqu'à la 2.1.0 et aux premiers retours des amis : se
 - [x] **Licence : GNU AGPL-3.0** (21/11) : le détecteur est entraîné avec Ultralytics YOLO11 (AGPL-3.0) ; avis MIT du projet d’origine gardé
 - [x] **Partie 2 · Renommage en RiftMancer** (21/11) : nom affiché partout, identifiant Android `com.riftmancer.app`, dossier de données PC repris au premier lancement
 - [x] Partie 2 · Contenu des cartes hors de la copie publique (`npm run public:export`, `npm run content:import`, tests et version sans / avec contenu) — contenu sauvegardé dans `../sauvegarde-contenu` (21/11)
-- [ ] Partie 2 · Données personnelles, recherche de secrets, nouveau dépôt à l'historique neuf (adresse e-mail masquée, traductions à décider) ; facultatif : contenu des cartes téléchargé par l'appli au premier lancement
+- [x] Partie 2 · Données personnelles nettoyées, recherche de secrets (gitleaks : rien de réel), **dépôt public https://github.com/FaZox/RiftMancer** publié le 21/11/2026 (historique neuf, adresse e-mail masquée, 465 fichiers)
+- [ ] Facultatif : contenu des cartes téléchargé par l'appli au premier lancement ; traductions françaises : demander à riftboundfr.fr
 
 ## Phase 12 — Scanner par grille
 

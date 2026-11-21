@@ -132,12 +132,13 @@ test('release:check refuses a package with something forbidden, a test version o
   const pc = mkdtempSync(join(tmpdir(), 'rb-win-'));
   try {
     const put = (name, content) => writeFileSync(join(dir, name), content);
-    const sums = () => put('EMPREINTES.txt', R.checksumsText(['Riftbound-Scanner-2.1.0.apk', 'Riftbound-Scanner-Setup-2.1.0.exe', 'NOUVEAUTES.txt', 'LICENSE.txt', 'THIRD_PARTY_LICENSES.txt']
+    const sums = () => put('EMPREINTES.txt', R.checksumsText(['Riftbound-Scanner-2.1.0.apk', 'Riftbound-Scanner-Setup-2.1.0.exe', 'NOUVEAUTES.txt', 'LICENSE.txt', 'NOTICE.txt', 'THIRD_PARTY_LICENSES.txt']
       .filter(f => existsSync(join(dir, f))).map(name => ({ name, sha256: R.sha256(readFileSync(join(dir, name))) }))));
-    put('Riftbound-Scanner-2.1.0.apk', makeZip([['assets/public/models/yolo11s-pose-riftbound-dyn.onnx', 'm', false], ['assets/public/LICENSE.txt', 'l', false]]));
+    put('Riftbound-Scanner-2.1.0.apk', makeZip([['assets/public/models/yolo11s-pose-riftbound-dyn.onnx', 'm', false], ['assets/public/LICENSE.txt', 'l', false], ['assets/public/NOTICE.txt', 'n', false]]));
     put('Riftbound-Scanner-Setup-2.1.0.exe', 'MZ');
     put('NOUVEAUTES.txt', 'n');
-    put('LICENSE.txt', `${R.APP_LICENCE_TITLE}\r\n\r\n${R.ORIGIN_COPYRIGHT}\r\n`);
+    put('LICENSE.txt', `${R.APP_LICENCE_TITLE}\r\n`);
+    put('NOTICE.txt', `${R.ORIGIN_COPYRIGHT}\r\n`);
     put('THIRD_PARTY_LICENSES.txt', 't');
     sums();
     rmSync(pc, { recursive: true }); // no win-unpacked: said, not a failure
@@ -149,17 +150,18 @@ test('release:check refuses a package with something forbidden, a test version o
     const res = join(pc, 'resources');
     mkdirSync(res, { recursive: true });
     writeFileSync(join(res, 'LICENSE.txt'), 'l');
-    writeFileSync(join(res, 'app.asar'), makeAsar({ 'package.json': '{"version":"2.1.0","variant":"daily"}', 'dist/LICENSE.txt': 'l', 'dist/collection.sqlite': 'x' }));
+    writeFileSync(join(res, 'NOTICE.txt'), 'n');
+    writeFileSync(join(res, 'app.asar'), makeAsar({ 'package.json': '{"version":"2.1.0","variant":"daily"}', 'dist/LICENSE.txt': 'l', 'dist/NOTICE.txt': 'n', 'dist/collection.sqlite': 'x' }));
     r = R.checkReleaseDir(dir, { version: '2.1.0', winUnpacked: pc });
     assert.deepEqual(r.problems, ['appli PC → dist/collection.sqlite : base de données']);
 
-    writeFileSync(join(res, 'app.asar'), makeAsar({ 'package.json': '{"version":"2.1.0","variant":"daily"}', 'dist/LICENSE.txt': 'l' }));
-    put('Riftbound-Scanner-2.1.0.apk', makeZip([['assets/public/models/yolo11s-pose-riftbound-dyn-test.onnx', 'm', false], ['assets/public/LICENSE.txt', 'l', false]]));
+    writeFileSync(join(res, 'app.asar'), makeAsar({ 'package.json': '{"version":"2.1.0","variant":"daily"}', 'dist/LICENSE.txt': 'l', 'dist/NOTICE.txt': 'n' }));
+    put('Riftbound-Scanner-2.1.0.apk', makeZip([['assets/public/models/yolo11s-pose-riftbound-dyn-test.onnx', 'm', false], ['assets/public/LICENSE.txt', 'l', false], ['assets/public/NOTICE.txt', 'n', false]]));
     sums();
     r = R.checkReleaseDir(dir, { version: '2.1.0', winUnpacked: pc });
     assert.deepEqual(r.problems, ['Riftbound-Scanner-2.1.0.apk → assets/public/models/yolo11s-pose-riftbound-dyn-test.onnx : modèle d’essai (version de test)']);
 
-    put('Riftbound-Scanner-2.1.0.apk', makeZip([['assets/public/index.html', 'x', true], ['assets/public/LICENSE.txt', 'l', false]]));
+    put('Riftbound-Scanner-2.1.0.apk', makeZip([['assets/public/index.html', 'x', true], ['assets/public/LICENSE.txt', 'l', false], ['assets/public/NOTICE.txt', 'n', false]]));
     put('keystore.properties', 'x');
     put('Riftbound-Scanner-Test.apk', makeZip([]));
     r = R.checkReleaseDir(dir, { version: '2.1.0', winUnpacked: pc });
@@ -203,52 +205,61 @@ test('installed apps: not debuggable, no WebView inspection, no backup, no devel
 });
 
 // ─── LICENCE-ET-PUBLICATION.md, part 1: the MIT licence of the original project in every copy ───
-test('LICENSE: the app under the AGPL-3.0 (full text), the original MIT notice word for word, the note on Riot outside both', () => {
+test('LICENSE: the AGPL-3.0 text alone (GitHub recognises it); NOTICE: the app, the original MIT notice word for word, Riot', () => {
   const lic = read('LICENSE').replace(/\r\n/g, '\n');
-  const lines = lic.split('\n');
+  assert.match(lic, /^ {20}GNU AFFERO GENERAL PUBLIC LICENSE\n {23}Version 3, 19 November 2007\n/, 'LICENSE starts with the AGPL text');
+  assert.ok(lic.trimEnd().endsWith('<https://www.gnu.org/licenses/>.'), 'and holds nothing else');
+  assert.ok(lic.includes('END OF TERMS AND CONDITIONS'), 'AGPL text complete');
+  assert.ok(!lic.includes('Nekoraru22') && !lic.includes('Riot'));
+  assert.equal(pkg.license, 'AGPL-3.0-or-later');
+  const notice = read('NOTICE').replace(/\r\n/g, '\n');
+  const lines = notice.split('\n');
   assert.equal(lines[0], 'RiftMancer');
   assert.equal(lines[1], 'Copyright (C) 2026 FaZox');
-  assert.match(lic, /under the terms of the GNU Affero General Public License as published\nby the Free Software Foundation, either version 3 of the License, or\n\(at your option\) any later version\./);
-  assert.match(lic, /^ {20}GNU AFFERO GENERAL PUBLIC LICENSE\n {23}Version 3, 19 November 2007$/m, 'full AGPL text');
-  assert.ok(lic.includes('END OF TERMS AND CONDITIONS'), 'AGPL text complete');
-  assert.equal(pkg.license, 'AGPL-3.0-or-later');
-  assert.match(lic, new RegExp(`^ {4}${R.ORIGIN_COPYRIGHT.replace(/[()]/g, '\\$&')}$`, 'm'), 'the line of the original project, unchanged');
-  assert.match(read('THIRD_PARTY_LICENSES.md'), /## Ultralytics YOLO11 — AGPL-3\.0/);
-  assert.match(lic, /Permission is hereby granted, free of charge, to any person obtaining a copy\n {4}of this software/);
-  assert.match(lic, /The above copyright notice and this permission notice shall be included in all\n {4}copies or substantial portions of the Software\./);
-  const end = lic.indexOf('OTHER DEALINGS IN THE\n    SOFTWARE.');
+  assert.match(notice, /either version 3 of the License, or\n\(at your option\) any later version\./);
+  assert.match(notice, new RegExp(`^ {4}${R.ORIGIN_COPYRIGHT.replace(/[()]/g, '\\$&')}$`, 'm'), 'the line of the original project, unchanged');
+  assert.match(notice, /Permission is hereby granted, free of charge, to any person obtaining a copy\n {4}of this software/);
+  assert.match(notice, /The above copyright notice and this permission notice shall be included in all\n {4}copies or substantial portions of the Software\./);
+  const end = notice.indexOf('OTHER DEALINGS IN THE\n    SOFTWARE.');
   assert.ok(end > 0, 'MIT text complete');
-  assert.ok(lic.indexOf('Riot Games') > end && lic.indexOf('Riot Games') < lic.indexOf('GNU AFFERO GENERAL PUBLIC LICENSE\n'), 'the sentence on Riot is outside both licence texts');
+  assert.ok(notice.indexOf('Riot Games') > end, 'the sentence on Riot is outside the MIT text');
+  assert.match(read('THIRD_PARTY_LICENSES.md'), /## Ultralytics YOLO11 — AGPL-3\.0/);
   const third = read('THIRD_PARTY_LICENSES.md');
   assert.match(third, /## riftbound-scanner \(Nekoraru22\) — MIT/);
   assert.ok(third.includes(R.ORIGIN_COPYRIGHT) && third.includes('Permission is hereby granted'), 'full MIT text in the third-party licences');
   assert.match(read('README.md'), /^# RiftMancer\r?\n\r?\n> Based on \[riftbound-scanner\]\(https:\/\/github\.com\/Nekoraru22\/riftbound-scanner\) by Nekoraru22 \(MIT licence\)/);
-  assert.match(read('scripts/copy-ort.mjs'), /join\(root, 'LICENSE'\), join\(root, 'public', 'LICENSE\.txt'\)/, 'shipped in the app (PC and APK)');
-  assert.deepEqual(pkg.build.extraResources.map(r => r.from), ['LICENSE', 'THIRD_PARTY_LICENSES.md'], 'next to the installed PC app');
+  const copy = read('scripts/copy-ort.mjs');
+  assert.match(copy, /join\(root, 'LICENSE'\), join\(root, 'public', 'LICENSE\.txt'\)/, 'shipped in the app (PC and APK)');
+  assert.match(copy, /join\(root, 'NOTICE'\), join\(root, 'public', 'NOTICE\.txt'\)/);
+  assert.deepEqual(pkg.build.extraResources.map(r => r.from), ['LICENSE', 'NOTICE', 'THIRD_PARTY_LICENSES.md'], 'next to the installed PC app');
   assert.match(read('scripts/release.mjs'), /join\(out, 'LICENSE\.txt'\)/);
+  assert.match(read('scripts/release.mjs'), /join\(out, 'NOTICE\.txt'\)/);
 });
 
 test('release:check refuses a package without the licence, or with a licence lacking the original line', () => {
   const dir = mkdtempSync(join(tmpdir(), 'rb-licence-'));
   try {
     const put = (name, content) => writeFileSync(join(dir, name), content);
-    const sums = () => put('EMPREINTES.txt', R.checksumsText(['Riftbound-Scanner-2.1.1.apk', 'LICENSE.txt', 'THIRD_PARTY_LICENSES.txt']
+    const sums = () => put('EMPREINTES.txt', R.checksumsText(['Riftbound-Scanner-2.1.1.apk', 'LICENSE.txt', 'NOTICE.txt', 'THIRD_PARTY_LICENSES.txt']
       .filter(f => existsSync(join(dir, f))).map(name => ({ name, sha256: R.sha256(readFileSync(join(dir, name))) }))));
     put('Riftbound-Scanner-2.1.1.apk', makeZip([['assets/public/index.html', 'x', false]]));
     sums();
     let r = R.checkReleaseDir(dir, { version: '2.1.1' });
     assert.ok(r.problems.some(p => p.startsWith('LICENSE.txt manquant')));
+    assert.ok(r.problems.some(p => p.startsWith('NOTICE.txt manquant')));
     assert.ok(r.problems.some(p => p.startsWith('THIRD_PARTY_LICENSES.txt manquant')));
     assert.ok(r.problems.includes('Riftbound-Scanner-2.1.1.apk : LICENSE.txt absent de l’appli (Réglages → À propos → Licences)'));
 
-    put('LICENSE.txt', `${R.APP_LICENCE_TITLE}\r\n\r\nCopyright (C) 2026 FaZox\r\n`); // the original line forgotten
+    put('LICENSE.txt', `${R.APP_LICENCE_TITLE}\r\n`);
+    put('NOTICE.txt', 'RiftMancer\r\nCopyright (C) 2026 FaZox\r\n'); // the original line forgotten
     put('THIRD_PARTY_LICENSES.txt', 't');
-    put('Riftbound-Scanner-2.1.1.apk', makeZip([['assets/public/index.html', 'x', false], ['assets/public/LICENSE.txt', 'l', false]]));
+    put('Riftbound-Scanner-2.1.1.apk', makeZip([['assets/public/index.html', 'x', false], ['assets/public/LICENSE.txt', 'l', false], ['assets/public/NOTICE.txt', 'n', false]]));
     sums();
     r = R.checkReleaseDir(dir, { version: '2.1.1' });
-    assert.deepEqual(r.problems, [`LICENSE.txt : ligne « ${R.ORIGIN_COPYRIGHT} » absente`]);
+    assert.deepEqual(r.problems, [`NOTICE.txt : ligne « ${R.ORIGIN_COPYRIGHT} » absente`]);
 
     put('LICENSE.txt', read('LICENSE').replace(/\r?\n/g, '\r\n'));
+    put('NOTICE.txt', read('NOTICE').replace(/\r?\n/g, '\r\n'));
     sums();
     assert.deepEqual(R.checkReleaseDir(dir, { version: '2.1.1' }).problems, []);
   } finally {
@@ -264,7 +275,9 @@ test('Réglages → À propos: credit to Nekoraru22 with the link, Riot Games me
   assert.ok(about.includes('RiftMancer a été créé selon la politique « Legal Jibber Jabber » de Riot Games en utilisant des éléments appartenant à Riot Games. Riot Games ne soutient ni ne sponsorise ce projet.'));
   assert.ok(about.includes('Riot Games does not endorse or sponsor this project.'));
   assert.ok(about.includes('Projet de fan gratuit et non commercial.'));
-  assert.match(read('src/components/settings/RecognitionSection.jsx'), /read\('\/LICENSE\.txt'\)/, '« Licences » shows the app licence too');
+  const licences = read('src/components/settings/RecognitionSection.jsx');
+  assert.match(licences, /read\('\/LICENSE\.txt'\)/, '« Licences » shows the app licence too');
+  assert.match(licences, /read\('\/NOTICE\.txt'\)/, 'and its notice');
   const guide = read('docs/LISEZ-MOI-AMIS.md');
   assert.ok(guide.includes('Riot Games does not endorse or sponsor this project.') && guide.includes('Nekoraru22'));
 });

@@ -90,6 +90,7 @@
     "electronDist": "node_modules/electron/dist",
     "extraResources": [
       { "from": "LICENSE", "to": "LICENSE.txt" },
+      { "from": "NOTICE", "to": "NOTICE.txt" },
       { "from": "THIRD_PARTY_LICENSES.md", "to": "THIRD_PARTY_LICENSES.md" }
     ],
     "files": [

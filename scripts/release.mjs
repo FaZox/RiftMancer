@@ -6,7 +6,8 @@
  *   RiftMancer-<version>.apk                Android app, signed with the distribution key
  *   NOUVEAUTES.txt / WHATS-NEW.txt          section « ## <version> » of docs/NOUVEAUTES.md / docs/WHATS-NEW.md
  *   LISEZ-MOI-AMIS.txt / FRIENDS-GUIDE.txt  docs/LISEZ-MOI-AMIS.md / docs/FRIENDS-GUIDE.md (lot 11.1)
- *   LICENSE.txt                             LICENSE (MIT of the original project: in every copy)
+ *   LICENSE.txt                             LICENSE (GNU AGPL-3.0)
+ *   NOTICE.txt                              NOTICE (MIT notice of the original project: in every copy)
  *   THIRD_PARTY_LICENSES.txt                THIRD_PARTY_LICENSES.md
  *   EMPREINTES.txt                          SHA-256 of every file
  * Steps: clean Git tree, version higher than every one distributed (tags v*),
@@ -22,7 +23,7 @@
 import { execSync, spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { checkReleaseDir, checksumsText, releaseNotes, sha256, versionProblem, versionsIn, ORIGIN_COPYRIGHT } from './lib/release.mjs';
+import { checkReleaseDir, checksumsText, releaseNotes, sha256, versionProblem, versionsIn, ORIGIN_COPYRIGHT, APP_LICENCE_TITLE } from './lib/release.mjs';
 import { hasCardContent } from './lib/content.mjs';
 
 const args = process.argv.slice(2);
@@ -66,7 +67,8 @@ if (!existsSync('docs/LISEZ-MOI-AMIS.md')) fail('Guide docs/LISEZ-MOI-AMIS.md in
 // The card content is not in the public repository (scripts/lib/content.mjs): a version for friends needs it
 if (!hasCardContent(process.cwd())) fail('Contenu des cartes absent (public/card-hashes.json, public/cards/) : npm run content:import -- <dossier>, ou npm run catalog:update.');
 if (!existsSync('docs/FRIENDS-GUIDE.md')) fail('Guide docs/FRIENDS-GUIDE.md introuvable.');
-if (!existsSync('LICENSE') || !readFileSync('LICENSE', 'utf8').includes(ORIGIN_COPYRIGHT)) fail(`Fichier LICENSE absent ou sans la ligne « ${ORIGIN_COPYRIGHT} » du projet d’origine (LICENCE-ET-PUBLICATION.md).`);
+if (!existsSync('LICENSE') || !readFileSync('LICENSE', 'utf8').includes(APP_LICENCE_TITLE)) fail('Fichier LICENSE absent ou sans le texte de la licence AGPL-3.0.');
+if (!existsSync('NOTICE') || !readFileSync('NOTICE', 'utf8').includes(ORIGIN_COPYRIGHT)) fail(`Fichier NOTICE absent ou sans la ligne « ${ORIGIN_COPYRIGHT} » du projet d’origine (LICENCE-ET-PUBLICATION.md).`);
 if (!existsSync(resolve('android', 'keystore.properties')) && !process.env.RB_KEYSTORE) {
   fail('Pas de clé de signature (android/keystore.properties) : voir l’annexe A d’AMELIORATIONS-APPLI.md.');
 }
@@ -101,6 +103,7 @@ try {
   writeFileSync(join(out, 'LISEZ-MOI-AMIS.txt'), crlf(readFileSync('docs/LISEZ-MOI-AMIS.md', 'utf8')));
   writeFileSync(join(out, 'FRIENDS-GUIDE.txt'), crlf(readFileSync('docs/FRIENDS-GUIDE.md', 'utf8')));
   writeFileSync(join(out, 'LICENSE.txt'), crlf(readFileSync('LICENSE', 'utf8')));
+  writeFileSync(join(out, 'NOTICE.txt'), crlf(readFileSync('NOTICE', 'utf8')));
   writeFileSync(join(out, 'THIRD_PARTY_LICENSES.txt'), crlf(readFileSync('THIRD_PARTY_LICENSES.md', 'utf8')));
   const files = readdirSync(out).sort().map(name => ({ name, sha256: sha256(readFileSync(join(out, name))) }));
   writeFileSync(join(out, 'EMPREINTES.txt'), checksumsText(files));

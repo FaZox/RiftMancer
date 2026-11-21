@@ -223,7 +223,8 @@ Feature freeze until 2.1.0 and the friends’ first feedback: only these correct
 - [x] **Licence: GNU AGPL-3.0** (21/11): the detector is trained with Ultralytics YOLO11 (AGPL-3.0); MIT notice of the original project kept
 - [x] **Part 2 · Renamed RiftMancer** (21/11): name shown everywhere, Android id `com.riftmancer.app`, PC data folder taken over on first launch
 - [x] Part 2 · Card content out of the public copy (`npm run public:export`, `npm run content:import`, tests and release without / with content) — content backed up in `../sauvegarde-contenu` (21/11)
-- [ ] Part 2 · Personal data, secrets search, new repository with a fresh history (masked e-mail address, translations to decide); optional: card content downloaded by the app on first launch
+- [x] Part 2 · Personal data cleaned, secrets search (gitleaks: nothing real), **public repository https://github.com/FaZox/RiftMancer** published on 21/11/2026 (fresh history, masked e-mail address, 465 files)
+- [ ] Optional: card content downloaded by the app on first launch; French translations: ask riftboundfr.fr
 
 ## Phase 12 — Grid scanner
 

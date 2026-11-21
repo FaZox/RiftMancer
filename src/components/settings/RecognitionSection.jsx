@@ -119,7 +119,8 @@ export function LicencesLink() {
     if (text !== null) { setText(null); return; }
     try {
       const read = async (url) => { const r = await fetch(url); return r.ok ? r.text() : null; };
-      const [own, others] = await Promise.all([read('/LICENSE.txt'), read('/THIRD_PARTY_LICENSES.md')]);
+      const [notice, licence, others] = await Promise.all([read('/NOTICE.txt'), read('/LICENSE.txt'), read('/THIRD_PARTY_LICENSES.md')]);
+      const own = [notice, licence].filter(Boolean).map(t => t.trim()).join('\n\n────────\n\n');
       setText(own || others
         ? [own && tx('LICENCE DE L’APPLI\n\n{trim}', { trim: own.trim() }), others && others.trim()].filter(Boolean).join('\n\n════════════════════════\n\n')
         : tx('Fichier des licences introuvable.'));

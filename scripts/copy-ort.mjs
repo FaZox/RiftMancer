@@ -29,3 +29,5 @@ console.log(`[copy-ort] ${FILES.length} files copied to public/ort/`);
 copyFileSync(join(root, 'THIRD_PARTY_LICENSES.md'), join(root, 'public', 'THIRD_PARTY_LICENSES.md'));
 // The app's licence (MIT of the original project, LICENCE-ET-PUBLICATION.md): in every copy
 copyFileSync(join(root, 'LICENSE'), join(root, 'public', 'LICENSE.txt'));
+// Its notice: the app's copyright, the MIT notice of the original project (Nekoraru22), Riot Games
+copyFileSync(join(root, 'NOTICE'), join(root, 'public', 'NOTICE.txt'));

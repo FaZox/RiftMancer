@@ -11,7 +11,7 @@ This folder holds everything needed for one version of the app:
 | `WHATS-NEW.txt` (`NOUVEAUTES.txt` in French) | what changes in this version |
 | `FRIENDS-GUIDE.txt` (`LISEZ-MOI-AMIS.txt` in French) | this guide |
 | `EMPREINTES.txt` | checksums to check that the files are intact |
-| `LICENSE.txt`, `THIRD_PARTY_LICENSES.txt` | the licences |
+| `LICENSE.txt`, `NOTICE.txt`, `THIRD_PARTY_LICENSES.txt` | the licences |
 
 Your cards stay with you: nothing goes on the Internet, the phone only talks to your PC, over your Wi-Fi.
 
@@ -113,4 +113,4 @@ RiftMancer was created under Riot Games' "Legal Jibber Jabber" policy using asse
 
 > RiftMancer a été créé selon la politique « Legal Jibber Jabber » de Riot Games en utilisant des éléments appartenant à Riot Games. Riot Games ne soutient ni ne sponsorise ce projet.
 
-RiftMancer is free software under the GNU AGPL-3.0 licence (its source code is available from the person who gave you the app). The app is based on riftbound-scanner by Nekoraru22 (MIT licence, https://github.com/Nekoraru22/riftbound-scanner), heavily modified and extended. The licence texts are in the package (LICENSE.txt, THIRD_PARTY_LICENSES.txt) and in the app: Settings → About → Licences.
+RiftMancer is free software under the GNU AGPL-3.0 licence (its source code is available from the person who gave you the app). The app is based on riftbound-scanner by Nekoraru22 (MIT licence, https://github.com/Nekoraru22/riftbound-scanner), heavily modified and extended. The licence texts are in the package (LICENSE.txt, NOTICE.txt, THIRD_PARTY_LICENSES.txt) and in the app: Settings → About → Licences.

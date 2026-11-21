@@ -11,7 +11,7 @@ Ce dossier contient tout ce qu’il faut pour une version de l’appli :
 | `NOUVEAUTES.txt` (`WHATS-NEW.txt` en anglais) | ce qui change dans cette version |
 | `LISEZ-MOI-AMIS.txt` (`FRIENDS-GUIDE.txt` en anglais) | ce guide |
 | `EMPREINTES.txt` | de quoi vérifier que les fichiers sont intacts |
-| `LICENSE.txt`, `THIRD_PARTY_LICENSES.txt` | les licences |
+| `LICENSE.txt`, `NOTICE.txt`, `THIRD_PARTY_LICENSES.txt` | les licences |
 
 Vos cartes restent chez vous : rien ne part sur Internet, le téléphone ne parle qu’à votre PC, sur votre Wi-Fi.
 
@@ -113,4 +113,4 @@ RiftMancer a été créé selon la politique « Legal Jibber Jabber » de Riot G
 
 > RiftMancer was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.
 
-RiftMancer est un logiciel libre sous licence GNU AGPL-3.0 (son code source est disponible auprès de la personne qui vous a donné l’appli). L'appli est basée sur riftbound-scanner de Nekoraru22 (licence MIT, https://github.com/Nekoraru22/riftbound-scanner), largement modifié et étendu. Les textes des licences sont dans le paquet (LICENSE.txt, THIRD_PARTY_LICENSES.txt) et dans l'appli : Réglages → À propos → Licences.
+RiftMancer est un logiciel libre sous licence GNU AGPL-3.0 (son code source est disponible auprès de la personne qui vous a donné l’appli). L'appli est basée sur riftbound-scanner de Nekoraru22 (licence MIT, https://github.com/Nekoraru22/riftbound-scanner), largement modifié et étendu. Les textes des licences sont dans le paquet (LICENSE.txt, NOTICE.txt, THIRD_PARTY_LICENSES.txt) et dans l'appli : Réglages → À propos → Licences.

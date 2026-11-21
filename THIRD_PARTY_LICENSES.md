@@ -233,7 +233,7 @@ datasets are not distributed with the app; only the weights are.
 The card detection model (`public/models/yolo11s-pose-riftbound-dyn.onnx`) was trained by the project with **Ultralytics YOLO11** (pose model, 4 corners per card) and exported to ONNX.
 
 - Source: <https://github.com/ultralytics/ultralytics>
-- Licence: GNU Affero General Public License v3.0 — the full text is in `LICENSE`. Ultralytics considers models trained with its tools to be covered by this licence: this is why RiftMancer itself is published under the AGPL-3.0 (see `LICENSE`).
+- Licence: GNU Affero General Public License v3.0 — the full text is in `LICENSE`. Ultralytics considers models trained with its tools to be covered by this licence: this is why RiftMancer itself is published under the AGPL-3.0 (see `LICENSE` and `NOTICE`).
 
 ## riftbound-scanner (Nekoraru22) — MIT
 

@@ -48,6 +48,7 @@ model/embedders/**/*.onnx
 # Copied from the root by scripts/copy-ort.mjs
 public/THIRD_PARTY_LICENSES.md
 public/LICENSE.txt
+public/NOTICE.txt
 
 # Detector bench scenes (python model/make_detector_eval.py)
 model/detector-eval/

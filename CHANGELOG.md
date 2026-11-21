@@ -3,6 +3,17 @@
 Entries are in English from 21/11/2026; the earlier history is in French (*l’historique antérieur est en français*).
 
 
+## [Unreleased] - 2026-11-21 · LICENSE and NOTICE
+
+- **`LICENSE` now holds the GNU AGPL-3.0 text alone**, identical to the FSF's, so that GitHub recognises the licence (it showed « Other »). **`NOTICE`** holds the rest: the app's notice (Copyright (C) 2026 FaZox, AGPL-3.0 or later), the MIT notice of riftbound-scanner (Nekoraru22) word for word, the note on the detector and the Riot sentence (EN/FR).
+- Both are shipped: in the app (`public/LICENSE.txt`, `public/NOTICE.txt`; Settings → About → « Licences » shows the notice, the licence, then the third-party licences), next to the installed PC app, and in the release package (`LICENSE.txt`, `NOTICE.txt`). `npm run release` and `release:check` require the AGPL text in LICENSE and the original line in NOTICE, inside the APK and the PC app too. Guides, README and tests updated.
+
+## [Unreleased] - 2026-11-21 · Public repository
+
+- **https://github.com/FaZox/RiftMancer** published: one commit with a fresh history (`npm run public:export`), authored with the masked GitHub address, 465 files, the two models through Git LFS; no card content, no personal trace, no secret (gitleaks on the history and the files); 204 tests passed (14 files set aside without the card content), build and lint OK before publishing. This private repository keeps the full history and the content.
+- `SECURITY.md` (English and French): private reporting through GitHub, the sensitive parts. Secrets search: the only finding in 127 commits was the invented key of the diagnostic test (`gitleaks:allow`).
+- This repository now commits with the masked address too (GitHub blocks pushes that expose the personal one).
+
 ## [Unreleased] - 2026-11-21 · Personal data out of the public files
 
 - **YOLO detector**: its metadata held the training path on the author's PC; the description now reads 'model/dataset-rot/data.yaml'. Same weights: identical outputs, checked bit for bit on 3 input sizes. New SHA-256 `06df918b…`; the former one (`980a89fd…`) is accepted as the same detector (`DETECTOR.sameWeights`, `sameDetector()` in `src/lib/scanRules.js`, same list in `electron/pack.cjs`), so catalogs, packs and bench proposals made for it keep their thresholds.

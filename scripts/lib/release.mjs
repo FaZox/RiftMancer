@@ -207,12 +207,10 @@ export const APP_LICENCE_TITLE = 'GNU AFFERO GENERAL PUBLIC LICENSE';
 /** What is missing for the licence in a package folder (files: its file names). */
 export function licenceProblems(dir, files) {
   const problems = [];
-  if (!files.includes('LICENSE.txt')) problems.push('LICENSE.txt manquant (licence MIT du projet d’origine, obligatoire dans toute copie)');
-  else {
-    const text = readFileSync(join(dir, 'LICENSE.txt'), 'utf8');
-    if (!text.includes(ORIGIN_COPYRIGHT)) problems.push(`LICENSE.txt : ligne « ${ORIGIN_COPYRIGHT} » absente`);
-    if (!text.includes(APP_LICENCE_TITLE)) problems.push('LICENSE.txt : texte de la licence AGPL-3.0 absent');
-  }
+  if (!files.includes('LICENSE.txt')) problems.push('LICENSE.txt manquant (licence GNU AGPL-3.0 de l’appli)');
+  else if (!readFileSync(join(dir, 'LICENSE.txt'), 'utf8').includes(APP_LICENCE_TITLE)) problems.push('LICENSE.txt : texte de la licence AGPL-3.0 absent');
+  if (!files.includes('NOTICE.txt')) problems.push('NOTICE.txt manquant (avis MIT du projet d’origine, obligatoire dans toute copie)');
+  else if (!readFileSync(join(dir, 'NOTICE.txt'), 'utf8').includes(ORIGIN_COPYRIGHT)) problems.push(`NOTICE.txt : ligne « ${ORIGIN_COPYRIGHT} » absente`);
   if (!files.includes('THIRD_PARTY_LICENSES.txt')) problems.push('THIRD_PARTY_LICENSES.txt manquant (licences des modèles d’IA et du code repris)');
   return problems;
 }
@@ -229,7 +227,7 @@ export function checkReleaseDir(dir, { version, winUnpacked } = {}) {
       const buf = readFileSync(join(dir, f));
       const names = zipEntries(buf).map(e => e.name);
       bad(forbiddenIn(names, `${f} → `));
-      if (!names.includes('assets/public/LICENSE.txt')) problems.push(`${f} : LICENSE.txt absent de l’appli (Réglages → À propos → Licences)`);
+      for (const n of ['LICENSE.txt', 'NOTICE.txt']) if (!names.includes(`assets/public/${n}`)) problems.push(`${f} : ${n} absent de l’appli (Réglages → À propos → Licences)`);
     }
   }
   if (files.some(f => f.toLowerCase().endsWith('.exe'))) {
@@ -243,8 +241,10 @@ export function checkReleaseDir(dir, { version, winUnpacked } = {}) {
         notes.push(`Appli PC non vérifiée de l’intérieur : release/win-unpacked est d’une autre version.`);
       } else {
         problems.push(...pcProblems.map(p => `appli PC : ${p}`));
-        if (!asar.files.includes('dist/LICENSE.txt')) problems.push('appli PC : LICENSE.txt absent de l’appli (Réglages → À propos → Licences)');
-        if (!existsSync(join(winUnpacked, 'resources', 'LICENSE.txt'))) problems.push('appli PC : LICENSE.txt absent du dossier installé');
+        for (const n of ['LICENSE.txt', 'NOTICE.txt']) {
+          if (!asar.files.includes(`dist/${n}`)) problems.push(`appli PC : ${n} absent de l’appli (Réglages → À propos → Licences)`);
+          if (!existsSync(join(winUnpacked, 'resources', n))) problems.push(`appli PC : ${n} absent du dossier installé`);
+        }
         bad(forbiddenIn(asar.files, 'appli PC → '));
         bad(forbiddenIn(listFiles(winUnpacked), 'appli PC (dossier) → '));
       }

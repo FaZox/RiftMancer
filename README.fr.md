@@ -366,7 +366,7 @@ RiftMancer a été créé selon la politique « Legal Jibber Jabber » de Riot G
 
 Riftbound et League of Legends sont des marques de Riot Games, Inc.
 
-**Licence** : RiftMancer est un logiciel libre sous **GNU AGPL-3.0** (ou ultérieure, [LICENSE](LICENSE)) : vous pouvez le copier, le modifier et le redistribuer, à condition de partager le code source sous la même licence. Le détecteur de cartes est entraîné avec Ultralytics YOLO11 (AGPL-3.0), d’où cette licence. Basé sur [riftbound-scanner](https://github.com/Nekoraru22/riftbound-scanner) de Nekoraru22 (licence MIT), largement modifié et étendu. Les parties issues de riftbound-scanner gardent leur avis MIT (dans `LICENSE`). La licence ne couvre que le code : les noms, cartes, images, textes et marques de Riot Games n'en font pas partie. Licences des modèles d'IA et du code repris : [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+**Licence** : RiftMancer est un logiciel libre sous **GNU AGPL-3.0** (ou ultérieure, [LICENSE](LICENSE)) : vous pouvez le copier, le modifier et le redistribuer, à condition de partager le code source sous la même licence. Le détecteur de cartes est entraîné avec Ultralytics YOLO11 (AGPL-3.0), d’où cette licence. Basé sur [riftbound-scanner](https://github.com/Nekoraru22/riftbound-scanner) de Nekoraru22 (licence MIT), largement modifié et étendu. Les parties issues de riftbound-scanner gardent leur avis MIT (dans [NOTICE](NOTICE)). La licence ne couvre que le code : les noms, cartes, images, textes et marques de Riot Games n'en font pas partie. Licences des modèles d'IA et du code repris : [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
 
 ---
 
