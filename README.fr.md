@@ -12,7 +12,7 @@ Deux applications qui partagent les mêmes données et se synchronisent entre el
 
 Reconnaissance des cartes par intelligence artificielle (YOLO11 + empreintes couleur, puis DINOv2), hors ligne, sans compte.
 
-**Documentation** : [sécurité](SECURITY.md) · [guide pour les amis](docs/LISEZ-MOI-AMIS.md) ([anglais](docs/FRIENDS-GUIDE.md)) (installer, appairer, synchroniser, mettre à jour) · [nouveautés par version](docs/NOUVEAUTES.md) ([anglais](docs/WHATS-NEW.md)) · [bilan de la distribution aux amis, M0 à M14](docs/PHASE-10.fr.md) · [feuille de route](ROADMAP.fr.md) · [journal des changements](CHANGELOG.md) · études : [modèles d’IA](docs/RAPPORT-MODELES-IA.md), [langue détectée](docs/ETUDE-LANGUE.md), [variantes](docs/ETUDE-VARIANTES.md).
+**Documentation** : [sécurité](SECURITY.md) · [guide pour les amis](docs/LISEZ-MOI-AMIS.md) ([anglais](docs/FRIENDS-GUIDE.md)) (installer, appairer, synchroniser, mettre à jour) · [nouveautés par version](docs/NOUVEAUTES.md) ([anglais](docs/WHATS-NEW.md)) · [bilan de la distribution aux amis, M0 à M14](docs/PHASE-10.fr.md) · [feuille de route](ROADMAP.fr.md) · [journal des changements](CHANGELOG.md) · [données et base de données](docs/BASE-DE-DONNEES.md) · études : [modèles d’IA](docs/RAPPORT-MODELES-IA.md), [langue détectée](docs/ETUDE-LANGUE.md), [variantes](docs/ETUDE-VARIANTES.md).
 
 ## Télécharger
 
@@ -329,10 +329,13 @@ tests/                   tests Node (npm test)
 
 ## Données et stockage
 
-- **Téléphone / navigateur** : IndexedDB `riftbound-collection` (un enregistrement par exemplaire, horodaté, suppression logique pour la synchro).
-- **PC** : SQLite (`node:sqlite`) dans le dossier de l’application, serveur de synchronisation local (port 47321) ; sauvegardes dans le même dossier.
+Chaque donnée est un enregistrement JSON dans une collection, les mêmes sur les deux applis ; description complète (champs, liens, synchro, sauvegardes, fichiers) : **[docs/BASE-DE-DONNEES.md](docs/BASE-DE-DONNEES.md)**.
+
+- **PC** : SQLite (`node:sqlite`), `%APPDATA%\riftmancer\collection.sqlite` : une table `records (collection, id, data JSON, updatedAt, deleted, seq, origin)` + `meta` ; serveur de synchronisation local (port 47321) ; 30 sauvegardes dans `backups\`.
+- **Téléphone / navigateur** : IndexedDB `riftbound-collection` (version 7), un magasin par collection, marque `dirty` pour les changements pas encore envoyés.
+- **Collections** (synchronisées et sauvegardées) : `copies` (une par carte physique), `wishlist`, `boxes`, `decks`, `people`, `loans`, `trades`, `matches`, `learned`. Chaque enregistrement a `id`, `createdAt`, `updatedAt` (le plus récent gagne) et `deleted` (rien n’est effacé).
 - **Prix** : table des prix + historique (31 jours par carte), gardés sur l’appareil, utilisables hors ligne.
-- **Catalogue** : `public/card-hashes.json` (cartes, noms FR/EN, textes, empreintes couleur) ; images originales dans `public/cards/`, miniatures dans `public/cards/thumbs/`.
+- **Catalogue** (hors de la base) : `public/card-hashes.json` (cartes, noms FR/EN, textes, empreintes couleur, signatures IA) ; images originales dans `public/cards/`, miniatures dans `public/cards/thumbs/` ; mises à jour installées depuis le PC dans `catalogue\`.
 
 ---
 

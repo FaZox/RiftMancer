@@ -3,6 +3,11 @@
 Entries are in English from 21/11/2026; the earlier history is in French (*l’historique antérieur est en français*).
 
 
+## [Unreleased] - 2026-11-21 · Data and database documentation
+
+- **`docs/DATABASE.md`** (English) and **`docs/BASE-DE-DONNEES.md`** (French): where the data lives and in what shape, written from the code. SQLite schema of the PC and IndexedDB stores of the phone (with their versions), rules common to every record (`updatedAt`, `deleted`, `dirty`), the nine synced collections field by field, links between them (diagram), the card catalog and the content layers, every `meta` key, the sync step by step (merge, conflicts, clock skew), backups and restore on both devices, other files (`prices.json`, `localStorage` keys), where everything is on disk, and how to change the schema.
+- README (both languages): the « Data and storage » section sums it up and links to it; link in the documentation line.
+
 ## [Unreleased] - 2026-11-21 · Public package for the GitHub releases
 
 - **`npm run release -- <version>` now builds two packages**: `release/v<version>/` for the friends (with the cards, as before; never on GitHub) and `release/v<version>-public/` for a GitHub release: the same app and APK **without any card picture nor catalog** (`--public` of `desktop-exe.mjs` and `build-mobile.mjs`, `stripCardContent()` in `scripts/lib/content.mjs`), starting with `catalog-base.json`. `release:check` looks inside the public APK and PC app: no file of the cards, the catalog header present.

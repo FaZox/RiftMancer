@@ -12,7 +12,7 @@ Two apps that share the same data and sync with each other:
 
 Card recognition by artificial intelligence (YOLO11 + colour fingerprints, then DINOv2), offline, no account. The app is in **English or French** (Settings → Display; French by default when the phone or PC is in French).
 
-**Documentation**: [security policy](SECURITY.md) · [friends’ guide](docs/FRIENDS-GUIDE.md) (install, pair, sync, update; [French](docs/LISEZ-MOI-AMIS.md)) · [what’s new per version](docs/WHATS-NEW.md) ([French](docs/NOUVEAUTES.md)) · [roadmap](ROADMAP.md) ([French](ROADMAP.fr.md)) · [changelog](CHANGELOG.md) · studies: [AI models](docs/AI-MODELS-REPORT.md), [detected language](docs/STUDY-LANGUAGE.md), [variants](docs/STUDY-VARIANTS.md) (French versions next to them).
+**Documentation**: [security policy](SECURITY.md) · [friends’ guide](docs/FRIENDS-GUIDE.md) (install, pair, sync, update; [French](docs/LISEZ-MOI-AMIS.md)) · [what’s new per version](docs/WHATS-NEW.md) ([French](docs/NOUVEAUTES.md)) · [roadmap](ROADMAP.md) ([French](ROADMAP.fr.md)) · [changelog](CHANGELOG.md) · [data and database](docs/DATABASE.md) · studies: [AI models](docs/AI-MODELS-REPORT.md), [detected language](docs/STUDY-LANGUAGE.md), [variants](docs/STUDY-VARIANTS.md) (French versions next to them).
 
 ## Download
 
@@ -335,10 +335,13 @@ tests/                   Node tests (npm test)
 
 ## Data and storage
 
-- **Phone / browser**: IndexedDB `riftbound-collection` (one record per copy, timestamped, soft deletion for the sync).
-- **PC**: SQLite (`node:sqlite`) in the app’s folder, local sync server (port 47321); backups in the same folder.
+Every piece of data is a JSON record in a collection, the same on both apps; full description (fields, links, sync, backups, files): **[docs/DATABASE.md](docs/DATABASE.md)**.
+
+- **PC**: SQLite (`node:sqlite`), `%APPDATA%\riftmancer\collection.sqlite`: one table `records (collection, id, data JSON, updatedAt, deleted, seq, origin)` + `meta`; local sync server (port 47321); 30 backups in `backups\`.
+- **Phone / browser**: IndexedDB `riftbound-collection` (version 7), one store per collection, `dirty` flag for the changes not yet sent.
+- **Collections** (synced and backed up): `copies` (one per physical card), `wishlist`, `boxes`, `decks`, `people`, `loans`, `trades`, `matches`, `learned`. Every record has `id`, `createdAt`, `updatedAt` (the most recent wins) and `deleted` (nothing is erased).
 - **Prices**: price table + history (31 days per card), kept on the device, usable offline.
-- **Catalog**: `public/card-hashes.json` (cards, FR/EN names, texts, colour fingerprints); original pictures in `public/cards/`, thumbnails in `public/cards/thumbs/`.
+- **Catalog** (not in the database): `public/card-hashes.json` (cards, FR/EN names, texts, colour fingerprints, AI signatures); original pictures in `public/cards/`, thumbnails in `public/cards/thumbs/`; updates installed from the PC in `catalogue\`.
 
 ---
 
