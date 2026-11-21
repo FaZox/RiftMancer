@@ -305,12 +305,14 @@ Key → JSON value, **never synced** (each device has its own).
 |---|---|---|
 | `pcId` | PC | identity of this PC (UUID) |
 | `token` | PC | secret of the pairing QR code (« Regenerate the key » changes it) |
+| `pcSecret` | PC | secret of this PC (64 hexadecimal characters), made once and given to each phone at pairing (`pairing.pcSecret` on the phone) |
 | `devices` | PC | paired phones: `{ [deviceId]: { key, name, firstSync, lastSync, appVersion } }` (the key is never shown) |
 | `syncLog` | PC | history of the syncs (shown in Settings) |
 | `phoneOffer` | PC | « Send to the phone » waiting (date) |
 | `valueHistory` | PC | daily value of the collection: `[{ d, v, v7, vl, n }]` (730 days) |
 | `extraBackupDir` | PC | extra backup folder (USB key…) |
 | `lanSync` | PC | sync over the Wi-Fi allowed (on by default) |
+| `revokedDevices` | PC | **no longer used**: list of unpaired phones of the versions before « one key per phone »; may still be in an old database, read by nothing |
 | `pairing` | phone | the paired PC: `{ pcId, name, port, hosts, lastHost, deviceId, deviceKey, pcSecret }` |
 | `since:<pcId>` | phone | last PC position (`seq`) received from that PC |
 | `lastSync` | phone | date of the last sync |

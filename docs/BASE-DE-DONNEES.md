@@ -311,12 +311,14 @@ Clé → valeur JSON, **jamais synchronisé** (chaque appareil a le sien).
 |---|---|---|
 | `pcId` | PC | identité de ce PC (UUID) |
 | `token` | PC | secret du QR code d’appairage (« Régénérer la clé » le change) |
+| `pcSecret` | PC | secret de ce PC (64 caractères hexadécimaux), créé une fois et donné à chaque téléphone à l’appairage (`pairing.pcSecret` sur le téléphone) |
 | `devices` | PC | téléphones appairés : `{ [deviceId]: { key, name, firstSync, lastSync, appVersion } }` (la clé n’est jamais affichée) |
 | `syncLog` | PC | historique des synchros (affiché dans Réglages) |
 | `phoneOffer` | PC | « Envoyer sur le téléphone » en attente (date) |
 | `valueHistory` | PC | valeur quotidienne de la collection : `[{ d, v, v7, vl, n }]` (730 jours) |
 | `extraBackupDir` | PC | dossier de sauvegarde supplémentaire (clé USB…) |
 | `lanSync` | PC | synchro par le Wi-Fi autorisée (oui par défaut) |
+| `revokedDevices` | PC | **plus utilisée** : liste des téléphones dissociés des versions d’avant « une clé par téléphone » ; peut rester dans une ancienne base, plus lue par rien |
 | `pairing` | téléphone | le PC appairé : `{ pcId, name, port, hosts, lastHost, deviceId, deviceKey, pcSecret }` |
 | `since:<pcId>` | téléphone | dernière position du PC (`seq`) reçue de ce PC |
 | `lastSync` | téléphone | date de la dernière synchro |

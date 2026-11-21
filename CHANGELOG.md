@@ -7,6 +7,7 @@ Entries are in English from 21/11/2026; the earlier history is in French (*l’h
 
 - **`docs/DATABASE.md`** (English) and **`docs/BASE-DE-DONNEES.md`** (French): where the data lives and in what shape, written from the code. SQLite schema of the PC and IndexedDB stores of the phone (with their versions), rules common to every record (`updatedAt`, `deleted`, `dirty`), the nine synced collections field by field, links between them (diagram), the card catalog and the content layers, every `meta` key, the sync step by step (merge, conflicts, clock skew), backups and restore on both devices, other files (`prices.json`, `localStorage` keys), where everything is on disk, and how to change the schema.
 - README (both languages): the « Data and storage » section sums it up and links to it; link in the documentation line.
+- Two `meta` keys added after measuring a real database: `pcSecret` (PC) and `revokedDevices` (no longer used, may remain in an old database).
 
 ## [Unreleased] - 2026-11-21 · Public package for the GitHub releases
 
