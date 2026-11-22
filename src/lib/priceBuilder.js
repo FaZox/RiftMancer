@@ -12,7 +12,8 @@ import { RIFTHUNT_CARDS_URL, rifthuntCardIndex } from './rifthunt.js';
 export const CM_PRODUCTS = 'https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_22.json';
 export const CM_PRICES = 'https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_22.json';
 export const RIFTCODEX = 'https://api.riftcodex.com/cards';
-const HISTORY_DAYS = 31;
+const DAILY_DAYS = 31; // price history: one column per day for the last month, then one per week
+const SERIES = ['cards', 'foil', 'avg7', 'avg7Foil', 'low', 'lowFoil'];
 
 const r2 = (v) => (v == null ? null : Math.round(v * 100) / 100);
 
@@ -93,38 +94,83 @@ export function buildMapping(cards, products, index) {
   return mapping;
 }
 
+const dayNumber = (d) => Math.floor(Date.parse(`${d}T00:00:00Z`) / 86400000);
+
 /**
- * Add today's prices to the per-card history (one column per day, last 31
- * days), for each reference price and finish: `cards` / `foil` = trend,
- * `avg7` / `avg7Foil` = 7-day average, `low` / `lowFoil` = lowest offer
- * (Réglages → Prix de référence).
+ * Days of a history worth keeping: every day of the last month (31 days),
+ * then the latest day of each week before — the curve goes back as far as
+ * the history does without growing too much for the sync with the phone.
+ * Same as thinHistory in electron/prices.cjs.
+ */
+export function thinHistory(h) {
+  const days = h?.days || [];
+  const last = days.length ? dayNumber(days[days.length - 1]) : 0;
+  const daily = [];
+  const lastOfWeek = new Map();
+  days.forEach((d, i) => {
+    const n = dayNumber(d);
+    if (last - n < DAILY_DAYS) daily.push(i);
+    else lastOfWeek.set(Math.floor(n / 7), i);
+  });
+  const idx = [...lastOfWeek.values(), ...daily].sort((a, b) => a - b);
+  const out = { days: idx.map(i => days[i]) };
+  for (const key of SERIES) {
+    const rows = {};
+    for (const [id, row] of Object.entries(h?.[key] || {})) {
+      const kept = idx.map(i => row[i] ?? null);
+      if (kept.some(v => v != null)) rows[id] = kept;
+    }
+    out[key] = rows;
+  }
+  return out;
+}
+
+/**
+ * Two price histories in one, without doubles: one column per day, `a`'s
+ * value when both have one (the app's own readings win). `only`: the cards
+ * taken from `b` (a Set of card ids; all when null). Then thinned
+ * (thinHistory). Same as mergeHistory in electron/prices.cjs.
+ */
+export function mergeHistory(a, b, only = null) {
+  const days = [...new Set([...(a?.days || []), ...(b?.days || [])])].sort();
+  const pos = new Map(days.map((d, i) => [d, i]));
+  const out = { days };
+  for (const key of SERIES) {
+    const rows = {};
+    for (const [h, own] of [[b, false], [a, true]]) { // a written last: it wins
+      for (const [id, row] of Object.entries(h?.[key] || {})) {
+        if (!own && only && !only.has(id)) continue;
+        const r = rows[id] || (rows[id] = new Array(days.length).fill(null));
+        (h.days || []).forEach((d, i) => { if (row[i] != null) r[pos.get(d)] = row[i]; });
+      }
+    }
+    out[key] = rows;
+  }
+  return thinHistory(out);
+}
+
+const PICK = {
+  cards: p => p[0] ?? p[1], foil: p => p[1] ?? null,
+  avg7: p => p[3] ?? null, avg7Foil: p => p[7] ?? null,
+  low: p => p[5] ?? null, lowFoil: p => p[6] ?? null,
+};
+
+/**
+ * Add today's prices to the per-card history (one column per day for the
+ * last month, then one per week: thinHistory), for each reference price and
+ * finish: `cards` / `foil` = trend, `avg7` / `avg7Foil` = 7-day average,
+ * `low` / `lowFoil` = lowest offer (Réglages → Prix de référence).
  */
 export function updateHistory(prev, day, cards) {
-  const days = [...(prev?.days || [])];
-  let idx = days.indexOf(day);
-  if (idx === -1) { days.push(day); idx = days.length - 1; }
-  const drop = Math.max(0, days.length - HISTORY_DAYS);
-  const series = (old, pick) => {
-    const out = {};
-    for (const id of new Set([...Object.keys(old || {}), ...Object.keys(cards)])) {
-      const row = ((old || {})[id] || []).slice(0, days.length);
-      while (row.length < days.length) row.push(null);
-      const p = cards[id];
-      if (p) row[idx] = r2(pick(p));
-      const kept = row.slice(drop);
-      if (kept.some(v => v != null)) out[id] = kept;
+  const today = { days: [day] };
+  for (const key of SERIES) {
+    today[key] = {};
+    for (const [id, p] of Object.entries(cards)) {
+      const v = r2(PICK[key](p));
+      if (v != null) today[key][id] = [v];
     }
-    return out;
-  };
-  return {
-    days: days.slice(drop),
-    cards: series(prev?.cards, p => p[0] ?? p[1]),
-    foil: series(prev?.foil, p => p[1] ?? null),
-    avg7: series(prev?.avg7, p => p[3] ?? null),
-    avg7Foil: series(prev?.avg7Foil, p => p[7] ?? null),
-    low: series(prev?.low, p => p[5] ?? null),
-    lowFoil: series(prev?.lowFoil, p => p[6] ?? null),
-  };
+  }
+  return mergeHistory(today, prev);
 }
 
 const median = (xs) => {
@@ -300,6 +346,10 @@ export async function fetchRiftcodexNames(getJSON) {
 }
 
 /** Full price table (same shape as the PC's). */
+// Price table format: raised when the links or the card ↔ product matching change,
+// so a table built the former way is rebuilt at once instead of waiting a day.
+export const PRICE_FORMAT = 2;
+
 export function buildPriceTable(catalog, products, guide, rcNames, prev) {
   // Manual additions (model/manual-cards/): no price
   const mapping = buildMapping(catalog.filter(c => !c.manual), products.products || [], rcNames);
@@ -315,6 +365,7 @@ export function buildPriceTable(catalog, products, guide, rcNames, prev) {
   }
   const day = String(guide.createdAt || new Date().toISOString()).slice(0, 10);
   return {
+    format: PRICE_FORMAT,
     updatedAt: Date.now(),
     priceDate: guide.createdAt || null,
     source: tx('Cardmarket (prix tendance)'),

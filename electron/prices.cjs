@@ -15,11 +15,14 @@
  *
  * Output (userData/prices.json, sent to the phone at sync):
  *   { updatedAt, source, cards: { <cardId>: [trend, trendFoil, idProduct, avg7, avg30, low, lowFoil, avg7Foil] },
- *     hist: { days: ['YYYY-MM-DD', …], cards: { <cardId>: [trend|null per day] } } }
+ *     hist: { days: ['YYYY-MM-DD', …], cards / foil / avg7 / avg7Foil / low / lowFoil: { <cardId>: [price|null per day] } },
+ *     oldImported, rifthuntAt }
  *
- * `hist` keeps one trend price per card and per day for the last 31 days
- * (built up day after day). avg7 / avg30 (Cardmarket's 7- and 30-day average
- * sale prices) give a price movement even before the history fills up.
+ * `hist` keeps the prices of each day for the last month, then one day a
+ * week, as far back as it goes (thinHistory). Built up day after day, plus
+ * once the prices.json of the app's former versions on this PC
+ * (OLD_DATA_DIRS), plus the days the app missed from rifthunt's copy of
+ * Cardmarket's trend price (fillFromRifthunt). The app's own readings win.
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -30,6 +33,9 @@ const RIFTCODEX = 'https://api.riftcodex.com/cards';
 const RIFTHUNT_CARDS = 'https://api.rifthunt.com/bulk/cards'; // first source of the Cardmarket products (src/lib/rifthunt.js)
 const HEADERS = { 'User-Agent': 'RiftMancer (local collection app; https://github.com/FaZox/RiftMancer)' };
 const REFRESH_EVERY = 20 * 60 * 60 * 1000; // ~ daily
+// Price table format: raised when the links or the card ↔ product matching change,
+// so a table built the former way is rebuilt at once instead of waiting a day.
+const PRICE_FORMAT = 2; // same as src/lib/priceBuilder.js
 const NAMES_EVERY = 7 * 24 * 60 * 60 * 1000;
 
 async function getJSON(url) {
@@ -155,42 +161,155 @@ function buildMapping(cards, products, index) {
   return mapping;
 }
 
-const HISTORY_DAYS = 31;
+const DAILY_DAYS = 31; // price history: one column per day for the last month, then one per week
+const SERIES = ['cards', 'foil', 'avg7', 'avg7Foil', 'low', 'lowFoil'];
 const r2 = (v) => (v == null ? null : Math.round(v * 100) / 100);
+const dayNumber = (d) => Math.floor(Date.parse(`${d}T00:00:00Z`) / 86400000);
 
 /**
- * Add today's prices to the per-card history (one column per day, last 31
- * days), for each reference price and finish: `cards` / `foil` = trend,
- * `avg7` / `avg7Foil` = 7-day average, `low` / `lowFoil` = lowest offer
- * (Réglages → Prix de référence).
+ * Days of a history worth keeping: every day of the last month (31 days),
+ * then the latest day of each week before. Same as thinHistory in
+ * src/lib/priceBuilder.js.
+ */
+function thinHistory(h) {
+  const days = h?.days || [];
+  const last = days.length ? dayNumber(days[days.length - 1]) : 0;
+  const daily = [];
+  const lastOfWeek = new Map();
+  days.forEach((d, i) => {
+    const n = dayNumber(d);
+    if (last - n < DAILY_DAYS) daily.push(i);
+    else lastOfWeek.set(Math.floor(n / 7), i);
+  });
+  const idx = [...lastOfWeek.values(), ...daily].sort((a, b) => a - b);
+  const out = { days: idx.map(i => days[i]) };
+  for (const key of SERIES) {
+    const rows = {};
+    for (const [id, row] of Object.entries(h?.[key] || {})) {
+      const kept = idx.map(i => row[i] ?? null);
+      if (kept.some(v => v != null)) rows[id] = kept;
+    }
+    out[key] = rows;
+  }
+  return out;
+}
+
+/**
+ * Two price histories in one, without doubles: one column per day, `a`'s
+ * value when both have one (the app's own readings win). `only`: the cards
+ * taken from `b` (a Set of card ids; all when null). Then thinned. Same as
+ * mergeHistory in src/lib/priceBuilder.js.
+ */
+function mergeHistory(a, b, only = null) {
+  const days = [...new Set([...(a?.days || []), ...(b?.days || [])])].sort();
+  const pos = new Map(days.map((d, i) => [d, i]));
+  const out = { days };
+  for (const key of SERIES) {
+    const rows = {};
+    for (const [h, own] of [[b, false], [a, true]]) { // a written last: it wins
+      for (const [id, row] of Object.entries(h?.[key] || {})) {
+        if (!own && only && !only.has(id)) continue;
+        const r = rows[id] || (rows[id] = new Array(days.length).fill(null));
+        (h.days || []).forEach((d, i) => { if (row[i] != null) r[pos.get(d)] = row[i]; });
+      }
+    }
+    out[key] = rows;
+  }
+  return thinHistory(out);
+}
+
+const PICK = {
+  cards: p => p[0] ?? p[1], foil: p => p[1] ?? null,
+  avg7: p => p[3] ?? null, avg7Foil: p => p[7] ?? null,
+  low: p => p[5] ?? null, lowFoil: p => p[6] ?? null,
+};
+
+/**
+ * Add today's prices to the per-card history (one column per day for the
+ * last month, then one per week), for each reference price and finish:
+ * `cards` / `foil` = trend, `avg7` / `avg7Foil` = 7-day average, `low` /
+ * `lowFoil` = lowest offer (Réglages → Prix de référence).
  */
 function updateHistory(prev, day, cards) {
-  const days = [...(prev?.days || [])];
-  let idx = days.indexOf(day);
-  if (idx === -1) { days.push(day); idx = days.length - 1; }
-  const drop = Math.max(0, days.length - HISTORY_DAYS);
-  const series = (old, pick) => {
-    const out = {};
-    for (const id of new Set([...Object.keys(old || {}), ...Object.keys(cards)])) {
-      const row = ((old || {})[id] || []).slice(0, days.length);
-      while (row.length < days.length) row.push(null);
-      const p = cards[id];
-      if (p) row[idx] = r2(pick(p));
-      const kept = row.slice(drop);
-      if (kept.some(v => v != null)) out[id] = kept;
+  const today = { days: [day] };
+  for (const key of SERIES) {
+    today[key] = {};
+    for (const [id, p] of Object.entries(cards)) {
+      const v = r2(PICK[key](p));
+      if (v != null) today[key][id] = [v];
     }
-    return out;
-  };
-  return {
-    days: days.slice(drop),
-    cards: series(prev?.cards, p => p[0] ?? p[1]),
-    foil: series(prev?.foil, p => p[1] ?? null),
-    avg7: series(prev?.avg7, p => p[3] ?? null),
-    avg7Foil: series(prev?.avg7Foil, p => p[7] ?? null),
-    low: series(prev?.low, p => p[5] ?? null),
-    lowFoil: series(prev?.lowFoil, p => p[6] ?? null),
-  };
+  }
+  return mergeHistory(today, prev);
 }
+
+// ─── Days the app missed: Cardmarket's trend price kept by rifthunt ───────
+// rifthunt keeps the trend price of Cardmarket's price guide (the same file,
+// the same figure) for each printing since 10/11/2026 — free, no key, any use
+// allowed (rifthunt.com/terms), « bursts under 10 requests a second ».
+const RIFTHUNT_HISTORY_FROM = '2026-11-10';
+const RIFTHUNT_EVERY = 7 * 24 * 60 * 60 * 1000;
+const RIFTHUNT_WAIT = 500; // ms between two cards: 2 a second (4 a second got « 429 Too Many Requests »)
+const rifthuntHistoryUrl = (rid, range) => `https://api.rifthunt.com/prices/${encodeURIComponent(rid)}/history?range=${range}`;
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+/** One card's rifthunt history; on « 429 Too Many Requests », waits (Retry-After, else 10 s) and tries again, 5 times at most. Null when it has none. */
+async function getRifthuntHistory(url, wait = sleep) {
+  for (let tries = 0; tries < 6; tries++) {
+    let r;
+    try { r = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(30000) }); } catch { return null; }
+    if (r.status === 429) { await wait(Math.min(60, Number(r.headers.get('retry-after')) || 10) * 1000); continue; }
+    if (!r.ok) return null;
+    try { return await r.json(); } catch { return null; }
+  }
+  return null;
+}
+
+/** rifthunt's id of one of our cards ('ogn-303-star-298' → 'ogn-303*-298'); null for our own ids of printings sharing a number. */
+function rifthuntId(cardId) {
+  const m = /^([a-z0-9]+)-([a-z0-9]+?)(-star)?-(\d+)$/.exec(cardId);
+  return m ? `${m[1]}-${m[2]}${m[3] ? '*' : ''}-${m[4]}` : null;
+}
+
+/**
+ * One card's history from rifthunt (/prices/:id/history) as a history
+ * ({ days, cards, foil }), kept only when it agrees with our own prices on
+ * the days both have (at least one, all within a cent): a printing rifthunt
+ * links to another Cardmarket product is left out. Null otherwise.
+ */
+function fromRifthunt(cardId, data, own) {
+  const cm = data?.series?.cardmarket;
+  const dates = data?.dates;
+  if (!cm || !Array.isArray(dates) || !dates.length) return null;
+  const n = cm.normal || []; const f = cm.foil || [];
+  const rows = { cards: dates.map((d, i) => r2(n[i] ?? f[i] ?? null)), foil: dates.map((d, i) => r2(f[i] ?? null)) };
+  const pos = new Map((own?.days || []).map((d, i) => [d, i]));
+  let same = 0; let differ = 0;
+  for (const key of ['cards', 'foil']) {
+    const mine = own?.[key]?.[cardId];
+    if (!mine) continue;
+    dates.forEach((d, i) => {
+      const j = pos.get(d);
+      if (j == null || mine[j] == null || rows[key][i] == null) return;
+      if (Math.abs(mine[j] - rows[key][i]) > 0.011) differ++; else same++;
+    });
+  }
+  if (!same || differ) return null;
+  return { days: dates, cards: { [cardId]: rows.cards }, foil: { [cardId]: rows.foil } };
+}
+
+/** Days of the last month (from rifthunt's first day) missing in a history. */
+function missingDays(hist, today) {
+  const have = new Set(hist?.days || []);
+  const out = [];
+  for (let n = dayNumber(today) - DAILY_DAYS + 1; n <= dayNumber(today); n++) {
+    const d = new Date(n * 86400000).toISOString().slice(0, 10);
+    if (d >= RIFTHUNT_HISTORY_FROM && !have.has(d)) out.push(d);
+  }
+  return out;
+}
+
+/** Former names of the app's data folders (prices.json of older versions on this PC). */
+const OLD_DATA_DIRS = ['riftbound-scanner', 'riftbound-scanner-test', 'riftmancer', 'riftmancer-test'];
 
 const median = (xs) => {
   const v = xs.filter(x => x).sort((a, b) => a - b);
@@ -368,7 +487,11 @@ function createPrices({ userData, distDir, onUpdated, catalogFile = null }) {
       cards[cardId] = [r2(trend), r2(trendFoil), idProduct, r2(g.avg7), r2(g.avg30), r2(g.low), r2(g['low-foil']), r2(g['avg7-foil'])];
     }
     const day = String(guide.createdAt || new Date().toISOString()).slice(0, 10);
+    const prev = current;
     current = {
+      format: PRICE_FORMAT,
+      oldImported: prev?.oldImported,
+      rifthuntAt: prev?.rifthuntAt,
       updatedAt: Date.now(),
       priceDate: guide.createdAt || null,
       source: 'Cardmarket (prix tendance)',
@@ -377,18 +500,74 @@ function createPrices({ userData, distDir, onUpdated, catalogFile = null }) {
       cards,
       promo: buildPromoPrices(withoutPromos(catalog, mapping), products.products || [], guideById),
       links: buildLinks(catalog, mapping, products.products || [], rcNames?.paths),
-      hist: updateHistory(current?.hist, day, cards),
+      hist: updateHistory(prev?.hist, day, cards),
     };
+    importOldFiles();
     fs.writeFileSync(file, JSON.stringify(current));
     console.log(`[prices] ${current.matched}/${current.total} cards priced`);
     onUpdated?.(current);
+    fillFromRifthunt().catch(err => console.warn('[prices] rifthunt history failed:', err.message));
     return current;
+  }
+
+  /** Once: the history of the prices.json left by the app's former versions on this PC (their cards still in ours). */
+  function importOldFiles() {
+    if (!current?.cards || current.oldImported) return;
+    const only = new Set(Object.keys(current.cards));
+    let hist = current.hist;
+    for (const name of OLD_DATA_DIRS) {
+      const other = path.join(path.dirname(userData), name, 'prices.json');
+      if (path.resolve(other) === path.resolve(file)) continue;
+      try {
+        const h = JSON.parse(fs.readFileSync(other, 'utf8')).hist;
+        if (Array.isArray(h?.days)) hist = mergeHistory(hist, h, only);
+      } catch { /* not on this PC */ }
+    }
+    current = { ...current, hist, oldImported: true };
+  }
+
+  /**
+   * The days of the last month the app missed, from rifthunt (Cardmarket's
+   * trend price, normal and foil): all its history the first time, then the
+   * last month at most once a week, and only when days are missing.
+   * In the background, one card after another.
+   */
+  let filling = null;
+  function fillFromRifthunt(force = false) {
+    if (filling) return filling;
+    const today = current?.hist?.days?.at(-1);
+    if (!today || !current.cards) return Promise.resolve(false);
+    const first = !current.rifthuntAt;
+    if (!force && !first && (!missingDays(current.hist, today).length || Date.now() - current.rifthuntAt < RIFTHUNT_EVERY)) return Promise.resolve(false);
+    filling = (async () => {
+      const range = first ? 'all' : '1m';
+      const own = current.hist;
+      let add = null; let n = 0;
+      for (const cardId of Object.keys(current.cards)) {
+        const rid = rifthuntId(cardId);
+        if (!rid) continue;
+        const h = fromRifthunt(cardId, await getRifthuntHistory(rifthuntHistoryUrl(rid, range)), own);
+        if (h) { add = mergeHistory(add, h); n++; }
+        await sleep(RIFTHUNT_WAIT);
+      }
+      current = { ...current, hist: add ? mergeHistory(current.hist, add) : current.hist, rifthuntAt: Date.now() };
+      fs.writeFileSync(file, JSON.stringify(current));
+      console.log(`[prices] rifthunt history: ${n} cards`);
+      onUpdated?.(current);
+      return true;
+    })().finally(() => { filling = null; });
+    return filling;
   }
 
   /** Refresh if older than a day (or forced). Never throws. */
   function refresh(force = false) {
     if (running) return running;
-    if (!force && current?.hist && Date.now() - current.updatedAt < REFRESH_EVERY) return Promise.resolve(current);
+    if (!force && current?.hist && current.format === PRICE_FORMAT && Date.now() - current.updatedAt < REFRESH_EVERY) {
+      // the history of older versions and of rifthunt, when the prices of the day are already there
+      if (!current.oldImported) { importOldFiles(); fs.writeFileSync(file, JSON.stringify(current)); onUpdated?.(current); }
+      fillFromRifthunt().catch(err => console.warn('[prices] rifthunt history failed:', err.message));
+      return Promise.resolve(current);
+    }
     running = doRefresh()
       .catch(err => { console.warn('[prices] refresh failed:', err.message); return current; })
       .finally(() => { running = null; });
@@ -421,4 +600,4 @@ function copiesValue(copies, prices, ref = 'trend') {
   return Math.round(v * 100) / 100;
 }
 
-module.exports = { createPrices, copiesValue, buildMapping, updateHistory, buildPromoPrices, buildLinks, withoutPromos, cardmarketSlug };
+module.exports = { createPrices, copiesValue, buildMapping, updateHistory, thinHistory, mergeHistory, fromRifthunt, rifthuntId, missingDays, buildPromoPrices, buildLinks, withoutPromos, cardmarketSlug };

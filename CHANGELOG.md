@@ -3,6 +3,19 @@
 Entries are in English from 21/11/2026; the earlier history is in French (*l’historique antérieur est en français*).
 
 
+## [Unreleased] - 2026-11-22 · Price history beyond a month
+
+- **Cardmarket price history kept beyond 31 days**: every day of the last month, then one day a week, as far back as it goes (`thinHistory`), for each reference price and finish. Prices are still Cardmarket's only (its public price guide has no older days, so the longer curves fill up with time).
+- **Days already collected are taken back**, once, from the `prices.json` left on the PC by the former versions (Riftbound Scanner, RiftMancer and their test apps), for the cards still in the catalog.
+- **Days the app missed** come from rifthunt's copy of Cardmarket's trend price (normal and foil, kept since 10/11/2026; free, no key, any use allowed): all of it the first time, then the last month at most once a week and only when days are missing, 2 cards a second in the background (waits and tries again when rifthunt answers « 429 Too Many Requests »). A card's rifthunt history is kept only when it agrees with the app's own prices on the days both have (Cardmarket's product, never TCGplayer's). The app's own readings always win (`mergeHistory`).
+- **Phone**: the price histories of the PC and the phone are merged at each sync, without doubles, so neither loses days.
+- Tests: `tests/priceHistory.test.mjs` (thinning, merging, rifthunt check, missing days), price history test of `tests/sync.test.cjs` updated.
+
+## [Unreleased] - 2026-11-22 · Promo printings priced, prices rebuilt at once
+
+- A promo printing with its own catalog entry (« Organized Play » #036…) links to its normal card's Cardmarket promo page (…/Unleashed-Promos/Mutated-Mouser) and takes its promo price (`promoBaseOf` in `src/lib/prices.js`).
+- Price tables carry a `format` (2): a table built the former way is rebuilt at the next start (PC and phone) instead of waiting a day.
+
 ## [Unreleased] - 2026-11-22 · Direct Cardmarket links, prices of every card and promo again
 
 - **Cardmarket links**: card pages open directly, as on Cardmarket: `…/Products/Singles/Unleashed/Mutated-Mouser` for the normal card, `…/Singles/Unleashed-Promos/Mutated-Mouser` for the promo (no minimum condition: promos are few), instead of `Products?idProduct=…` or a search. Set and card names written as Cardmarket does (« Kai'Sa, Survivor » → `KaiSa-Survivor`, « B.F. Sword » → `BF-Sword`), with Cardmarket's versions (`KSante-Dauntless-V2-Showcase`). Card sheet → Price: a second button « Voir la promo sur Cardmarket » when Cardmarket has one. Wishes, missing cards for the decks and the card sheet use the same pages; the catalog's promo printings (« opp-036-219 ») open their promo page.

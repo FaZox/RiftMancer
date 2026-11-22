@@ -11,14 +11,15 @@
  * Price table: { updatedAt, priceDate, source,
  *                cards: { cardId: [trend, trendFoil, idProduct, avg7, avg30, low, lowFoil, avg7Foil] },
  *                promo: { cardId: [trend, trendFoil, n] },
- *                hist: { days: [...], cards / foil / avg7 / avg7Foil / low / lowFoil: { cardId: [per day] } } }   (31 days)
+ *                hist: { days: [...], cards / foil / avg7 / avg7Foil / low / lowFoil: { cardId: [per day] } } }
+ *                (every day of the last month, then one a week: priceBuilder.js thinHistory)
  * History:     [{ d: 'YYYY-MM-DD', v: value €, n: copies }]
  */
 import { useEffect, useState } from 'react';
 import { Capacitor, CapacitorHttp } from '@capacitor/core';
 import { isDesktop, getMeta, setMeta } from './collectionDB.js';
 import { getMatcher } from './cardMatcher.js';
-import { buildPriceTable, fetchCardIndex, CM_PRODUCTS, CM_PRICES } from './priceBuilder.js';
+import { buildPriceTable, fetchCardIndex, mergeHistory, CM_PRODUCTS, CM_PRICES, PRICE_FORMAT } from './priceBuilder.js';
 import { getPrefs } from './uiPrefs.js';
 import { tx, locale } from './i18n.js';
 
@@ -52,12 +53,28 @@ export async function initPrices() {
   }
 }
 
-/** Phone: store prices received from the PC (only if newer than ours). */
+/**
+ * Phone: store prices received from the PC (only if newer than ours). The two
+ * price histories are merged either way (the PC's has the days the phone
+ * missed and those rifthunt gave the PC; the newer table's readings win).
+ */
 export async function savePrices(payload) {
-  const cur = state.prices?.updatedAt || 0;
-  if (cur && !state.prices?.demo && (payload?.prices?.updatedAt || 0) <= cur) return;
-  await setMeta('prices', payload);
-  set(payload);
+  const mine = state.prices;
+  const theirs = payload?.prices;
+  const cur = mine?.updatedAt || 0;
+  const merge = mine?.hist && theirs?.hist && !mine.demo && !theirs.demo;
+  if (cur && !mine?.demo && (theirs?.updatedAt || 0) <= cur) {
+    if (!merge) return;
+    const hist = mergeHistory(mine.hist, theirs.hist);
+    if (JSON.stringify(hist) === JSON.stringify(mine.hist)) return;
+    const next = { ...state, prices: { ...mine, hist } };
+    await setMeta('prices', next);
+    set(next);
+    return;
+  }
+  const next = merge ? { ...payload, prices: { ...theirs, hist: mergeHistory(theirs.hist, mine.hist) } } : payload;
+  await setMeta('prices', next);
+  set(next);
 }
 
 // ─── Phone: download prices from Cardmarket ──────────────────────────────
@@ -95,7 +112,7 @@ export function refreshPrices(force = false) {
   if (!Capacitor.isNativePlatform()) return Promise.resolve(false);
   if (running) return running;
   const cur = state.prices;
-  if (!force && cur?.hist && !cur.demo && Date.now() - cur.updatedAt < REFRESH_EVERY) return Promise.resolve(false);
+  if (!force && cur?.hist && !cur.demo && cur.format === PRICE_FORMAT && Date.now() - cur.updatedAt < REFRESH_EVERY) return Promise.resolve(false);
   running = (async () => {
     const catalog = getMatcher().cards;
     if (!catalog?.length) return false;
@@ -242,15 +259,17 @@ export function stacksValue(prices, stacks, ref = priceRef()) {
 const HIST_KEY = { trend: ['cards', 'foil'], avg7: ['avg7', 'avg7Foil'], low: ['low', 'lowFoil'] };
 
 /**
- * Price history of a card over the last month, in the chosen reference price
- * and finish: [{ d: 'YYYY-MM-DD', v }]. (Foil histories and those of the
- * 7-day average and of the low price fill up day after day.)
+ * Price history of a card, in the chosen reference price and finish:
+ * [{ d: 'YYYY-MM-DD', v }], all of it or its last `days` days. (Foil
+ * histories and those of the 7-day average and of the low price fill up day
+ * after day.)
  */
-export function cardHistory(prices, cardId, ref = priceRef(), foil = false) {
+export function cardHistory(prices, cardId, ref = priceRef(), foil = false, days = null, today = Date.now()) {
   const h = prices?.hist;
   const row = h?.[(HIST_KEY[ref] || HIST_KEY.trend)[foil ? 1 : 0]]?.[cardId];
   if (!row) return [];
-  return h.days.map((d, i) => ({ d, v: row[i] })).filter(p => p.v != null);
+  const from = days ? new Date(today - (days - 1) * 86400000).toISOString().slice(0, 10) : '';
+  return h.days.map((d, i) => ({ d, v: row[i] })).filter(p => p.v != null && p.d >= from);
 }
 
 /** Collection value history in the chosen reference price: [{ d, v, n }]. */

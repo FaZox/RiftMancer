@@ -28,7 +28,7 @@ export default function PriceHistory({ prices, cardId }) {
   if (!hasNormal && !hasFoil) return null;
   const foil = hasNormal ? (hasFoil && foilPick) : true;
   const ref = priceRef();
-  const pts = cardHistory(prices, cardId, ref, foil);
+  const pts = cardHistory(prices, cardId, ref, foil, 31);
   const c7 = priceChange(prices, cardId, 7, ref, foil);
   const c30 = priceChange(prices, cardId, 30, ref, foil);
 

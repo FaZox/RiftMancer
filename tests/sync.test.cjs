@@ -50,18 +50,21 @@ test('restoring a backup brings back its records and deletes newer ones, with fr
   assert.ok(store.load('copies').every(r => r.updatedAt >= before)); // the phone will take them
 });
 
-test('price history keeps one column per day for 31 days', () => {
+test('price history keeps one column per day for 31 days, then one a week', () => {
   let h = null;
   for (let d = 1; d <= 40; d++) {
     const day = new Date(Date.UTC(2026, 0, d)).toISOString().slice(0, 10);
     h = updateHistory(h, day, d === 20 ? { x: [1, null, 1] } : { x: [d, null, 1], y: [2, 3, 2] });
   }
-  assert.equal(h.days.length, 31);
-  assert.equal(h.cards.x.length, 31);
-  assert.equal(h.cards.y.length, 31);
-  assert.equal(h.cards.x[30], 40);
+  const last31 = h.days.slice(-31);
+  assert.equal(last31[0], '2026-01-10'); // the last month, every day
+  assert.deepEqual(h.days.slice(0, -31), ['2026-01-07', '2026-01-09']); // before: the latest day of each week (weeks from Thursday)
+  assert.equal(h.cards.x.length, h.days.length);
+  assert.equal(h.cards.y.length, h.days.length);
+  assert.equal(h.cards.x.at(-1), 40);
+  assert.equal(h.cards.x[0], 7);
   // same day twice → the column is replaced, not added
-  const again = updateHistory(h, h.days[30], { x: [99, null, 1] });
-  assert.equal(again.days.length, 31);
-  assert.equal(again.cards.x[30], 99);
+  const again = updateHistory(h, h.days.at(-1), { x: [99, null, 1] });
+  assert.equal(again.days.length, h.days.length);
+  assert.equal(again.cards.x.at(-1), 99);
 });

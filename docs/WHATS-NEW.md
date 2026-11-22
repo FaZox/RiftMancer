@@ -6,6 +6,11 @@ version is docs/NOUVEAUTES.md). `npm run release -- <version>` takes
 `WHATS-NEW.txt` from it and refuses to build a package until the section of the
 version is written, in both files.
 
+## 2.4.2 — direct Cardmarket links
+
+- **Cardmarket links**: each card opens its own page (…/Singles/Unleashed/Mutated-Mouser), and its promo the promo page (…/Unleashed-Promos/Mutated-Mouser).
+- **Prices**: card and promo prices are right again; they update as soon as the app starts.
+
 ## 2.4.1 — price paid, phone tab bar
 
 - **Price paid and purchase date**: in a card's sheet, Price tab → « My purchase », say how much you paid and when; it shows on the right of the rarity.
