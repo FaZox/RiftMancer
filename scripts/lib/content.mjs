@@ -18,6 +18,7 @@ export const PUBLIC_EXCLUDED = [
   ['model/distractors/', 'images d’arrière-plan de licence inconnue'],
   ['model/manual-cards/', 'image d’une carte (Riot Games)'],
   ['docs/maquettes/', 'maquettes avec des captures de cartes'],
+  ['CLAUDE.md', 'notes de travail de Claude Code (privées)'],
 ];
 
 /** Why `rel` stays out of the public repository, or null. */

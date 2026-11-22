@@ -19,7 +19,8 @@ import { Capacitor, CapacitorHttp } from '@capacitor/core';
 import { isDesktop, getMeta, setMeta } from './collectionDB.js';
 import { getMatcher } from './cardMatcher.js';
 import { buildPriceTable, fetchCardIndex, CM_PRODUCTS, CM_PRICES } from './priceBuilder.js';
-import { getPrefs } from './uiPrefs.js';import { tx, locale } from './i18n.js';
+import { getPrefs } from './uiPrefs.js';
+import { tx, locale } from './i18n.js';
 
 
 const REFRESH_EVERY = 20 * 60 * 60 * 1000; // ~ daily
@@ -146,6 +147,28 @@ export const ESTIMATE_LABEL = {
  * trend, then the other finish (estimated). Promo copies use the price of the
  * card's promo on Cardmarket (trend) when there is one.
  */
+let promoBases = { cards: null, map: null };
+/**
+ * A promo printing with its own catalog entry (« Organized Play » #036…) →
+ * its normal printing (same oracle). Cardmarket sells it as the normal card's
+ * promo (…/Singles/Unleashed-Promos/Mutated-Mouser): its price is in
+ * prices.promo of the normal printing. Null for any other card.
+ */
+export function promoBaseOf(cardId) {
+  const cards = getMatcher().cards || [];
+  if (promoBases.cards !== cards) {
+    const byOracle = new Map();
+    for (const c of cards) if (c.oracle && (c.variant || 'base') === 'base' && !byOracle.has(c.oracle)) byOracle.set(c.oracle, c);
+    const map = new Map();
+    for (const c of cards) {
+      const b = c.variant === 'promo' && c.oracle ? byOracle.get(c.oracle) : null;
+      if (b && b.id !== c.id) map.set(c.id, b);
+    }
+    promoBases = { cards, map };
+  }
+  return promoBases.map.get(cardId) || null;
+}
+
 export function priceInfo(prices, cardId, foil = false, ref = priceRef(), promo = false) {
   if (promo) {
     const q = prices?.promo?.[cardId];
@@ -159,7 +182,10 @@ export function priceInfo(prices, cardId, foil = false, ref = priceRef(), promo 
     return base.value == null ? base : { value: base.value, estimated: 'promo-none' };
   }
   const p = prices?.cards?.[cardId];
-  if (!p) return { value: null, estimated: null };
+  if (!p) {
+    const base = promoBaseOf(cardId);
+    return base ? priceInfo(prices, base.id, foil, ref, true) : { value: null, estimated: null };
+  }
   const [n, f] = REF_INDEX[ref] || REF_INDEX.trend;
   const own = foil ? (p[f] || p[1]) : (p[n] || p[0]);
   if (own) return { value: own, estimated: null };

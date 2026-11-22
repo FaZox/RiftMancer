@@ -4,7 +4,8 @@
  * are copied to the clipboard as « quantity name » lines and the Cardmarket
  * Wants page is opened so they can be pasted.
  */
-import { getPricesState } from './prices.js';
+import { getPricesState, promoBaseOf } from './prices.js';
+import { getMatcher } from './cardMatcher.js';
 import { cardmarketFilters } from './uiPrefs.js';
 import { cardmarketSlug } from './priceBuilder.js';
 
@@ -26,6 +27,9 @@ export function cardmarketName(cardData) {
  * and the English name.
  */
 export function cardmarketUrl(cardData, { promo = false } = {}) {
+  // A promo printing of its own (« Organized Play ») is its normal card's promo on Cardmarket
+  const base = !promo && cardData.variant === 'promo' ? promoBaseOf(cardData.id) : null;
+  if (base) return cardmarketUrl(getMatcher().getCardData(base.id) || base, { promo: true });
   const q = cardmarketFilters({ condition: !promo && cardData.variant !== 'promo' });
   const known = getPricesState().prices?.links?.[cardData.id]?.[promo ? 1 : 0];
   const exp = cardmarketSlug(cardData.setName || cardData.set);
