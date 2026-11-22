@@ -18,7 +18,7 @@ import {
   DOMAIN_COLORS, LANGUAGES, domainLabel, rarityLabel, typeLabel,
 } from '../../data/sampleCards.js';
 import { conditionShort } from '../../lib/conditions.js';
-import { tx } from '../../lib/i18n.js';
+import { tx, locale } from '../../lib/i18n.js';
 
 const TABS = [
   { id: 'infos', label: tx('Infos') },
@@ -113,6 +113,11 @@ export default function CardZoom({ cardId: openedId, language: initialLanguage, 
   const refPrice = price ?? foilPrice;
   const isPrecious = cardData.type === 'legend' || (refPrice != null && refPrice > 20);
   const onImgError = () => { if (imgSrc !== thumbSrc(cardId)) setImgSrc(thumbSrc(cardId)); };
+  // What you paid (Prix tab → « Mon achat »): average of the copies with a price, latest date
+  const paidStacks = owned.filter(s => s.paid > 0);
+  const paidCount = paidStacks.reduce((n, s) => n + s.quantity, 0);
+  const paidAvg = paidCount ? paidStacks.reduce((v, s) => v + s.paid * s.quantity, 0) / paidCount : null;
+  const paidDate = owned.map(s => s.paidAt).filter(Boolean).sort().at(-1) || null;
   const tabLabel = (t) => (t.id === 'price' && price != null ? tx('Prix · {v0}{euro}', { v0: normalInfo.estimated ? '≈ ' : '', euro: euro(price) }) : t.id === 'mine' ? tx('Ma collection · {ownedTotal}', { ownedTotal }) : t.label);
 
   return (
@@ -187,6 +192,12 @@ export default function CardZoom({ cardId: openedId, language: initialLanguage, 
               ))}
               <span className="px-2.5 py-0.5 text-xs bg-rift-700 border border-rift-600 text-rift-100">{typeLabel(cardData.type)}</span>
               <span className="px-2.5 py-0.5 text-xs bg-rift-800 border border-gold-400 text-gold-400">{rarityLabel(cardData.rarity)}</span>
+              {(paidAvg != null || paidDate) && (
+                <span className="ml-auto self-center text-[13px] text-rift-200" title={tx('Prix payé et date d’achat (onglet Prix)')}>
+                  {paidAvg != null && <>{tx('Payé')} <span className="font-semibold text-gold-400">{euro(paidAvg)}</span>{paidStacks.length > 1 && <span className="text-rift-400"> {tx('(moyenne)')}</span>}</>}
+                  {paidDate && <>{paidAvg != null ? ' · ' : ''}{tx('le {date}', { date: new Date(`${paidDate}T12:00:00`).toLocaleDateString(locale()) })}</>}
+                </span>
+              )}
             </div>
             <h2 className="font-display text-[26px] leading-tight font-bold text-gold-400 flex items-center gap-2">
               {/* the rarity's gem, as printed on the card */}
@@ -253,6 +264,9 @@ export default function CardZoom({ cardId: openedId, language: initialLanguage, 
               </>
             )}
 
+            {tab === 'price' && owned.length > 0 && onUpdateCard && (
+              <PurchaseEditor key={cardId} owned={owned} paid={paidAvg} paidAt={paidDate} onSave={(paid, paidAt) => owned.forEach(s => onUpdateCard(s, { ...s, paid, paidAt }))} />
+            )}
             {tab === 'price' && (
               !prices ? (
                 <p className="text-sm text-rift-400">{tx('Prix disponibles dans l’app PC (et sur le téléphone après une synchro).')}</p>
@@ -384,6 +398,40 @@ export default function CardZoom({ cardId: openedId, language: initialLanguage, 
         </div>
       </div>
       </div>
+    </div>
+  );
+}
+
+/** « Mon achat » (Prix tab): the price paid for one copy and the purchase date, for every copy of the card. */
+function PurchaseEditor({ owned, paid, paidAt, onSave }) {
+  const fmt = (v) => (v ? String(Math.round(v * 100) / 100).replace('.', ',') : '');
+  const [price, setPrice] = useState(fmt(paid));
+  const [date, setDate] = useState(paidAt || '');
+  const n = owned.reduce((k, s) => k + s.quantity, 0);
+  const save = () => {
+    const v = parseFloat(price.replace(',', '.'));
+    onSave(Number.isFinite(v) && v > 0 ? Math.round(v * 100) / 100 : null, /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : null);
+  };
+  return (
+    <div className="panel p-3 space-y-2">
+      <p className="text-sm font-semibold text-rift-100">{tx('Mon achat')}</p>
+      <div className="flex flex-wrap items-end gap-2">
+        <label className="flex flex-col gap-1 text-[12px] text-rift-400">
+          {tx('Prix payé (un exemplaire)')}
+          <span className="inline-flex items-center gap-1 h-11 px-2 bg-rift-900 border border-rift-600 focus-within:border-gold-500/60">
+            <input type="text" inputMode="decimal" value={price} onChange={e => setPrice(e.target.value)} placeholder="—"
+              className="w-20 bg-transparent text-right text-[15px] text-rift-100 focus:outline-none" />
+            <span className="text-rift-500">€</span>
+          </span>
+        </label>
+        <label className="flex flex-col gap-1 text-[12px] text-rift-400">
+          {tx('Date d’achat')}
+          <input type="date" value={date} onChange={e => setDate(e.target.value)}
+            className="h-11 px-2 bg-rift-900 border border-rift-600 text-[15px] text-rift-100 focus:outline-none focus:border-gold-500/60 [color-scheme:dark]" />
+        </label>
+        <button type="button" onClick={save} className="btn-primary min-h-[44px] text-sm">{tx('Enregistrer')}</button>
+      </div>
+      <p className="text-[12px] text-rift-500">{n > 1 ? tx('Pour vos {n} exemplaires de cette carte.', { n }) : tx('Pour votre exemplaire de cette carte.')}</p>
     </div>
   );
 }

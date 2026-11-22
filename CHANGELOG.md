@@ -3,6 +3,13 @@
 Entries are in English from 21/11/2026; the earlier history is in French (*l’historique antérieur est en français*).
 
 
+## [Unreleased] - 2026-11-22 · Price paid and purchase date, phone tab bar, Cards tab polish
+
+- **Card sheet**: the price paid and the purchase date show on the right of the rarity (« Payé 4,50 € · le 12/11/2026 », the average when copies were bought at different prices). They are set in the Price tab → « Mon achat », for every copy of the card; copies get a `paidAt` field (YYYY-MM-DD) next to `paid`.
+- **Phone tab bar**: Collection · Cartes · Valeur · Scanner · Decks · Boîtes · Plus (Valeur back in the bar, Boîtes moved out of « Plus »).
+- **Cards tab**: one tile less per row on the PC (bigger, readable card texts); the price under each card on the phone too.
+- « Impressions et variantes » and rulings missing in 2.4.0 on the PC: the everyday app had never installed the content layers (only the test app had them, and its current « cartes » layer came from Riot's gallery, without the printing links). Fixed on this PC by copying the layers; on another device, Settings → Content → Cards and Rulings → « Rechercher ».
+
 ## [Unreleased] - 2026-11-22 · « Cartes » tab: the whole catalog, owned or not (ONGLET-CARTES.md, design A « Bibliothèque »)
 
 - **New main tab « Cartes »** — PC: first item of the sidebar (« Explorer »), Ctrl+F searches the page (Ctrl+K stays the global search), Ctrl+9 opens it; phone: Collection · **Cartes** · Scanner · Decks · Plus, **Valeur moved to « Plus »** (first entry). The Collection view « Cartes » is renamed « Mes cartes »; Progression has « Voir les manquantes dans Cartes » and the global search « Voir tous les résultats dans Cartes ».

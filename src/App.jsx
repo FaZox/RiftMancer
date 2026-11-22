@@ -13,6 +13,8 @@ import UndoBar from './components/UndoBar.jsx';
 // The other tabs are loaded when first opened (smaller startup code).
 const ScanTab = lazy(() => import('./components/scan/ScanTab.jsx'));
 const CardsTab = lazy(() => import('./components/cards/CardsTab.jsx'));
+const ValueTab = lazy(() => import('./components/value/ValueTab.jsx'));
+const OrganizeTab = lazy(() => import('./components/organize/OrganizeTab.jsx'));
 const MoreTab = lazy(() => import('./components/more/MoreTab.jsx'));
 import useAppController from './hooks/useAppController.js';
 import GlobalSearch from './components/common/GlobalSearch.jsx';
@@ -98,7 +100,7 @@ export default function App() {
         scannedCards={scannedCards} wishlist={wishlist} org={org} collection={collection} onAddCopy={handleAddCopy}
         language={batchDefaults.language} notify={showNotification}
         navigate={(page, opts = {}) => {
-          if (['collection', 'cards', 'decks', 'scan'].includes(page)) { setActiveTab(page); return; }
+          if (['collection', 'cards', 'value', 'decks', 'boxes', 'scan'].includes(page)) { setActiveTab(page); return; }
           if (page === 'settings') requestOpen({ kind: 'setting', id: opts.setting });
           else requestOpen({ kind: 'more', id: page });
           setActiveTab('more');
@@ -170,6 +172,17 @@ export default function App() {
 
         {activeTab === 'decks' && (
           <DecksTab collection={collection} org={org} wishlist={wishlist} onAddCopy={handleAddCopy} showNotification={showNotification} />
+        )}
+
+        {activeTab === 'value' && (
+          <ValueTab scannedCards={scannedCards} wishlist={wishlist} onAddCopy={handleAddCopy} />
+        )}
+
+        {activeTab === 'boxes' && (
+          <div className="relative flex-1 min-h-0 flex flex-col">
+            <h1 className="h-title text-[22px] px-4 pt-5 pb-1 flex-shrink-0">{tx('Boîtes')}</h1>
+            <OrganizeTab collection={collection} org={org} wishlist={wishlist} onAddCopy={handleAddCopy} fixedView="boxes" hideHeader />
+          </div>
         )}
 
         {activeTab === 'cards' && (

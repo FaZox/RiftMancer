@@ -24,7 +24,7 @@ Details in skills (on demand): riftmancer-tests, riftmancer-scanner, riftmancer-
 
 ## Rules
 - Test in the test app (`com.riftmancer.app.test`) before the everyday app.
-- Commit and push the private repo (FaZox/RiftboundApp, main) when a piece of work is done; commit messages end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. The public repo (FaZox/RiftMancer, `npm run public:export`) only with the user's go.
+- When a piece of work is done: commit in the main folder, then publish to the only GitHub repo, the public FaZox/RiftMancer (`npm run public:export -- <empty folder>`, copy into `../riftmancer-public` keeping its `.git`, commit, push; tag `v<version>` for a release). Commit messages end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 - Never commit: `docs/claude/` (`CORRECTIONS*.md`, `AMELIORATIONS-*.md`, `MODULE-BANC.md`, `LICENCE-ET-PUBLICATION.md`, `REPRODUIRE-SCANNER-OPENRIFT.md`…), `model/500266617.jpg`, `android/Nouveau Document texte.txt`, keystores, `*.jks`, `*.pem`.
 - Never read `android/keystore.properties` or the pack signing key; never ask for, show or write passwords.
 - Riot content (card pictures, catalog, `public/sym`) stays out of the public repo and the public builds.

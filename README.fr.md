@@ -179,7 +179,7 @@ Le **même code** pour les données et la logique, **deux interfaces** distincte
 | | Logiciel PC | Application Android |
 |---|---|---|
 | Choix | logiciel Electron, ou navigateur large (≥ 1024 px) | application Capacitor, ou navigateur étroit |
-| Navigation | colonne à gauche (Cartes · Collection, Valeur · Decks, Matchs · Scanner · Boîtes, Prêts, Échanges · Réglages) | barre du bas : Collection · Cartes · **Scanner** · Decks · Plus (Valeur dans Plus) |
+| Navigation | colonne à gauche (Cartes · Collection, Valeur · Decks, Matchs · Scanner · Boîtes, Prêts, Échanges · Réglages) | barre du bas : Collection · Cartes · Valeur · **Scanner** · Decks · Boîtes · Plus |
 | Scanner | photos d’abord (plusieurs à la fois), webcam en option | caméra d’abord |
 | Collection | grille S/M/L ou tableau modifiable | grille ou liste |
 | Fiche d’une carte | fenêtre compacte | plein écran, glisser pour changer de carte |

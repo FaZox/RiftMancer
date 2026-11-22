@@ -123,7 +123,7 @@ export default function CardsPage({ scannedCards, wishlist, org, onAddCopy, onRe
               <button type="button" onClick={() => { b.setQuery(''); b.setView({ ownership: 'all' }); }} className="btn-secondary mx-auto text-sm">{tx('Tout effacer')}</button>
             </div>
           ) : (
-            <CardsGrid b={b} scrollRef={scrollRef} minWidth={minWidth} gap={16} hd showPrice
+            <CardsGrid b={b} scrollRef={scrollRef} minWidth={minWidth} fewer={1} gap={16} hd showPrice
               selection={a.selected} onTilePress={press} onTileZoom={open} onQuickAdd={onQuickAdd} />
           )}
         </section>

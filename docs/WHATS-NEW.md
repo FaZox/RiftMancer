@@ -6,6 +6,12 @@ version is docs/NOUVEAUTES.md). `npm run release -- <version>` takes
 `WHATS-NEW.txt` from it and refuses to build a package until the section of the
 version is written, in both files.
 
+## 2.4.1 — price paid, phone tab bar
+
+- **Price paid and purchase date**: in a card's sheet, Price tab → « My purchase », say how much you paid and when; it shows on the right of the rarity.
+- **Phone tab bar**: Collection · Cards · Value · Scanner · Decks · Boxes · More.
+- **Cards tab**: bigger cards on the PC, and the price under each card on the phone.
+
 ## 2.4.0 — the Cards tab
 
 - **New « Cards » tab**: the whole Riftbound catalog, owned or not, with ×N on the cards you have. On the phone it sits between Collection and Scanner; **Value moves to « More »**. In the Collection, the « Cards » view is now « My cards ».

@@ -180,7 +180,7 @@ export function SyntaxHelp({ onClose }) {
  * Virtual grid by rows (set titles when sorted by set and number). `cols`
  * from the width: (width + gap) / (min + gap). Restores the scroll position.
  */
-export function CardsGrid({ b, scrollRef, minWidth, fixedCols, gap, hd, selection, onTilePress, onTileZoom, onQuickAdd, showPrice }) {
+export function CardsGrid({ b, scrollRef, minWidth, fixedCols, fewer = 0, gap, hd, selection, onTilePress, onTileZoom, onQuickAdd, showPrice }) {
   const boxRef = useRef(null);
   const [width, setWidth] = useState(0);
   useLayoutEffect(() => {
@@ -191,7 +191,7 @@ export function CardsGrid({ b, scrollRef, minWidth, fixedCols, gap, hd, selectio
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-  const cols = fixedCols || Math.max(2, Math.floor((width + gap) / (minWidth + gap)));
+  const cols = fixedCols || Math.max(2, Math.floor((width + gap) / (minWidth + gap)) - fewer);
   const tileW = width ? (width - gap * (cols - 1)) / cols : minWidth;
   const withSets = b.view.sort === 'collector';
   const rows = useMemo(() => gridRows(b.items, cols, withSets), [b.items, cols, withSets]);

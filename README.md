@@ -182,7 +182,7 @@ The **same code** for the data and the logic, **two separate interfaces**:
 | | PC app | Android app |
 |---|---|---|
 | Chosen | Electron app, or wide browser (≥ 1024 px) | Capacitor app, or narrow browser |
-| Navigation | column on the left (Cards · Collection, Value · Decks, Matches · Scanner · Boxes, Loans, Trades · Settings) | bottom bar: Collection · Cards · **Scanner** · Decks · More (Value in More) |
+| Navigation | column on the left (Cards · Collection, Value · Decks, Matches · Scanner · Boxes, Loans, Trades · Settings) | bottom bar: Collection · Cards · Value · **Scanner** · Decks · Boxes · More |
 | Scanner | photos first (several at once), webcam optional | camera first, grid mode |
 | Collection | S/M/L grid or editable table | grid or list |
 | Card sheet | compact window | full screen, swipe to change card |

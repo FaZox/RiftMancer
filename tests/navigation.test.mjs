@@ -40,10 +40,10 @@ test('PC: « Explorer » (Cartes) first, then the groups of B.3, status zone at 
   assert.match(s, /onSettings\('content'\)/);
 });
 
-test('phone: Collection · Cartes · Scanner · Decks · Plus, Valeur first in « Plus »', async () => {
+test('phone: Collection · Cartes · Valeur · Scanner · Decks · Boîtes · Plus', async () => {
   const bar = read('src/components/BottomTabBar.jsx');
-  assert.deepEqual([...bar.matchAll(/\{ id: '(\w+)'/g)].map(m => m[1]), ['collection', 'cards', 'scan', 'decks', 'more']);
+  assert.deepEqual([...bar.matchAll(/\{ id: '(\w+)'/g)].map(m => m[1]), ['collection', 'cards', 'value', 'scan', 'decks', 'boxes', 'more']);
   const more = read('src/components/more/MoreTab.jsx');
-  assert.ok(more.indexOf("id: 'value'") < more.indexOf("id: 'trades'"));
+  assert.doesNotMatch(more, /id: 'value'|id: 'boxes'/);
   assert.match(read('src/components/collection/CollectionTab.jsx'), /label: 'Mes cartes'/);
 });

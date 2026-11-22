@@ -5,6 +5,12 @@ Texte pour les utilisateurs de l’appli, une section par version distribuée
 docs/WHATS-NEW.md). `npm run release -- <version>` en tire `NOUVEAUTES.txt` et refuse
 de construire un paquet tant que la section de la version n’est pas écrite, dans les deux fichiers.
 
+## 2.4.1 — prix payé, barre du téléphone
+
+- **Prix payé et date d’achat** : dans la fiche d’une carte, onglet Prix → « Mon achat », indiquez combien vous l’avez payée et quand ; c’est affiché à droite de la rareté.
+- **Barre du téléphone** : Collection · Cartes · Valeur · Scanner · Decks · Boîtes · Plus.
+- **Onglet Cartes** : des cartes plus grandes sur PC, et le prix sous chaque carte sur téléphone.
+
 ## 2.4.0 — l’onglet Cartes
 
 - **Nouvel onglet « Cartes »** : tout le catalogue Riftbound, possédé ou non, avec ×N sur les cartes que vous avez. Sur téléphone il est entre Collection et Scanner ; **Valeur passe dans « Plus »**. Dans la Collection, la vue « Cartes » s’appelle maintenant « Mes cartes ».

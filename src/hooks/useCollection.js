@@ -32,7 +32,7 @@ async function withCardmarketConditions(copies) {
 export function stackKey(c) {
   // Copies in different places (box, deck, loan) are separate stacks.
   // Copies bought at different prices are separate stacks too.
-  return `${c.cardId}|${c.language}|${c.foil ? 1 : 0}|${c.promo ? 1 : 0}|${c.condition}|${c.boxId || ''}|${c.deckId || ''}|${c.loanId || ''}|${c.paid || ''}`;
+  return `${c.cardId}|${c.language}|${c.foil ? 1 : 0}|${c.promo ? 1 : 0}|${c.condition}|${c.boxId || ''}|${c.deckId || ''}|${c.loanId || ''}|${c.paid || ''}|${c.paidAt || ''}`;
 }
 
 export default function useCollection() {
@@ -94,6 +94,7 @@ export default function useCollection() {
           deckId: c.deckId || null,
           loanId: c.loanId || null,
           paid: c.paid || null,
+          paidAt: c.paidAt || null,
           scanTimestamp: c.createdAt,
           copyIds: [],
           slots: [], // [[page, pocket]] in a binder (binder.js)
@@ -141,6 +142,7 @@ export default function useCollection() {
       deckId: stack.deckId || null,
       loanId: stack.loanId || null,
       paid: (next.paid !== undefined ? next.paid : stack.paid) || null,
+      paidAt: (next.paidAt !== undefined ? next.paidAt : stack.paidAt) || null,
     };
     const targetQty = Math.max(0, (next.quantity ?? stack.quantity) | 0);
 
@@ -148,7 +150,8 @@ export default function useCollection() {
     const members = current.filter(c => ids.has(c.id));
     const attrsChanged = members.some(c =>
       c.cardId !== attrs.cardId || c.language !== attrs.language || c.foil !== attrs.foil
-      || c.promo !== attrs.promo || c.condition !== attrs.condition || (c.paid || null) !== attrs.paid);
+      || c.promo !== attrs.promo || c.condition !== attrs.condition || (c.paid || null) !== attrs.paid
+      || (c.paidAt || null) !== attrs.paidAt);
 
     // Keep the oldest copies, delete the newest ones when reducing.
     const keep = new Set(members.slice(0, targetQty).map(c => c.id));

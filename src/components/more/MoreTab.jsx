@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Repeat, Package, Users, Settings, ChevronRight, ArrowLeft, RefreshCw, BarChart3 } from 'lucide-react';
+import { Repeat, Users, Settings, ChevronRight, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useNeedsAttention } from '../../lib/attention.js';
 import FriendsView from '../friends/FriendsView.jsx';
 import CardZoom from '../collection/CardZoom.jsx';
 import OrganizeTab from '../organize/OrganizeTab.jsx';
 import SettingsTab from '../settings/SettingsTab.jsx';
-import ValueTab from '../value/ValueTab.jsx';
 import { getSyncState, subscribeSync, checkPcOffer } from '../../lib/syncClient.js';
 import { SyncButtons } from '../settings/SyncSection.jsx';
 import { isDesktop } from '../../lib/collectionDB.js';
@@ -40,9 +39,7 @@ export default function MoreTab({ scannedCards, collection, org, wishlist, onAdd
       : tx('Synchronisation avec le PC, options');
 
   const SECTIONS = [
-    { id: 'value', label: tx('Valeur'), sub: tx('Valeur de la collection, évolution, statistiques'), icon: BarChart3 },
     { id: 'trades', label: tx('Échanges et amis'), sub: tx('{length} liste(s) d’amis · {length2} échange(s) enregistré(s)', { length: org.people.items.filter(p => p.list).length, length2: org.trades.items.length }), icon: Repeat },
-    { id: 'boxes', label: tx('Boîtes'), sub: tx('{length} boîte(s) de rangement', { length: org.boxes.items.length }), icon: Package },
     { id: 'loans', label: tx('Prêts'), sub: activeLoans ? tx('{activeLoans} prêt(s) en cours', { activeLoans }) : tx('Aucun prêt en cours'), icon: Users },
     { id: 'settings', label: tx('Réglages'), sub: syncLine, icon: Settings },
   ];
@@ -50,15 +47,7 @@ export default function MoreTab({ scannedCards, collection, org, wishlist, onAdd
 
   return (
     <div className="relative flex-1 min-h-0 flex flex-col">
-      {section === 'value' ? (
-        // Valeur has its own header; the back arrow brings « Plus » back
-        <div className="relative flex-1 min-h-0 flex flex-col">
-          <button onClick={() => setSection(null)} aria-label={tx('Retour')} className="absolute left-1 top-3 z-10 w-11 h-11 flex items-center justify-center text-rift-100">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div className="flex-1 min-h-0 flex flex-col pl-9"><ValueTab scannedCards={scannedCards} wishlist={wishlist} onAddCopy={onAddCopy} /></div>
-        </div>
-      ) : section === 'settings' ? (
+      {section === 'settings' ? (
         // Réglages has its own header (list of sections, then each section with its back arrow)
         <SettingsTab key={settingsOpen || 'list'} {...settingsProps} initialOpen={settingsOpen} onClose={() => { setSection(null); setSettingsOpen(null); }} />
       ) : !current ? (

@@ -1,15 +1,17 @@
 import React from 'react';
-import { LayoutGrid, Swords, ScanLine, GalleryVerticalEnd, MoreHorizontal } from 'lucide-react';
+import { LayoutGrid, Swords, ScanLine, GalleryVerticalEnd, MoreHorizontal, BarChart3, Package } from 'lucide-react';
 import { useNeedsAttention } from '../lib/attention.js';
 import { tx } from '../lib/i18n.js';
 
 // Design Hextech : 5 onglets, le Scanner au centre (plus gros, atteignable au pouce).
-// Valeur est dans « Plus » depuis l'onglet Cartes (ONGLET-CARTES 1.2).
+// 7 onglets depuis l'onglet Cartes : Valeur à droite de Cartes, Boîtes à droite de Decks.
 export const TABS = [
   { id: 'collection', label: tx('Collection'), icon: LayoutGrid },
   { id: 'cards', label: tx('Cartes'), icon: GalleryVerticalEnd },
+  { id: 'value', label: tx('Valeur'), icon: BarChart3 },
   { id: 'scan', label: tx('Scanner'), icon: ScanLine, center: true },
   { id: 'decks', label: tx('Decks'), icon: Swords },
+  { id: 'boxes', label: tx('Boîtes'), icon: Package },
   { id: 'more', label: tx('Plus'), icon: MoreHorizontal },
 ];
 
@@ -21,7 +23,7 @@ export default function BottomTabBar({ activeTab, onTabChange, scannedCount }) {
       className="flex-shrink-0 z-40 bg-rift-900 border-t border-gold-500/35"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
-      <div className="grid grid-cols-5 items-end h-[68px]">
+      <div className="grid grid-cols-7 items-end h-[68px]">
         {TABS.map(({ id, label, icon: Icon, center }) => {
           const isActive = activeTab === id;
           if (center) {
@@ -30,9 +32,9 @@ export default function BottomTabBar({ activeTab, onTabChange, scannedCount }) {
                 key={id}
                 onClick={() => onTabChange(id)}
                 aria-current={isActive ? 'page' : undefined}
-                className="flex flex-col items-center gap-1 pb-2 -mt-7"
+                className="flex flex-col items-center gap-1 pb-2 -mt-7 min-w-0"
               >
-                <span className={`hexagon w-[60px] h-[60px] flex items-center justify-center transition-colors ${isActive ? 'bg-gold-400' : 'bg-gold-500 active:bg-gold-600'}`}>
+                <span className={`hexagon w-[54px] h-[54px] flex items-center justify-center transition-colors ${isActive ? 'bg-gold-400' : 'bg-gold-500 active:bg-gold-600'}`}>
                   <Icon className="w-7 h-7 text-rift-900" strokeWidth={2.4} />
                 </span>
                 <span className={`text-[11px] font-bold ${isActive ? 'text-gold-400' : 'text-rift-300'}`}>{label}</span>
@@ -44,7 +46,7 @@ export default function BottomTabBar({ activeTab, onTabChange, scannedCount }) {
               key={id}
               onClick={() => onTabChange(id)}
               aria-current={isActive ? 'page' : undefined}
-              className={`h-full flex flex-col items-center justify-center gap-1 relative transition-colors ${
+              className={`h-full min-w-0 flex flex-col items-center justify-center gap-1 relative transition-colors ${
                 isActive ? 'text-gold-400' : 'text-rift-400 active:text-rift-200'
               }`}
             >
@@ -58,7 +60,7 @@ export default function BottomTabBar({ activeTab, onTabChange, scannedCount }) {
                   </span>
                 )}
               </span>
-              <span className={`text-[11px] ${isActive ? 'font-bold' : 'font-medium'}`}>{label}</span>
+              <span className={`max-w-full truncate px-0.5 text-[11px] tracking-tight ${isActive ? 'font-bold' : 'font-medium'}`}>{label}</span>
             </button>
           );
         })}

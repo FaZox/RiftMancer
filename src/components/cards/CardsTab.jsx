@@ -79,7 +79,7 @@ export default function CardsTab({ scannedCards, wishlist, org, onAddCopy, onRem
             <button type="button" onClick={() => { b.setQuery(''); b.setView({ ownership: 'all' }); }} className="btn-secondary mx-auto text-sm">{tx('Tout effacer')}</button>
           </div>
         ) : (
-          <CardsGrid b={b} scrollRef={scrollRef} fixedCols={3} minWidth={100} gap={10} hd={false}
+          <CardsGrid b={b} scrollRef={scrollRef} fixedCols={3} minWidth={100} gap={10} hd={false} showPrice
             selection={a.selecting ? a.selected : null} onTilePress={press} onTileZoom={hold} />
         )}
       </main>
