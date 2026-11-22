@@ -118,8 +118,9 @@ export default function useCollection() {
       const qty = Math.max(1, e.quantity | 0);
       for (let i = 0; i < qty; i++) added.push(makeCopy(e, now));
     }
-    if (added.length === 0) return;
+    if (added.length === 0) return [];
     commit([...copiesRef.current, ...added], added);
+    return added;
   }, [commit]);
 
   /**

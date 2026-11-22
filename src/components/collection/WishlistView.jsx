@@ -7,7 +7,8 @@ import CardImage from '../common/CardImage.jsx';
 import { getLocalizedName, displayLanguage } from '../../lib/cardLocale.js';
 import { compareCollector } from '../../lib/catalog.js';
 import { getMatcher } from '../../lib/cardMatcher.js';
-import CardmarketWantsButton from '../common/CardmarketWantsButton.jsx';import { tx } from '../../lib/i18n.js';
+import CardmarketWantsButton from '../common/CardmarketWantsButton.jsx';
+import { tx } from '../../lib/i18n.js';
 
 
 // ─── Wish list ───────────────────────────────────────────────────────────
@@ -28,7 +29,7 @@ export function WishlistView({ ownedByCard, wishlist, onOpen }) {
     <div className="flex-1 overflow-y-auto pb-20">
       <div className="px-4 pt-3 pb-4 space-y-3 lg:px-8 lg:max-w-[1800px]">
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="flex flex-col items-center justify-center py-16 text-center" data-help="wish.empty">
             <Heart className="w-10 h-10 text-rift-600 mb-3" />
             <p className="text-sm text-rift-400">{tx('Votre liste de souhaits est vide')}</p>
             <p className="text-xs text-rift-500 mt-1">{tx('Ouvrez une carte (Cartes ou Progression) et appuyez sur « Ajouter » dans Liste de souhaits')}</p>
@@ -41,14 +42,14 @@ export function WishlistView({ ownedByCard, wishlist, onOpen }) {
                 <span>{alerts.length} {tx('carte')}{alerts.length > 1 ? 's' : ''} {tx('sous votre prix d’alerte :')} {alerts.map(a => getLocalizedName(matcher.getCardData(a.cardId), displayLanguage())).join(', ')}.</span>
               </div>
             )}
-            <p className="text-xs text-rift-400">
+            <p className="text-xs text-rift-400" data-help="wish.summary">
               {items.length} {tx('carte')}{items.length > 1 ? 's' : ''} {tx('souhaitée')}{items.length > 1 ? 's' : ''} · {missing.length} {tx('encore à obtenir')}
               {toBuy > 0 && <> {tx('· coût estimé')} <span className="font-semibold text-gold-400">{euro(toBuy)}</span></>}
             </p>
-            <CardmarketWantsButton label={tx('Envoyer vers mes souhaits Cardmarket')}
-              items={missing.map(i => ({ cardData: i.cardData, quantity: i.quantity - (ownedByCard.get(i.cardId) || 0) }))} />
+            <div data-help="wish.cardmarket"><CardmarketWantsButton label={tx('Envoyer vers mes souhaits Cardmarket')}
+              items={missing.map(i => ({ cardData: i.cardData, quantity: i.quantity - (ownedByCard.get(i.cardId) || 0) }))} /></div>
             <div className="space-y-2">
-              {items.map(i => {
+              {items.map((i, ii) => {
                 const owned = ownedByCard.get(i.cardId) || 0;
                 const done = owned >= i.quantity;
                 return (
@@ -64,9 +65,9 @@ export function WishlistView({ ownedByCard, wishlist, onOpen }) {
                         {prices && unitPrice(prices, i.cardId) != null && <span className="text-gold-400"> · {euro(unitPrice(prices, i.cardId))} {tx('l’unité')}</span>}
                         {prices && <> <ChangeBadge value={priceChange(prices, i.cardId, 7)} label="· 7 j" unknown={null} /></>}
                       </p>
-                      {!done && <AlertInput item={i} hit={alerts.includes(i)} onChange={(v) => wishlist.setMaxPrice(i.cardId, v)} />}
+                      {!done && <span data-help={ii === 0 ? 'wish.alert' : undefined} className="inline-block"><AlertInput item={i} hit={alerts.includes(i)} onChange={(v) => wishlist.setMaxPrice(i.cardId, v)} /></span>}
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1" data-help={ii === 0 ? 'wish.wanted' : undefined}>
                       <button onClick={() => wishlist.setWanted(i.cardId, i.quantity - 1)} className="w-7 h-7 rounded-lg bg-rift-800 text-rift-300">−</button>
                       <span className="w-6 text-center text-sm font-mono text-rift-100">{i.quantity}</span>
                       <button onClick={() => wishlist.setWanted(i.cardId, i.quantity + 1)} className="w-7 h-7 rounded-lg bg-rift-800 text-rift-300">+</button>

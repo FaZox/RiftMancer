@@ -6,6 +6,7 @@ import { BanEditSheet, BanUpdateSheet } from './BanUpdate.jsx';
 import TranslationsSheet from './TranslationsUpdate.jsx';
 import CardsUpdateSheet from './CardsUpdate.jsx';
 import PricesCard from './PricesCard.jsx';
+import { useHelpPage } from '../../lib/help.js';
 import PacksRow from './PackUpdate.jsx';
 import { useContentNotices, clearNotice } from '../../lib/contentNotices.js';
 import { SectionCard } from '../common/SectionCard.jsx';
@@ -153,7 +154,7 @@ function PcContent() {
           <>
             <WeeklyToggle api={api} kind="cartes" info={info} setInfo={setInfo} />
             <div className="flex flex-wrap justify-end gap-2 mt-3">
-              <button onClick={() => setSheet('cards')} className="btn-secondary text-[13px] py-2 px-3"><RefreshCw className="w-4 h-4" /> {tx('Rechercher')}</button>
+              <button data-help="content.cards" onClick={() => setSheet('cards')} className="btn-secondary text-[13px] py-2 px-3"><RefreshCw className="w-4 h-4" /> {tx('Rechercher')}</button>
               <button onClick={importFolder} className="btn-ghost text-[13px] py-2 px-3"><FolderInput className="w-4 h-4" /> {tx('Importer un dossier…')}</button>
               {notices.cartes && <button onClick={() => setSheet('cardsPending')} className="btn-primary text-[13px] py-2 px-3">{tx('Installer')} {notices.cartes.added ? `les ${notices.cartes.added}` : 'les corrections'}</button>}
             </div>
@@ -235,6 +236,7 @@ function PhoneContent() {
 
 /** Réglages → Contenu. `title`: phone heading (the PC page has its own). */
 export default function ContentSection({ title = false }) {
+  useHelpPage('content');
   return (
     <div className="space-y-3">
       {title && <h2 className="text-sm font-semibold text-rift-100 flex items-center gap-2"><Layers className="w-4 h-4 text-gold-400" /> {tx('Contenu')}</h2>}

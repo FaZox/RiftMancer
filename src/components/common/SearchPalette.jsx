@@ -99,6 +99,11 @@ export default function SearchPalette({ open, mode = 'search', data, onPick, onC
             })}
           </div>
         ))}
+        {mode === 'search' && q.trim() && (
+          <button onClick={() => pick({ type: 'cardsTab', query: q.trim() })} className="w-full flex items-center gap-3 px-4 min-h-[44px] text-left text-[14px] text-gold-400 hover:bg-rift-800">
+            <Search size={16} aria-hidden="true" /> {tx('Voir tous les résultats dans Cartes')}
+          </button>
+        )}
         {mode === 'search' && q.trim() && !!flat.length && !all && (
           <button onClick={() => setAll(true)} className="w-full flex items-center gap-3 px-4 min-h-[44px] text-left text-[14px] text-gold-400 hover:bg-rift-800">
             <Layers size={16} aria-hidden="true" /> {tx('Chercher aussi dans toutes les cartes')}

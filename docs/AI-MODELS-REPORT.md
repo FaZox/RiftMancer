@@ -291,3 +291,61 @@ Detailed report of the last bench: `model/eval-compare.json`. Sources and SHA-25
 - different model refused, with a visible fallback.
 
 Lint: 0 errors, 0 warnings.
+
+---
+
+## 9. Pixel check from OpenRift (phase A, 22/11/2026)
+
+REPRODUIRE-SCANNER-OPENRIFT.md, phase A: OpenRift decides with a pixel comparison instead of a score threshold. The straightened photo and each candidate's picture are reduced to 40 × 56 grey (area average); 10 × 10 patches (step 5) keep their best normalised correlation within ±2 px; the score is the median of the patches. Winner when best ≥ 0.60 and 0.15 ahead of any other artwork. Ported in `src/lib/alignedVerify.js` (and the outline snapping `src/lib/edgeSnap.js`), tested in `tests/alignedVerify.test.mjs`. **Not used by the app yet.**
+
+Bench: `npm run eval:matcher -- --compare grid16,dinov2s-ft-fp16-mean-168@art --fusion 0.5 --cascade 100 --single --sample 300 --aug 2 --seed 11 --verify 4,8 --verify-opts 0.55/0.1,0.7/0.2` (600 simulated photos, 65 real ones). The app's chain is « cascade100 1img ». Right / **wrong** / outside the catalog accepted:
+
+**The pixel check alone** (the engines only give the short list of K artworks):
+
+| Decision | Simulated | Real |
+|---|---|---|
+| The app today | 84.5 / **0.2** / 1.0 % | 89.2 / **0** / 0 % |
+| Check alone, K 8, 0.60 / 0.15 (OpenRift) | 64.0 / **0.5** / 2.5 % | 78.5 / **0** / 1.5 % |
+| Check alone, K 8, 0.55 / 0.10 | 74.0 / **0.8** / 4.8 % | 92.3 / **0** / 3.1 % |
+| Check alone, K 2, 0.60 / 0.15 | 74.7 / **3.0** / 18.7 % | 86.2 / **6.2** / 33.8 % |
+
+**The app's decision with the check added** (veto: the check picks another artwork → asked; rescue: the app asks, the check picks the app's first artwork → accepted):
+
+| Decision | Simulated | Real |
+|---|---|---|
+| The app today | 84.5 / **0.2** / 1.0 % | 89.2 / **0** / 0 % |
+| + veto (any K, thresholds) | 84.3–84.5 / **0.2** / 0.8–1.0 % | unchanged |
+| + rescue K 8, 0.70 / 0.20 | 85.0 / **0.2** / 1.0 % | 89.2 / **0** / 0 % |
+| + rescue K 8, 0.55 / 0.10 | 86.8 / **0.2** / 1.5 % | 89.2 / **0** / 1.5 % |
+| + rescue K 4, 0.60 / 0.15 | 86.2 / **0.3** / 3.2 % | 89.2 / **1.5** / 4.6 % |
+
+Findings:
+- **Alone, the check does worse than the app** on the simulated photos (wrong and outside-catalog cards up), and is on a par on the real ones (more found, more outside-catalog cards accepted). OpenRift's own encoder puts the right card in a short list of 2; ours is right at top-1 in 90 % of the simulated photos, where the check gains little.
+- Its wrong cards are often the same few pictures (OGN-023, VEN-054, UNL-068, VEN-095: flat or very contrasted art that correlates with many photos) and photos whose crop is shifted by more than ±2 thumbnail pixels (5 % of the card): the simulated photos shift the crop by a few %, more than a well-fitted outline.
+- **As a veto** it catches none of the app's rare wrong cards. **As a rescue** it finds a little more (+0.5 to +2.3 points) but, except at 0.70 / 0.20, lets more outside-catalog cards through: the phase's rule (0 wrong card added, outside the catalog not above today) only holds at 0.70 / 0.20, for +0.5 point.
+- Time: 2 ms per photo for K 2, 8 ms for K 8 (PC, Node).
+- Not measured yet: the outline snapping (it would need `photos:prepare` run again with and without it), and the phone.
+
+---
+
+## 10. Reading the printing (phase C, 22/11/2026)
+
+REPRODUIRE-SCANNER-OPENRIFT.md, phase C: among the printings of one artwork, OpenRift picks the one in the photo by comparing bands of pixels (name, code strip at the bottom left, stamp at the bottom centre) with each printing's picture, on the pixels where the printings differ (« tournament »). Ported in `src/lib/printingPick.js`; bench `node scripts/eval-printings.mjs [--aug 4] [--real <dir>] [--plain | --simple]`. **Not used by the app.**
+
+What could be measured: the catalog has no promo yet (rifthunt's printings are not installed on any of the PCs, and installing them downloads ~324 pictures), so the bench uses the **53 artworks printed several times** (118 cards): runes of 4 sets, « ★ » legends and units, reprinted tokens. 472 simulated photos (4 per card) and **11 real photos** of runes (RAD-R02 ×5, UNL-R02 ×2, UNL-R05 ×3, VEN-R02 ×1, straightened by `photos:prepare`). No French picture: the language stage cannot work, only the code and stamp stages. Right / **wrong** / left to the user:
+
+| Method | Simulated | Real |
+|---|---|---|
+| OpenRift's tournament, bands at fixed places | 24.6 / **3.6** / 71.8 % | 0 / **18.2** / 81.8 % |
+| + each band looked for within ±4 % of the card (ours) | 52.8 / **7.0** / 40.3 % | 0 / **27.3** / 72.7 % |
+| + OpenRift's « unanimous » rule | 49.8 / **3.2** / 47.0 % | 0 / **0** / 100 % |
+| Code strip searched per printing, best score ≥ 0.70 and 0.08 ahead (ours) | 18.2 / **0.6** / 81.2 % | 0 / **0** / 100 % |
+
+Findings:
+- **No setting reaches 0 wrong printing while finding some**: the best one finds 18 % of the simulated printings with 0.6 % wrong, and **none of the 11 real photos**. The rule of the phase is not met: nothing is wired into the scanner.
+- **The code strip is too small on our crops**: 5 % of the card's height; in the app's 480 × 670 crop its text is ~10 px high, and on the real photos it is too blurred for a reliable correlation (no real photo reaches a score of 0.5). OpenRift straightens to 384 × 528 too, but its outlines are snapped onto the card's edges and it votes over several video frames.
+- **Our crops are a few % off**: the fixed bands (±2 px) often miss the strip; looking for it around its place finds more printings but also more wrong ones.
+- **« ★ » printings differ by one character** (« 307/298 » and « 307*/298 »), which also shifts the rest of the code: most wrong picks are ★ ↔ normal.
+- **Data error found**: the pictures of the 6 UNL runes (`public/cards/unl-r01…r06.webp`) are **the same files as the VEN runes** (« VEN • R0x » printed on them). No method can tell those printings apart until the UNL pictures are replaced.
+- Time: 1.5 to 7 ms per photo (PC, Node).
+- **Full resolution (same day)**: the 11 real photos read at the straightened crop's own size (up to 2 048 px) instead of 480 × 670 (`--native`): still no printing decided (leads 0.00 to 0.01). Looking at them: on one photo **the detector's crop cuts off the bottom of the card** (no code strip at all); on another the code is readable, « UNL • R02 », though the photo was filed as VEN-R02. Reading the printing needs exact outlines first (phase E), so the app asks instead and remembers the choice per artwork (`src/lib/printingChoice.js`).

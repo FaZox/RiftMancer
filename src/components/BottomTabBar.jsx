@@ -1,14 +1,15 @@
 import React from 'react';
-import { LayoutGrid, Swords, ScanLine, BarChart3, MoreHorizontal } from 'lucide-react';
+import { LayoutGrid, Swords, ScanLine, GalleryVerticalEnd, MoreHorizontal } from 'lucide-react';
 import { useNeedsAttention } from '../lib/attention.js';
 import { tx } from '../lib/i18n.js';
 
 // Design Hextech : 5 onglets, le Scanner au centre (plus gros, atteignable au pouce).
+// Valeur est dans « Plus » depuis l'onglet Cartes (ONGLET-CARTES 1.2).
 export const TABS = [
   { id: 'collection', label: tx('Collection'), icon: LayoutGrid },
-  { id: 'decks', label: tx('Decks'), icon: Swords },
+  { id: 'cards', label: tx('Cartes'), icon: GalleryVerticalEnd },
   { id: 'scan', label: tx('Scanner'), icon: ScanLine, center: true },
-  { id: 'value', label: tx('Valeur'), icon: BarChart3 },
+  { id: 'decks', label: tx('Decks'), icon: Swords },
   { id: 'more', label: tx('Plus'), icon: MoreHorizontal },
 ];
 

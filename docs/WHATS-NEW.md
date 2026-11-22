@@ -6,6 +6,14 @@ version is docs/NOUVEAUTES.md). `npm run release -- <version>` takes
 `WHATS-NEW.txt` from it and refuses to build a package until the section of the
 version is written, in both files.
 
+## 2.4.0 — the Cards tab
+
+- **New « Cards » tab**: the whole Riftbound catalog, owned or not, with ×N on the cards you have. On the phone it sits between Collection and Scanner; **Value moves to « More »**. In the Collection, the « Cards » view is now « My cards ».
+- **One search bar**: a name, a number, or keys such as `t:unit d:mind e<=3 own:0` (the « ? » gives the whole syntax). The filters (domains, sets, type, energy, **might**, rarity…) write their key in the bar.
+- **Missing cards stay in colour**: « Dim missing cards » fades them if you wish.
+- **Quick actions**: the card sheet in one click or tap, add a copy (with « Undo »), several cards at once to wishes or a deck, « Missing → wishes », CSV export. On the phone, the Scanner icon of the search finds a card without adding it.
+- **Memory**: the tab keeps your search, your filters and your place.
+
 ## 2.3.0 — prints and promos, rulings, a handier collection
 
 - **Every printing of every card**: Settings → Content → Cards → « Search » now brings the promos (Organized Play, Judge, Launch, Metal…), the K/DA cards and every variant (alternate art, overnumbered, signature, showcase), with their pictures and, as soon as they are installed, the French name of the same card. In a card's sheet, « Prints & variants » lists them all with their price and how many you own.

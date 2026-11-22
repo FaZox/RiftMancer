@@ -27,6 +27,9 @@ export default function GlobalSearch({ open, mode, onClose, onOpen, scannedCards
     if (item.type === 'card') {
       if (mode === 'add') { onAddCopy?.(item.cardId, language); notify?.(tx('{label} ajoutée à la collection', { label: item.label }), 'success'); }
       else setZoom(item.cardId);
+    } else if (item.type === 'cardsTab') {
+      requestOpen({ kind: 'cards', query: item.query, ownership: 'all' });
+      navigate('cards');
     } else if (item.type === 'deck') {
       requestOpen({ kind: 'deck', id: item.id });
       navigate('decks');

@@ -12,12 +12,16 @@ import CollectionPage from './pages/CollectionPage.jsx';
 import GlobalSearch from '../components/common/GlobalSearch.jsx';
 import Welcome from '../components/common/Welcome.jsx';
 import NoCards from '../components/common/NoCards.jsx';
+import HelpLayer from '../components/common/HelpLayer.jsx';
+import { useHelpPage } from '../lib/help.js';
 import ShortcutsDialog from '../components/common/ShortcutsDialog.jsx';
 import { keyToAction, isTyping } from '../lib/shortcuts.js';
+import { onRequest } from '../lib/navRequest.js';
 import { tx } from '../lib/i18n.js';
 // The other pages are loaded when first opened (smaller startup code).
 const ScanPage = lazy(() => import('./pages/ScanPage.jsx'));
 const DecksPage = lazy(() => import('./pages/DecksPage.jsx'));
+const CardsPage = lazy(() => import('./pages/CardsPage.jsx'));
 const ValuePage = lazy(() => import('./pages/ValuePage.jsx'));
 const MatchesView = lazy(() => import('../components/matches/MatchesView.jsx'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage.jsx'));
@@ -49,11 +53,15 @@ export default function DesktopApp() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [setPage]);
+  // « Voir dans Cartes » (global search, Progression): the page takes the request when it shows
+  useEffect(() => onRequest((r) => { if (r.kind === 'cards') { setSearchMode(null); setPage('cards'); } }), [setPage]);
   // The PC opens on the collection (the phone opens on the scanner)
   const started = useRef(false);
   useEffect(() => {
     if (!started.current) { started.current = true; setPage('collection'); }
   }, [setPage]);
+
+  useHelpPage(c.isLoading || c.startupError ? null : page); // help: the page's tour the first time
 
   if (c.isLoading) return <SplashGate isLoading pc progress={c.loadProgress} stage={c.loadStage} />;
   if (c.startupError) return <SplashGate isLoading={false} pc><StartupError error={c.startupError} onContinue={c.continueWithoutScanner} /></SplashGate>;
@@ -63,6 +71,7 @@ export default function DesktopApp() {
     <div className="flex h-[100dvh] bg-rift-900 overflow-hidden">
       <WhatsNew />
       <Welcome copies={c.collection.totalCopies} pending={c.pendingCards.length} />
+      <HelpLayer />
       <GlobalSearch open={!!searchMode} mode={searchMode || 'search'} onOpen={setSearchMode} onClose={() => setSearchMode(null)}
         scannedCards={c.scannedCards} wishlist={c.wishlist} org={c.org} collection={c.collection} onAddCopy={c.handleAddCopy}
         language={c.batchDefaults.language} notify={c.showNotification}
@@ -93,6 +102,11 @@ export default function DesktopApp() {
               c.showNotification(tx('{reduce} exemplaire(s) importé(s)', { reduce: entries.reduce((n, e) => n + e.quantity, 0) }), 'success');
             }}
           />
+        )}
+
+        {page === 'cards' && (
+          <CardsPage scannedCards={c.scannedCards} wishlist={c.wishlist} org={c.org} onAddCopy={c.handleAddCopy}
+            onRemoveCopy={c.handleRemoveCopy} onUpdateCard={c.handleUpdateCard} onQuickAdd={c.handleQuickAdd} notify={c.showNotification} />
         )}
 
         {page === 'scan' && (

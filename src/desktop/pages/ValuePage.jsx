@@ -57,7 +57,7 @@ function Dashboard({ scannedCards, wishItems, onOpen }) {
       <MovementsPanel scannedCards={scannedCards} wishItems={wishItems} onOpen={onOpen} />
       {/* Key figures */}
       <div className="grid grid-cols-4 gap-4">
-        <Kpi icon={Coins} label={tx('Valeur de la collection')} value={euro(data.total.value)} big
+        <Kpi help="value.total" icon={Coins} label={tx('Valeur de la collection')} value={euro(data.total.value)} big
           sub={`${data.total.priced} exemplaire${data.total.priced > 1 ? 's' : ''} avec un prix${data.total.unpriced ? ` · ${data.total.unpriced} sans prix` : ''}`}
           extra={data.total.estimated ? tx('dont {estimated} au prix estimé (≈)', { estimated: data.total.estimated }) : null} />
         <Kpi icon={data.week && data.week.diff < 0 ? TrendingDown : TrendingUp} label={tx('Sur 7 jours')}
@@ -121,10 +121,10 @@ function Dashboard({ scannedCards, wishItems, onOpen }) {
   );
 }
 
-function Kpi({ icon: Icon, label, value, sub, extra, tone, big }) {
+function Kpi({ icon: Icon, label, value, sub, extra, tone, big, help }) {
   const color = tone === 'up' ? 'text-state-ok' : tone === 'down' ? 'text-state-bad' : 'text-gold-400';
   return (
-    <div className={`panel p-5 ${big ? 'hex-cut' : ''}`}>
+    <div data-help={help} className={`panel p-5 ${big ? 'hex-cut' : ''}`}>
       <p className="text-sm text-rift-400 flex items-center gap-2"><Icon className="w-4 h-4" /> {label}</p>
       <p className={`font-display font-bold mt-1 ${big ? 'text-4xl' : 'text-3xl'} ${color}`}>{value}</p>
       <p className="text-xs text-rift-500 mt-1 truncate" title={sub}>{sub}</p>

@@ -1,16 +1,12 @@
 /**
  * Card catalog helpers for the collection views (sets, progress, sorting).
  */
-import { getMatcher } from './cardMatcher.js';import { tx } from './i18n.js';
+import { getMatcher } from './cardMatcher.js';
+import { tx } from './i18n.js';
 
 
-// Display order of sets (release order); unknown sets go last, alphabetically.
-const SET_ORDER = ['OGN', 'OGS', 'SFD', 'UNL', 'VEN', 'RAD'];
-
-export function setRank(set) {
-  const i = SET_ORDER.indexOf(set);
-  return i === -1 ? SET_ORDER.length : i;
-}
+export { setRank, compareCollector } from './catalogOrder.js';
+import { compareCollector, setRank } from './catalogOrder.js';
 
 /**
  * "Base" card of a set = the numbered cards of the main list, e.g.
@@ -45,13 +41,6 @@ export function catalogSets() {
 }
 
 const RARITY_RANK = { common: 0, uncommon: 1, rare: 2, epic: 3, showcase: 4 };
-
-/** Natural order inside a set: base cards by number, then variants. */
-export function compareCollector(a, b) {
-  return setRank(a.set) - setRank(b.set)
-    || a.set.localeCompare(b.set)
-    || (a.collectorNumber || '').localeCompare(b.collectorNumber || '', 'fr', { numeric: true });
-}
 
 export const SORTS = [
   { value: 'collector', label: tx('Extension et numéro') },

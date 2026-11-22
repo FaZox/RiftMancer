@@ -1,13 +1,17 @@
+import { requestHelp } from '../lib/help.js';
 import React, { useEffect, useState } from 'react';
 import { useContentNotices } from '../lib/contentNotices.js';
 import { APP_VERSION } from '../lib/appVersion.js';
 import {
-  LayoutGrid, Swords, ScanLine, BarChart3, Package, UserCheck, ArrowLeftRight, Settings, Trophy, Search,
+  GalleryVerticalEnd, LayoutGrid, Swords, ScanLine, BarChart3, Package, UserCheck, ArrowLeftRight, Settings, Trophy, Search, HelpCircle,
 } from 'lucide-react';
 import { tx } from '../lib/i18n.js';
 
 // B.3: five groups — what you own, what you play, adding cards, storing them.
 const GROUPS = [
+  { title: tx('Explorer'), items: [
+    { id: 'cards', label: tx('Cartes'), icon: GalleryVerticalEnd },
+  ] },
   { title: tx('Ma collection'), items: [
     { id: 'collection', label: tx('Collection'), icon: LayoutGrid },
     { id: 'value', label: tx('Valeur'), icon: BarChart3 },
@@ -70,6 +74,10 @@ export default function Sidebar({ page, onChange, counts = {}, onSettings = () =
         ))}
       </div>
       <div className="border-t border-gold-500/15 py-2">
+        {/* Help on this screen: a label under every button (src/lib/help.js) */}
+        <button onClick={() => requestHelp('mode')} className="w-full flex items-center gap-3 px-5 h-10 text-[15px] text-rift-300 hover:text-gold-400 hover:bg-rift-800/60">
+          <HelpCircle className="w-5 h-5" aria-hidden="true" /> {tx('Aide sur cet écran')}
+        </button>
         <Item id="settings" label={tx('Réglages')} icon={Settings} />
       </div>
       <StatusZone onSettings={onSettings} />

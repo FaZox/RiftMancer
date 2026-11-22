@@ -31,7 +31,7 @@ export default function PricesCard() {
       <p className="text-[13px] text-rift-400 mt-0.5">{tx('Source : fichiers publics de Cardmarket, une fois par jour au plus.')}</p>
       {msg && <p className={`text-[13px] mt-2 ${msg.ok ? 'text-state-ok' : 'text-state-bad'}`}>{msg.text}</p>}
       <div className="flex flex-wrap justify-end gap-2 mt-3">
-        <button onClick={refresh} disabled={busy} className="btn-secondary text-[13px] py-2 px-3">
+        <button data-help="content.prices" onClick={refresh} disabled={busy} className="btn-secondary text-[13px] py-2 px-3">
           <RefreshCw className={`w-4 h-4 ${busy ? 'animate-spin' : ''}`} /> {busy ? tx('Actualisation…') : tx('Actualiser')}
         </button>
       </div>

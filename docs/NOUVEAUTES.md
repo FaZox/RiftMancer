@@ -5,6 +5,14 @@ Texte pour les utilisateurs de l’appli, une section par version distribuée
 docs/WHATS-NEW.md). `npm run release -- <version>` en tire `NOUVEAUTES.txt` et refuse
 de construire un paquet tant que la section de la version n’est pas écrite, dans les deux fichiers.
 
+## 2.4.0 — l’onglet Cartes
+
+- **Nouvel onglet « Cartes »** : tout le catalogue Riftbound, possédé ou non, avec ×N sur les cartes que vous avez. Sur téléphone il est entre Collection et Scanner ; **Valeur passe dans « Plus »**. Dans la Collection, la vue « Cartes » s’appelle maintenant « Mes cartes ».
+- **Une seule barre de recherche** : un nom, un numéro, ou des clés comme `t:unité d:esprit e<=3 own:0` (le « ? » donne toute la syntaxe). Les filtres (domaines, sets, type, énergie, **puissance**, rareté…) écrivent leur clé dans la barre.
+- **Les cartes manquantes restent en couleurs** : « Griser les manquantes » les atténue si vous le souhaitez.
+- **Actions rapides** : la fiche d’un clic ou d’un toucher, ajout d’un exemplaire (avec « Annuler »), plusieurs cartes à la fois vers les souhaits ou un deck, « Manquantes → souhaits », export CSV. Sur téléphone, l’icône Scanner de la recherche retrouve une carte sans l’ajouter.
+- **Mémoire** : l’onglet garde votre recherche, vos filtres et votre position.
+
 ## 2.3.0 — impressions et promos, rulings, une collection plus pratique
 
 - **Toutes les impressions de chaque carte** : Réglages → Contenu → Cartes → « Rechercher » apporte maintenant les promos (Organized Play, Judge, lancement, Metal…), les cartes K/DA et toutes les variantes (illustration alternative, overnumbered, signature, showcase), avec leurs images et, dès l’installation, le nom français de la même carte. Dans la fiche d’une carte, « Impressions et variantes » les liste toutes avec leur prix et combien vous en avez.

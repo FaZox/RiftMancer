@@ -77,3 +77,6 @@ public/models/*-test.onnx
 *.pem
 pack-signing-key*
 test-results/
+
+# User instruction files (CORRECTIONS, AMELIORATIONS…) and their progress notes: local only
+docs/claude/

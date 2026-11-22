@@ -132,7 +132,7 @@ function DecksView({ org, copies, ownedByCard, collection, wishlist, onOpen, onD
     <div className="flex-1 overflow-y-auto pb-20 lg:pb-8">
       <div className="px-4 pt-3 pb-4 space-y-3 lg:px-8 lg:max-w-[1800px]">
         <div className="flex gap-2">
-          <button onClick={create} className="btn-primary flex-1 lg:flex-none lg:px-6 text-sm py-2.5 rounded-xl"><Plus className="w-4 h-4" /> {tx('Nouveau deck')}</button>
+          <button data-help="decks.new" onClick={create} className="btn-primary flex-1 lg:flex-none lg:px-6 text-sm py-2.5 rounded-xl"><Plus className="w-4 h-4" /> {tx('Nouveau deck')}</button>
           <button onClick={() => setImporting(true)} className="btn-secondary text-sm py-2.5 px-4 rounded-xl"><FileInput className="w-4 h-4" /> {tx('Importer')}</button>
         </div>
         {importing && (

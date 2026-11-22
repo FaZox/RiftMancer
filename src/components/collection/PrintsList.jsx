@@ -16,7 +16,7 @@ export default function PrintsList({ cardData, stacks, prices, onOpen }) {
   const prints = printsOf(cardData, getMatcher().cards || []);
   if (prints.length < 2) return null;
   return (
-    <section className="space-y-1.5" aria-label={tx('Impressions et variantes')}>
+    <section className="space-y-1.5" aria-label={tx('Impressions et variantes')} data-help="card.prints">
       <h3 className="text-[13px] font-semibold uppercase tracking-wider text-rift-400">{tx('Impressions et variantes')} · {prints.length}</h3>
       <ul className="divide-y divide-rift-700/70 border border-rift-700/70">
         {prints.map(p => {

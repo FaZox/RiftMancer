@@ -14,6 +14,10 @@ GNU Affero General Public License for more details.
 The full text of the GNU Affero General Public License, version 3, is in the
 LICENSE file.
 
+Portions of the scanner are adapted from OpenRift (https://github.com/openriftapp/openrift),
+Copyright Eiko Wagenknecht, licensed under the GNU AGPL-3.0
+(src/lib/alignedVerify.js, src/lib/edgeSnap.js, src/lib/printingPick.js).
+
 Parts of this program come from riftbound-scanner by Nekoraru22
 (https://github.com/Nekoraru22/riftbound-scanner), published under the MIT
 licence. As that licence requires, its notice is kept here:

@@ -10,6 +10,7 @@ import { getLocalizedName, getLocalizedText, rulesTextHtml, displayLanguage } fr
 import ErrataNote from '../common/ErrataNote.jsx';
 import PrintsList from './PrintsList.jsx';
 import { MIGHT_ICON, rarityIcon, symbolsReady, domainIcon } from '../../lib/symbols.js';
+import { useHelpPage } from '../../lib/help.js';
 import RulingsList from './RulingsList.jsx';
 import { useBackHandler } from '../../lib/backButton.js';
 import { usePrefs } from '../../lib/uiPrefs.js';
@@ -32,6 +33,7 @@ const TABS = [
 // onRemoveCopy (collection): one copy of a stack less; onUpdateCard: change a stack (promo)
 export default function CardZoom({ cardId: openedId, language: initialLanguage, stacks, wanted, onSetWanted, onAddCopy, onRemoveCopy = null, onUpdateCard = null, onClose, onPrev = null, onNext = null, position = null, deckControls = null }) {
   useBackHandler(true, onClose);
+  useHelpPage('card'); // its tour the first time a card is opened
   const [prefs] = usePrefs();
   // « Impressions et variantes »: another printing can be shown in the same sheet
   const [cardId, setCardId] = useState(openedId);
@@ -134,7 +136,7 @@ export default function CardZoom({ cardId: openedId, language: initialLanguage, 
                 <button onClick={onClose} aria-label={tx('Retour')} className="absolute top-3 left-3 z-10 w-11 h-11 flex items-center justify-center bg-rift-900/70 border border-gold-500/40 text-rift-100">
                   <ArrowLeft className="w-5 h-5" />
                 </button>
-                <div role="group" aria-label={tx('Langue')} className="absolute top-3 right-3 z-10 flex bg-rift-900/70 border border-gold-500/45">
+                <div role="group" aria-label={tx('Langue')} data-help="card.lang" className="absolute top-3 right-3 z-10 flex bg-rift-900/70 border border-gold-500/45">
                   {['French', 'English'].map(l => (
                     <button key={l} onClick={() => setLanguage(l)} aria-pressed={language === l}
                       className={`w-11 h-10 text-[13px] font-bold ${language === l ? 'bg-gold-500/20 text-gold-400' : 'text-rift-400'}`}>
@@ -198,7 +200,7 @@ export default function CardZoom({ cardId: openedId, language: initialLanguage, 
           </section>
 
           {/* Tabs */}
-          <div className="seg mx-5 mt-4" role="tablist" aria-label={tx('Sections')}>
+          <div className="seg mx-5 mt-4" role="tablist" aria-label={tx('Sections')} data-help="card.tabs">
             {TABS.map(t => (
               <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => setTab(t.id)} className="!text-[13px]">{tabLabel(t)}</button>
             ))}
@@ -352,7 +354,7 @@ export default function CardZoom({ cardId: openedId, language: initialLanguage, 
             </div>
           ) : onRemoveCopy ? (
             // Opened from the collection: how many copies (in this language), one less, one more
-            <div className="flex-1 lg:flex-none flex items-center gap-3 min-h-[50px] px-3 bg-rift-800 border border-gold-500/50">
+            <div data-help="card.count" className="flex-1 lg:flex-none flex items-center gap-3 min-h-[50px] px-3 bg-rift-800 border border-gold-500/50">
               <span className="text-sm text-rift-300 mr-auto lg:mr-2">
                 {tx('Dans ma collection')} · {langShort}
                 {ownedTotal > langCount && <span className="block text-[12px] text-rift-500">{tx('{ownedTotal} en tout', { ownedTotal })}</span>}
@@ -374,6 +376,7 @@ export default function CardZoom({ cardId: openedId, language: initialLanguage, 
             onClick={() => onSetWanted(cardId, wanted > 0 ? 0 : 1)}
             aria-pressed={wanted > 0}
             aria-label={wanted > 0 ? tx('Retirer des souhaits') : tx('Ajouter aux souhaits')}
+            data-help="card.wish"
             className="w-[50px] h-[50px] flex items-center justify-center bg-rift-800 border border-gold-500/50"
           >
             <Heart className={`w-5 h-5 ${wanted > 0 ? 'text-[#ff8ab8] fill-[#ff8ab8]' : 'text-gold-400'}`} />

@@ -30,12 +30,20 @@ test('phone: Decks | Matchs, the matches left « Plus », « Compteur » on the 
   assert.match(read('src/App.jsx'), /<DecksTab /);
 });
 
-test('PC: five groups in the order of B.3, status zone at the bottom', () => {
+test('PC: « Explorer » (Cartes) first, then the groups of B.3, status zone at the bottom', () => {
   const s = read('src/desktop/Sidebar.jsx');
   const titles = [...s.matchAll(/title: '([^']+)'/g)].map(m => m[1]);
-  assert.deepEqual(titles, ['Ma collection', 'Jouer', 'Ajouter', 'Organiser']);
+  assert.deepEqual(titles, ['Explorer', 'Ma collection', 'Jouer', 'Ajouter', 'Organiser']);
   const ids = [...s.matchAll(/\{ id: '(\w+)'/g)].map(m => m[1]);
-  assert.deepEqual(ids, ['collection', 'value', 'decks', 'matches', 'scan', 'boxes', 'loans', 'trades']);
+  assert.deepEqual(ids, ['cards', 'collection', 'value', 'decks', 'matches', 'scan', 'boxes', 'loans', 'trades']);
   assert.match(s, /<StatusZone onSettings=\{onSettings\} \/>/);
   assert.match(s, /onSettings\('content'\)/);
+});
+
+test('phone: Collection · Cartes · Scanner · Decks · Plus, Valeur first in « Plus »', async () => {
+  const bar = read('src/components/BottomTabBar.jsx');
+  assert.deepEqual([...bar.matchAll(/\{ id: '(\w+)'/g)].map(m => m[1]), ['collection', 'cards', 'scan', 'decks', 'more']);
+  const more = read('src/components/more/MoreTab.jsx');
+  assert.ok(more.indexOf("id: 'value'") < more.indexOf("id: 'trades'"));
+  assert.match(read('src/components/collection/CollectionTab.jsx'), /label: 'Mes cartes'/);
 });

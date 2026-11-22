@@ -74,6 +74,13 @@ Les applis sont livrées **sans les cartes** (images, noms et textes appartienne
 - **Langue des cartes** (FR/EN) choisie avant de scanner ; **« Chercher une carte »** par son nom (FR ou EN) ou son numéro.
 - Statistiques du scan (réussis, corrigés, annulés).
 
+### Cartes (tout le catalogue)
+
+- **Toutes les cartes de Riftbound**, possédées ou non, une vignette par carte (ses autres impressions regroupées, « +2 impressions »), ×N sur celles que vous avez ; « Griser les manquantes » à la demande.
+- **Une seule barre de recherche** : un nom (français ou anglais), un numéro, ou des clés — `t:unité d:esprit e<=3 own:0`. Clés : `t:` type, `d:` domaine, `e:` énergie, `p:` puissance, `r:` rareté (`r>=rare`), `s:` set, `o:` texte, `n:` numéro, `is:` foil / promo / signature / bannie / champion / deck, `own:` exemplaires possédés ; opérateurs `: = != < <= > >=`, `-` devant une clé l’inverse, les guillemets regroupent les mots. Les noms anglais marchent aussi (`t:unit d:mind`).
+- **Filtres** (domaines, sets avec progression, type, énergie, puissance, rareté, autres) : ils écrivent leur clé dans la barre et s’allument quand vous en tapez une ; Toutes · Possédées · Manquantes avec leur nombre.
+- **Actions rapides** : la fiche en un clic ; sur PC le « + » au survol ajoute un exemplaire (avec « Annuler »), Ctrl / Maj pour en choisir plusieurs ; sur téléphone un appui long sélectionne ; sélection → souhaits, un deck ou la collection ; « Manquantes → souhaits », export CSV de la vue. Téléphone : trouver une carte avec le scanner.
+
 ### Collection
 
 - **Un exemplaire = une fiche** : chaque carte physique a sa langue, son état, foil, son emplacement et son prix d’achat.
@@ -172,7 +179,7 @@ Le **même code** pour les données et la logique, **deux interfaces** distincte
 | | Logiciel PC | Application Android |
 |---|---|---|
 | Choix | logiciel Electron, ou navigateur large (≥ 1024 px) | application Capacitor, ou navigateur étroit |
-| Navigation | colonne à gauche (Collection, Decks, Valeur · Scanner · Boîtes, Prêts, Échanges · Réglages) | barre du bas : Collection · Decks · **Scanner** · Valeur · Plus |
+| Navigation | colonne à gauche (Cartes · Collection, Valeur · Decks, Matchs · Scanner · Boîtes, Prêts, Échanges · Réglages) | barre du bas : Collection · Cartes · **Scanner** · Decks · Plus (Valeur dans Plus) |
 | Scanner | photos d’abord (plusieurs à la fois), webcam en option | caméra d’abord |
 | Collection | grille S/M/L ou tableau modifiable | grille ou liste |
 | Fiche d’une carte | fenêtre compacte | plein écran, glisser pour changer de carte |

@@ -73,7 +73,7 @@ export default function DecksPage({ collection, org, wishlist, onAddCopy }) {
             <button onClick={() => setMissing(true)} className="btn-ghost h-10 px-4 text-sm"><Heart className="w-4 h-4" /> {tx('Ce qui me manque')}</button>
           )}
           <button onClick={() => setImporting(true)} className="btn-secondary h-10 px-4 text-sm"><FileInput className="w-4 h-4" /> {tx('Importer une liste')}</button>
-          <button onClick={create} className="btn-primary h-10 px-5 text-sm"><Plus className="w-4 h-4" /> {tx('Nouveau deck')}</button>
+          <button data-help="decks.new" onClick={create} className="btn-primary h-10 px-5 text-sm"><Plus className="w-4 h-4" /> {tx('Nouveau deck')}</button>
         </div>
       </header>
       <div className="flex-1 min-h-0 overflow-y-auto px-8 py-6">

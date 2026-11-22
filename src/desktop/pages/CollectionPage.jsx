@@ -2,7 +2,9 @@ import React, { useCallback, useMemo, useState } from 'react';
 import CardZoom from '../../components/collection/CardZoom.jsx';
 import { ProgressView } from '../../components/collection/CollectionTab.jsx';
 import { CardsPanel } from './CollectionCards.jsx';
-import { WishlistPanel } from './CollectionWishlist.jsx';import { tx } from '../../lib/i18n.js';
+import { WishlistPanel } from './CollectionWishlist.jsx';
+import { tx } from '../../lib/i18n.js';
+import { useHelpPage } from '../../lib/help.js';
 
 
 const VIEWS = [
@@ -21,6 +23,7 @@ export default function CollectionPage({
 }) {
   const [view, setView] = useState('cards');
   const [zoom, setZoom] = useState(null); // { cardId, language, list, index }
+  useHelpPage(view === 'cards' ? null : view); // Progression, Souhaits: their own tour
   const ownedByCard = useMemo(() => {
     const m = new Map();
     for (const s of scannedCards) m.set(s.cardData.id, (m.get(s.cardData.id) || 0) + s.quantity);
@@ -48,7 +51,7 @@ export default function CollectionPage({
           <h1 className="h-title text-[28px] leading-none">{tx('Collection')}</h1>
           <p className="text-sm text-rift-400 mt-2">{total} {tx('carte')}{total > 1 ? 's' : ''} · {ownedByCard.size} {tx('différente')}{ownedByCard.size > 1 ? 's' : ''}</p>
         </div>
-        <div className="seg ml-6 w-[420px]" role="tablist" aria-label={tx('Vues')}>
+        <div className="seg ml-6 w-[420px]" role="tablist" aria-label={tx('Vues')} data-help="collection.views">
           {VIEWS.map(v => (
             <button key={v.id} role="tab" aria-selected={view === v.id} onClick={() => setView(v.id)}>
               {v.label}{v.id === 'wishlist' && wishCount > 0 && <span className="ml-1.5 text-rift-400 font-normal">{wishCount}</span>}

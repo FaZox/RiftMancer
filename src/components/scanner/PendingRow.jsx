@@ -2,18 +2,25 @@ import React, { memo } from 'react';
 import { Minus, Plus, Trash2, Sparkles } from 'lucide-react';
 import CardImage from '../common/CardImage.jsx';
 import { CONDITIONS, LANGUAGES, isFoilOnly } from '../../data/sampleCards.js';
-import { getLocalizedName, displayLanguage } from '../../lib/cardLocale.js';import { tx } from '../../lib/i18n.js';
+import { getLocalizedName, displayLanguage } from '../../lib/cardLocale.js';
+import { tx } from '../../lib/i18n.js';
+import { printingsOf, rememberPrinting } from '../../lib/printingChoice.js';
+import { printingLabel } from '../../lib/variants.js';
 
 
 /**
  * A scanned card waiting in « À ajouter »: only what matters before adding
- * it — quantity, condition, foil, delete. No description.
+ * it — quantity, condition, foil, delete. No description. An artwork printed
+ * in several sets shows them (« Même illustration »): one tap changes the
+ * printing, remembered for the next scans (printingChoice.js).
  */
 const PendingRow = memo(function PendingRow({ card, index, onUpdate, onRemove }) {
   const { cardData, quantity, condition, foil, language } = card;
   const foilOnly = isFoilOnly(cardData);
   const lang = LANGUAGES.find(l => l.value === language)?.short || 'EN';
   const set = (patch) => onUpdate(index, patch);
+  const printings = printingsOf(cardData.id);
+  const choose = (p) => { if (p.id === cardData.id) return; rememberPrinting(printings, p.id); set({ cardData: p }); };
 
   return (
     <div className="flex items-center gap-2.5 p-2 bg-rift-800 border border-rift-600">
@@ -47,6 +54,17 @@ const PendingRow = memo(function PendingRow({ card, index, onUpdate, onRemove })
             <Sparkles className="w-3.5 h-3.5" /> {tx('Foil')}
           </button>
         </div>
+        {printings.length > 1 && (
+          <div className="flex items-center gap-1 flex-wrap" role="group" aria-label={tx('Même illustration :')}>
+            <span className="text-[11px] text-rift-400">{tx('Même illustration :')}</span>
+            {printings.map(p => (
+              <button key={p.id} onClick={() => choose(p)} aria-pressed={p.id === cardData.id}
+                className={`h-7 px-2 text-[11px] font-semibold border ${p.id === cardData.id ? 'bg-gold-500/20 border-gold-400 text-gold-400' : 'bg-rift-900 border-rift-600 text-rift-200'}`}>
+                {printingLabel(p)}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       <div className="flex items-center">
         <button onClick={() => (quantity > 1 ? set({ quantity: quantity - 1 }) : onRemove(index))} aria-label={tx('Retirer un exemplaire')}

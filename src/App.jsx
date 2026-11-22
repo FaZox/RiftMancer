@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import PageLoading from './components/PageLoading.jsx';
 const DecksTab = lazy(() => import('./components/organize/DecksTab.jsx'));
 import ErrorBoundary from './components/common/ErrorBoundary.jsx';
@@ -12,13 +12,15 @@ import CollectionTab from './components/collection/CollectionTab.jsx';
 import UndoBar from './components/UndoBar.jsx';
 // The other tabs are loaded when first opened (smaller startup code).
 const ScanTab = lazy(() => import('./components/scan/ScanTab.jsx'));
-const ValueTab = lazy(() => import('./components/value/ValueTab.jsx'));
+const CardsTab = lazy(() => import('./components/cards/CardsTab.jsx'));
 const MoreTab = lazy(() => import('./components/more/MoreTab.jsx'));
 import useAppController from './hooks/useAppController.js';
 import GlobalSearch from './components/common/GlobalSearch.jsx';
 import Welcome from './components/common/Welcome.jsx';
 import NoCards from './components/common/NoCards.jsx';
-import { requestOpen } from './lib/navRequest.js';
+import HelpLayer, { HelpFab } from './components/common/HelpLayer.jsx';
+import { useHelpPage } from './lib/help.js';
+import { requestOpen, onRequest } from './lib/navRequest.js';
 import { tx } from './lib/i18n.js';
 
 /** Android (phone) interface. The PC has its own: src/desktop/. */
@@ -65,11 +67,20 @@ export default function App() {
     handleClearAll,
     handleAddCardToExport,
     handleAddCopy,
+    handleQuickAdd,
+    findMode,
+    setFindMode,
     handleRemoveCopy,
     handleAddCardsToExport,
     handleExport,
   } = useAppController();
   const [searchMode, setSearchMode] = useState(null); // lot 6 e: 'search' | 'add' | null
+  // « Voir dans Cartes » (global search, Progression): the tab takes the request when it shows
+  useEffect(() => onRequest((r) => { if (r.kind === 'cards') setActiveTab('cards'); }), [setActiveTab]);
+  // « Trouver une carte » ends when you leave the scanner
+  useEffect(() => { if (activeTab !== 'scan' && findMode) setFindMode(false); }, [activeTab, findMode, setFindMode]);
+
+  useHelpPage(isLoading || startupError ? null : activeTab); // help: the page's tour the first time
 
   // ─── Render ────────────────────────────────────────────────
   if (isLoading) return <SplashGate isLoading progress={loadProgress} stage={loadStage} />;
@@ -79,13 +90,15 @@ export default function App() {
     <SplashGate isLoading={false}>
     <AppShell>
       <WhatsNew />
+      <HelpLayer />
+      <HelpFab />
       <Welcome copies={collection.totalCopies} pending={pendingCards.length}
         onPair={() => { requestOpen({ kind: 'setting', id: 'sync' }); setActiveTab('more'); }} />
       <GlobalSearch open={!!searchMode} mode={searchMode || 'search'} onOpen={setSearchMode} onClose={() => setSearchMode(null)}
         scannedCards={scannedCards} wishlist={wishlist} org={org} collection={collection} onAddCopy={handleAddCopy}
         language={batchDefaults.language} notify={showNotification}
         navigate={(page, opts = {}) => {
-          if (['collection', 'decks', 'value', 'scan'].includes(page)) { setActiveTab(page); return; }
+          if (['collection', 'cards', 'decks', 'scan'].includes(page)) { setActiveTab(page); return; }
           if (page === 'settings') requestOpen({ kind: 'setting', id: opts.setting });
           else requestOpen({ kind: 'more', id: page });
           setActiveTab('more');
@@ -96,6 +109,12 @@ export default function App() {
         <NoCards onSync={() => { requestOpen({ kind: 'setting', id: 'sync' }); setActiveTab('more'); }} />
         <ErrorBoundary key={activeTab} where={activeTab} page>
         <Suspense fallback={<PageLoading />}>
+        {activeTab === 'scan' && findMode && (
+          <div role="status" className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-gold-500/15 border-b border-gold-500/40 text-[13px] text-gold-400">
+            <span className="flex-1">{tx('Trouver une carte : scannez-la, sa fiche s’ouvre dans Cartes (rien n’est ajouté).')}</span>
+            <button onClick={() => { setFindMode(false); setActiveTab('cards'); }} className="min-h-[44px] px-2 font-semibold underline">{tx('Annuler')}</button>
+          </div>
+        )}
         {activeTab === 'scan' && (
           <ScanTab
             camera={camera}
@@ -153,8 +172,10 @@ export default function App() {
           <DecksTab collection={collection} org={org} wishlist={wishlist} onAddCopy={handleAddCopy} showNotification={showNotification} />
         )}
 
-        {activeTab === 'value' && (
-          <ValueTab scannedCards={scannedCards} wishlist={wishlist} onAddCopy={handleAddCopy} />
+        {activeTab === 'cards' && (
+          <CardsTab scannedCards={scannedCards} wishlist={wishlist} org={org} onAddCopy={handleAddCopy}
+            onRemoveCopy={handleRemoveCopy} onUpdateCard={handleUpdateCard} onQuickAdd={handleQuickAdd} notify={showNotification}
+            onFind={() => { setFindMode(true); setActiveTab('scan'); }} />
         )}
 
         {activeTab === 'more' && (

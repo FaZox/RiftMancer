@@ -1,6 +1,8 @@
 // « Progression »: completion per set.
+import { tourSeen } from '../../lib/help.js';
 import React, { useState, useMemo } from 'react';
-import { ChevronDown, Heart } from 'lucide-react';
+import { ChevronDown, Heart, GalleryVerticalEnd } from 'lucide-react';
+import { requestOpen } from '../../lib/navRequest.js';
 import CardTile from './CardTile.jsx';
 import { catalogSets, compareCollector } from '../../lib/catalog.js';
 import { useDialog } from '../common/Dialog.jsx';
@@ -19,7 +21,8 @@ export function ProgressBar({ value, total }) {
 export function ProgressView({ ownedByCard, wishlist, onOpen }) {
   const { ask } = useDialog();
   const sets = useMemo(() => catalogSets(), []);
-  const [openSet, setOpenSet] = useState(null);
+  // first visit: the first set open, so that its tour shows the filters too
+  const [openSet, setOpenSet] = useState(() => (tourSeen('progress') ? null : sets[0]?.set ?? null));
   const [show, setShow] = useState('missing'); // missing | all | owned
   const [withVariants, setWithVariants] = useState(false);
 
@@ -31,7 +34,7 @@ export function ProgressView({ ownedByCard, wishlist, onOpen }) {
         <p className="text-xs text-rift-400">
           {tx('Cartes différentes possédées par extension (toutes langues). « Variantes » = illustrations alternatives, signées, promos et jetons.')}
         </p>
-        {sets.map(s => {
+        {sets.map((s, si) => {
           const base = count(s.base);
           const variants = count(s.variants);
           const isOpen = openSet === s.set;
@@ -40,7 +43,7 @@ export function ProgressView({ ownedByCard, wishlist, onOpen }) {
             .filter(c => show === 'all' || (show === 'missing' ? !ownedByCard.has(c.id) : ownedByCard.has(c.id)))
             .sort(compareCollector);
           return (
-            <div key={s.set} className="rounded-xl bg-rift-800/60 border border-rift-600/20">
+            <div key={s.set} className="rounded-xl bg-rift-800/60 border border-rift-600/20" data-help={si === 0 ? 'progress.set' : undefined}>
               <button onClick={() => setOpenSet(isOpen ? null : s.set)} className="w-full text-left p-3 space-y-2">
                 <div className="flex items-baseline gap-2">
                   <span className="text-sm font-semibold text-rift-100">{s.setName}</span>
@@ -55,7 +58,7 @@ export function ProgressView({ ownedByCard, wishlist, onOpen }) {
               </button>
               {isOpen && (
                 <div className="px-3 pb-3 space-y-3">
-                  <div className="flex flex-wrap items-center gap-1.5">
+                  <div className="flex flex-wrap items-center gap-1.5" data-help="progress.show">
                     {[['missing', tx('Manquantes')], ['owned', tx('Possédées')], ['all', tx('Toutes')]].map(([v, l]) => (
                       <button key={v} onClick={() => setShow(v)}
                         className={`px-2.5 py-1 rounded-lg text-[11px] border ${show === v ? 'bg-gold-400/20 text-gold-400 border-gold-400/30' : 'text-rift-400 border-rift-600/30'}`}>
@@ -67,8 +70,15 @@ export function ProgressView({ ownedByCard, wishlist, onOpen }) {
                       {tx('Inclure les variantes')}
                     </label>
                   </div>
+                  <button
+                    onClick={() => requestOpen({ kind: 'cards', query: `s:${s.set.toLowerCase()}`, ownership: 'missing' })}
+                    className="btn-ghost text-xs py-1.5 px-3 rounded-xl"
+                  >
+                    <GalleryVerticalEnd className="w-3.5 h-3.5" /> {tx('Voir les manquantes dans Cartes')}
+                  </button>
                   {show === 'missing' && shown.length > 0 && (
                     <button
+                      data-help="progress.wishAll"
                       onClick={async () => {
                         const toAdd = shown.filter(c => !wishlist.byCard.has(c.id));
                         if (toAdd.length && await ask({ title: tx('Ajouter aux souhaits ?'), message: tx('{length} carte{v1} manquante{v2} ajoutée{v3} à la liste de souhaits.', { length: toAdd.length, v1: toAdd.length > 1 ? 's' : '', v2: toAdd.length > 1 ? 's' : '', v3: toAdd.length > 1 ? 's' : '' }), confirmLabel: tx('Ajouter') })) {

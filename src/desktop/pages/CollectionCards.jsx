@@ -94,14 +94,14 @@ export function CardsPanel({
       {/* Toolbar: search, filters, display */}
       <div className="flex-shrink-0 px-8 py-3 space-y-3 border-b border-rift-600/40 bg-rift-900">
         <div className="flex items-center gap-3">
-          <div className="relative w-[340px]">
+          <div className="relative w-[340px]" data-help="collection.search">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-rift-500 pointer-events-none" />
             <input value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setShown(PAGE); }}
               placeholder={tx('Nom, numéro…')} className="input-field !pl-9 h-10" />
           </div>
-          <Sel label={tx('Tri')} value={sort} onChange={setSort} options={SORTS.map(s => [s.value, s.label])} noAll />
+          <Sel label={tx('Tri')} value={sort} onChange={setSort} options={SORTS.map(s => [s.value, s.label])} noAll help="collection.sort" />
           {/* Add a card by its name or number (the global search in « add » mode) */}
-          <button onClick={() => requestOpen({ kind: 'search', mode: 'add' })} className="btn-primary h-10 px-4 text-sm" title={tx('Ajouter une carte par son nom ou son numéro')}>
+          <button data-help="collection.add" onClick={() => requestOpen({ kind: 'search', mode: 'add' })} className="btn-primary h-10 px-4 text-sm" title={tx('Ajouter une carte par son nom ou son numéro')}>
             <Plus className="w-4 h-4" /> {tx('Ajouter')}
           </button>
           <div className="ml-auto flex items-center gap-2">
@@ -119,7 +119,7 @@ export function CardsPanel({
                 ))}
               </div>
             )}
-            <div className="flex border border-rift-600" role="group" aria-label={tx('Affichage')}>
+            <div className="flex border border-rift-600" role="group" aria-label={tx('Affichage')} data-help="collection.layout">
               <button onClick={() => setLayout('grid')} aria-pressed={layout === 'grid'} title={tx('Grille')}
                 className={`h-10 px-3 flex items-center gap-1.5 text-sm ${layout === 'grid' ? 'bg-gold-500/15 text-gold-400' : 'text-rift-400 hover:text-rift-100'}`}>
                 <LayoutGrid className="w-4 h-4" /> {tx('Grille')}
@@ -132,7 +132,7 @@ export function CardsPanel({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap" data-help="collection.filters">
           <Sel label={tx('Domaine')} value={filters.domain} onChange={v => setFilter('domain', v)}
             options={['fury', 'calm', 'mind', 'body', 'chaos', 'order', 'colorless'].filter(d => options.domains.has(d) || filters.domain === d).map(d => [d, domainLabel(d)])} />
           <Sel label={tx('Extension')} value={filters.set} onChange={v => setFilter('set', v)} options={[...options.sets]} />
@@ -169,7 +169,7 @@ export function CardsPanel({
                 <span className={week >= 0 ? 'text-state-ok' : 'text-state-bad'}> · {pct(week)} {tx('cette semaine')}</span>
               )}
             </p>
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-2" data-help="collection.io">
               {onImportEntries && (
                 <button onClick={() => setImporting(true)} className="btn-ghost h-9 px-3 text-sm"><Upload className="w-4 h-4" /> {tx('Importer')}</button>
               )}
@@ -186,7 +186,7 @@ export function CardsPanel({
                   </div>
                 )}
               </div>
-              <button onClick={() => setSelecting(true)} disabled={!filteredCards.length} className="btn-ghost h-9 px-3 text-sm">
+              <button data-help="collection.select" onClick={() => setSelecting(true)} disabled={!filteredCards.length} className="btn-ghost h-9 px-3 text-sm">
                 <CheckSquare className="w-4 h-4" /> {tx('Sélectionner')}
               </button>
             </div>
@@ -205,9 +205,9 @@ export function CardsPanel({
           <p className="py-24 text-center text-sm text-rift-400">{tx('Aucune carte ne correspond à ces filtres.')}</p>
         ) : layout === 'grid' ? (
           <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${minWidth}px, 1fr))` }}>
-            {visible.map(card => (
+            {visible.map((card, i) => (
               <GridTile key={card.key} card={card} name={nameOf(card)} price={prices ? priceOf(card) : null} place={placeOf(card, org)}
-                onOpen={openInList} selecting={selecting} selected={selected.has(card.key)} onToggle={toggle} hd />
+                onOpen={openInList} selecting={selecting} selected={selected.has(card.key)} onToggle={toggle} hd help={i === 0 ? 'collection.card' : undefined} />
             ))}
           </div>
         ) : (
@@ -236,10 +236,10 @@ export function CardsPanel({
 }
 
 /** Compact labelled select for the toolbar (« Tous » = no filter). */
-export function Sel({ label, value, onChange, options, noAll = false }) {
+export function Sel({ label, value, onChange, options, noAll = false, help }) {
   const active = !noAll && value !== 'all';
   return (
-    <label className={`h-9 flex items-center gap-2 pl-3 pr-1 border text-sm ${active ? 'border-gold-500/60 bg-gold-500/10' : 'border-rift-600'}`}>
+    <label data-help={help} className={`h-9 flex items-center gap-2 pl-3 pr-1 border text-sm ${active ? 'border-gold-500/60 bg-gold-500/10' : 'border-rift-600'}`}>
       <span className="text-rift-400">{label}</span>
       <select value={value} onChange={e => onChange(e.target.value)}
         className="h-8 bg-transparent text-rift-100 pr-1 focus:outline-none cursor-pointer max-w-[220px]">

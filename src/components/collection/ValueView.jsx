@@ -72,7 +72,7 @@ export function ValueView({ scannedCards, onOpen, wishItems = [] }) {
             <MovementsPanel scannedCards={scannedCards} wishItems={wishItems} onOpen={onOpen} />
             {/* PC: value and 7-day changes side by side */}
             <div className="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-4 lg:items-start">
-            <div className="panel hex-cut p-4 space-y-1">
+            <div className="panel hex-cut p-4 space-y-1" data-help="value.total">
               <p className="text-xs text-rift-400">{tx('Valeur de la collection (Cardmarket, prix tendance)')}</p>
               <p className="text-3xl font-display font-bold text-gold-400">{euro(data.total.value)}</p>
               <p className="text-[11px] text-rift-500">

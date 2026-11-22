@@ -3,6 +3,7 @@
  * organisation, notifications, undo, export… Shared by the Android
  * interface (src/App.jsx) and the PC interface (src/desktop/).
  */
+import { printingsOf, rememberedPrinting, rememberPrinting } from '../lib/printingChoice.js';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { DEFAULT_BATCH } from '../lib/batchDefaults.js';
 import { useCamera } from '../hooks/useCamera.js';
@@ -14,7 +15,7 @@ import { downloadCSV, validateForExport, getFormat, DEFAULT_FORMAT } from '../li
 import { getMatcher, isAccepted } from '../lib/cardMatcher.js';
 import { learnFromChoice } from '../lib/learning.js';
 import { isFoilOnly } from '../data/sampleCards.js';
-import { isSameStack, getLocalizedName } from '../lib/cardLocale.js';
+import { isSameStack, getLocalizedName, displayLanguage } from '../lib/cardLocale.js';
 import useCollection from '../hooks/useCollection.js';
 import useWishlist from '../hooks/useWishlist.js';
 import useRecords from '../hooks/useRecords.js';
@@ -22,6 +23,7 @@ import { countScan } from '../lib/scanStats.js';
 import { installBackButton, setBackFallback } from '../lib/backButton.js';
 import { toCardmarket } from '../lib/conditions.js';
 import { onUndo } from '../lib/undo.js';
+import { requestOpen } from '../lib/navRequest.js';
 import { useDialog } from '../components/common/Dialog.jsx';
 import { STORAGE_KEYS, loadFromStorage, usePersistedScanState } from './app/appStorage.js';
 import { useNotifications, usePriceSummary } from './app/useNotifications.js';
@@ -121,8 +123,11 @@ export default function useAppController() {
   useEffect(() => { batchDefaultsRef.current = batchDefaults; }, [batchDefaults]);
 
   // ─── Card Detection Handler ────────────────────────────────
-  const handleCardDetected = useCallback((result, { silent = false } = {}) => {
-    const { cardData, confidence, similarity, timestamp } = result;
+  // exact: the card the user chose (no remembered printing instead)
+  const handleCardDetected = useCallback((result, { silent = false, exact = false } = {}) => {
+    const { confidence, similarity, timestamp } = result;
+    // Same artwork in several sets (every scan mode): the set chosen last time for it, on this device
+    const cardData = (!exact && rememberedPrinting(printingsOf(result.cardData?.id))) || result.cardData;
 
     // Only trustworthy matches are added without asking (score + margin, see matchIndex.js).
     if (!isAccepted(result)) return null;
@@ -191,14 +196,18 @@ export default function useAppController() {
   const [scanFeedback, setScanFeedback] = useState(null);
   const scanLockRef = useRef(false);       // a scan is running or just finished
   const lastAddedRef = useRef(null);       // { cardId, at } — same card twice in a row?
-  // Reprints with the same artwork: the set last chosen, per artwork, for this session.
-  const printingChoiceRef = useRef(new Map());
   const DUPLICATE_WINDOW = 3000;           // ms
   const COOLDOWN = 1000;                   // ms after a result before the next tap counts
   const vibrate = (pattern) => { try { navigator.vibrate?.(pattern); } catch { /* not supported */ } };
 
   // opts.handsFree (lot 8.1): started by the hands-free watcher — an empty
   // table ends silently. Returns the phase of the result.
+  // « Trouver une carte » (onglet Cartes, téléphone): the next card scanned opens
+  // its sheet in « Cartes » instead of being added.
+  const [findMode, setFindModeState] = useState(false);
+  const findModeRef = useRef(false);
+  const setFindMode = useCallback((on) => { findModeRef.current = on; setFindModeState(on); }, []);
+
   const handleSnapScan = useCallback(async (opts) => {
     const handsFree = !!opts?.handsFree;
     if (!camera.isActive || scanLockRef.current) return null;
@@ -219,15 +228,18 @@ export default function useAppController() {
       setScanFeedback(null);
       return 'empty';
     }
+    if (findModeRef.current && result?.matched && result.cardData) {
+      setScanFeedback(null);
+      vibrate([40, 50, 40]);
+      setFindMode(false);
+      requestOpen({ kind: 'cardsFind', cardId: result.cardData.id });
+      setActiveTab('cards');
+      return 'found';
+    }
     if (result && result.matched && isAccepted(result)) {
-      // Same artwork in several sets: use the set chosen last time for it.
-      const printings = result.printings || [];
-      if (printings.length > 1) {
-        const groupKey = printings.map(p => p.id).sort().join('|');
-        const remembered = printingChoiceRef.current.get(groupKey);
-        const pick = remembered && printings.find(p => p.id === remembered);
-        if (pick && pick.id !== result.cardData.id) result = { ...result, cardData: pick };
-      }
+      // Same artwork in several sets: use the set chosen last time for it (printingChoice.js).
+      const pick = rememberedPrinting(result.printings);
+      if (pick && pick.id !== result.cardData.id) result = { ...result, cardData: pick };
       autoScan.setLastCardId(result.cardData.id);
       const last = lastAddedRef.current;
       if (last && last.cardId === result.cardData.id && Date.now() - last.at < DUPLICATE_WINDOW) {
@@ -257,7 +269,7 @@ export default function useAppController() {
     setScanFeedback({ phase: 'fail', at: Date.now() });
     vibrate(220);
     return 'fail';
-  }, [camera.isActive, camera.captureFrame, detection, handleCardDetected, autoScan]);
+  }, [camera.isActive, camera.captureFrame, detection, handleCardDetected, autoScan, setFindMode]);
 
   // ─── Hands-free (lot 8.1): a new card put down and still is scanned ──
   const snapRef = useRef(handleSnapScan);
@@ -296,16 +308,14 @@ export default function useAppController() {
     if (f?.candidate) removeOneScanned(f.candidate);
     // Remember the set chosen for an artwork printed in several sets.
     const printings = f?.result?.printings || [];
-    if (printings.length > 1 && printings.some(p => p.id === cardData.id)) {
-      printingChoiceRef.current.set(printings.map(p => p.id).sort().join('|'), cardData.id);
-    }
+    rememberPrinting(printings, cardData.id);
     // The AI learns from the choice (not for another set of the same artwork: same picture).
     if (f?.result?.match && !printings.some(p => p.id === cardData.id)) {
       learnFromChoice(f.result.match, cardData.id).then(ok => { if (ok) countScan('learned'); });
     }
     const result = { ...(f?.result || {}), cardData, similarity: 1, accepted: true, matched: true, timestamp: Date.now() };
     countScan(f?.phase === 'uncertain' ? 'confirmed' : 'corrected');
-    const candidate = handleCardDetected(result, { silent: true });
+    const candidate = handleCardDetected(result, { silent: true, exact: true });
     lastAddedRef.current = { cardId: cardData.id, at: Date.now() };
     setScanFeedback({ phase: 'success', result, candidate, corrected: true, at: Date.now() });
   }, [removeOneScanned, handleCardDetected]);
@@ -325,7 +335,7 @@ export default function useAppController() {
   const handleManualAdd = useCallback((cardData) => {
     const result = { cardData, similarity: 1, confidence: 1, matched: true, timestamp: Date.now() };
     countScan('manual');
-    const candidate = handleCardDetected(result, { silent: true });
+    const candidate = handleCardDetected(result, { silent: true, exact: true });
     lastAddedRef.current = { cardId: cardData.id, at: Date.now() };
     setScanFeedback({ phase: 'success', result, candidate, corrected: true, at: Date.now() });
   }, [handleCardDetected]);
@@ -486,6 +496,22 @@ export default function useAppController() {
     showNotification(`+ ${getLocalizedName(cardData, language)}${promo ? ` (${tx('Promo')})` : ''}`, 'success');
   }, [showNotification, addEntries]);
 
+  // « Cartes » tab: one copy in the default language, « Annuler » for a few seconds.
+  // quiet: several at once (the tab shows one message for all of them).
+  const handleQuickAdd = useCallback((cardData, { quiet = false } = {}) => {
+    const defaults = batchDefaultsRef.current;
+    const added = addEntries([{
+      cardId: cardData.id, quantity: 1, language: defaults.language, condition: defaults.condition,
+      foil: isFoilOnly(cardData) || defaults.foil, promo: false,
+    }]) || [];
+    if (quiet || !added.length) return;
+    setUndo({
+      message: tx('+ {name} ajoutée', { name: getLocalizedName(cardData, displayLanguage(defaults.language)) }),
+      run: () => deleteCopies(added.map(c => c.id)),
+      at: Date.now(),
+    });
+  }, [addEntries, deleteCopies]);
+
   // Add multiple cards to export list at once
   // extras[i] (optional): more fields for that card, e.g. its binder page and pocket (scanner « Grille »)
   const handleAddCardsToExport = useCallback((cardDataArray, extras = null) => {
@@ -551,6 +577,8 @@ export default function useAppController() {
     orgRef,
     activeTab,
     setActiveTab,
+    findMode,
+    setFindMode,
     activeTabRef,
     notification,
     setNotification,
@@ -603,6 +631,7 @@ export default function useAppController() {
     handleClearAll,
     handleAddCardToExport,
     handleAddCopy,
+    handleQuickAdd,
     handleRemoveCopy,
     handleAddCardsToExport,
     handleExport,

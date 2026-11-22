@@ -46,13 +46,14 @@ export const PLACE_STYLE = {
 
 /** Collection grid tile: image, quantity, language, name, where it is, price. */
 // hd: full-size picture instead of the thumbnail (PC: sharp at big sizes)
-export const GridTile = React.memo(function GridTile({ card, name, price, place, onOpen, selecting, selected, onToggle, hd = false }) {
+export const GridTile = React.memo(function GridTile({ card, name, price, place, onOpen, selecting, selected, onToggle, hd = false, help }) {
   const d = card.cardData;
   const lang = LANGUAGES.find(l => l.value === card.language)?.short || 'EN';
   return (
     <button
       onClick={() => (selecting ? onToggle(card.key) : onOpen(d.id, displayLanguage(card.language)))}
       aria-pressed={selecting ? selected : undefined}
+      data-help={help}
       className={`flex flex-col gap-1 min-w-0 ${selecting && !selected ? 'opacity-60' : ''}`}
       title={name}
     >

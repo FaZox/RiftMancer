@@ -1,3 +1,4 @@
+import { resetTours } from '../../lib/help.js';
 import React, { useEffect, useState } from 'react';
 import { FileText, Keyboard } from 'lucide-react';
 import ShortcutsDialog from '../common/ShortcutsDialog.jsx';
@@ -237,6 +238,7 @@ function HelpSection() {
     <div className="space-y-4">
       <Field label={tx('Présentation')} help={tx('Les écrans du premier lancement : scanner, valider, sauvegarder et appairer.')}>
         <button onClick={() => requestOpen({ kind: 'welcome' })} className="btn-ghost min-h-[40px] px-4 text-[14px]">{tx('Revoir la présentation')}</button>
+        <button onClick={() => resetTours} className="btn-ghost min-h-[40px] px-4 text-[14px]">{tx('Revoir les explications des boutons')}</button>
       </Field>
       <Field label={tx('Un problème ?')} help={tx('Un fichier à envoyer à la personne qui vous aide : versions, réglages, dernières erreurs. Aucune carte, aucun nom, aucun mot de passe.')}>
         <button onClick={report} disabled={busy} className="btn-secondary min-h-[40px] px-4 text-[14px]"><FileText className="w-4 h-4" /> {busy ? tx('Création…') : tx('Créer un rapport')}</button>

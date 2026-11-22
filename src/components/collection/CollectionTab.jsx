@@ -8,13 +8,14 @@ import { WishlistView } from './WishlistView.jsx';
 import SyncReminderBanner from './SyncReminderBanner.jsx';
 import SearchButton from '../common/SearchButton.jsx';
 import { tx, locale, tp } from '../../lib/i18n.js';
+import { useHelpPage } from '../../lib/help.js';
 export { locationOf, placeOf, PLACE_STYLE, GridTile } from './collectionShared.jsx';
 export { ProgressView } from './ProgressView.jsx';
 export { WishlistView, AlertInput } from './WishlistView.jsx';
 export { ValueChart, ValueView } from './ValueView.jsx';
 
 const VIEWS = [
-  { id: 'cards', label: tx('Cartes'), icon: Layers },
+  { id: 'cards', label: tx('Mes cartes'), icon: Layers },
   { id: 'progress', label: tx('Progression'), icon: BarChart3 },
   { id: 'wishlist', label: tx('Souhaits'), icon: Heart },
 ];
@@ -38,6 +39,7 @@ export default function CollectionTab({
 }) {
   const [view, setView] = useState('cards');
   const [zoom, setZoom] = useState(null); // { cardId, language, list?, index? }
+  useHelpPage(view === 'cards' ? null : view); // Progression, Souhaits: their own tour
 
   // Copies owned per card (all languages / finishes)
   const ownedByCard = useMemo(() => {
@@ -95,7 +97,7 @@ export default function CollectionTab({
             <> · <span className={header.week >= 0 ? 'text-state-ok' : 'text-state-bad'}>{pct(header.week)} {tx('cette semaine')}</span></>
           )}
         </p>
-        <div className="seg mt-3 mb-1 lg:max-w-xl" role="tablist" aria-label={tx('Vues de la collection')}>
+        <div className="seg mt-3 mb-1 lg:max-w-xl" role="tablist" aria-label={tx('Vues de la collection')} data-help="collection.views">
           {VIEWS.map(v => (
             <button key={v.id} role="tab" aria-selected={view === v.id} onClick={() => setView(v.id)} className="whitespace-nowrap">
               {v.label}

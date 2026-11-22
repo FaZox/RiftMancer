@@ -95,7 +95,7 @@ export default function ScanTab({
   // --- Shared JSX ---
 
   const modeSwitcher = (
-    <div className="seg flex-shrink-0" role="tablist" aria-label={tx('Mode de scan')}>
+    <div className="seg flex-shrink-0" role="tablist" aria-label={tx('Mode de scan')} data-help="scan.modes">
       <button role="tab" aria-selected={scanMode === 'camera'} onClick={() => handleModeChange('camera')} aria-label={tx('Caméra')} title={tx('Caméra')} className="!w-10 !px-0">
         <Camera className="w-4 h-4" />
       </button>
@@ -109,10 +109,10 @@ export default function ScanTab({
   );
 
   const languageToggle = (
-    <LanguageToggle
+    <span data-help="scan.lang" className="flex-shrink-0"><LanguageToggle
       value={batchDefaults.language}
       onChange={(language) => onUpdateDefaults({ ...batchDefaults, language })}
-    />
+    /></span>
   );
 
   const hasPlaces = org && (org.boxes.items.length > 0 || org.decks.items.length > 0);
@@ -176,7 +176,7 @@ export default function ScanTab({
         )}
         {/* The title only where it fits whole (the bottom bar already says « Scanner »); camera on: the room goes to the buttons */}
         <h1 className={`h-title text-[22px] flex-1 min-w-0 truncate max-[439px]:hidden ${camera.isActive ? "invisible" : ""}`}>{tx('Scanner')}</h1>
-        <button onClick={() => { onClearScan(); setSearching(true); }} aria-label={tx('Chercher une carte à la main')} title={tx('Carte non reconnue ? La chercher par son nom')}
+        <button data-help="scan.search" onClick={() => { onClearScan(); setSearching(true); }} aria-label={tx('Chercher une carte à la main')} title={tx('Carte non reconnue ? La chercher par son nom')}
           className="ml-auto w-10 h-10 flex-shrink-0 flex items-center justify-center border border-gold-500/35 text-gold-400"><Search className="w-[18px] h-[18px]" /></button>
         {modeSwitcher}
         {languageToggle}

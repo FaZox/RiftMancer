@@ -76,6 +76,13 @@ The apps come **without the cards** (pictures, names and texts belong to Riot Ga
 - **Card language** (FR/EN) chosen before scanning; **« Search for a card »** by name (FR or EN) or number.
 - Scan statistics (successful, corrected, undone).
 
+### Cards (the whole catalog)
+
+- **Every card of Riftbound**, owned or not, one tile per card (its other printings grouped, « +2 printings »), ×N on the cards you own; « Dim missing cards » on request.
+- **One search line**: a name (French or English), a number, or keys — `t:unit d:mind e<=3 own:0`. Keys: `t:` type, `d:` domain, `e:` energy, `p:` might, `r:` rarity (`r>=rare`), `s:` set, `o:` text, `n:` number, `is:` foil / promo / signature / banned / champion / deck, `own:` copies owned; operators `: = != < <= > >=`, `-` before a key reverses it, quotes group words. French aliases work too (`t:unité d:esprit`).
+- **Filters** (domains, sets with progress, type, energy, might, rarity, others) write their key in the line and light up when you type one; All · Owned · Missing with the counts.
+- **Quick actions**: the card sheet with one click; on the PC the « + » on hover adds a copy (with « Undo »), Ctrl / Shift select several; on the phone a long press selects; selection → wishes, a deck or the collection; « Missing → wishes », CSV of the view. Phone: find a card with the scanner.
+
 ### Collection
 
 - **One copy = one record**: each physical card has its language, condition, foil, location and purchase price.
@@ -175,7 +182,7 @@ The **same code** for the data and the logic, **two separate interfaces**:
 | | PC app | Android app |
 |---|---|---|
 | Chosen | Electron app, or wide browser (≥ 1024 px) | Capacitor app, or narrow browser |
-| Navigation | column on the left (Collection, Decks, Value · Scanner · Boxes, Loans, Trades · Settings) | bottom bar: Collection · Decks · **Scanner** · Value · More |
+| Navigation | column on the left (Cards · Collection, Value · Decks, Matches · Scanner · Boxes, Loans, Trades · Settings) | bottom bar: Collection · Cards · **Scanner** · Decks · More (Value in More) |
 | Scanner | photos first (several at once), webcam optional | camera first, grid mode |
 | Collection | S/M/L grid or editable table | grid or list |
 | Card sheet | compact window | full screen, swipe to change card |

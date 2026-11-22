@@ -17,7 +17,7 @@ export default function RulingsList({ cardData }) {
   if (!entry) return null;
   const license = m.rulings.license || 'CC BY-SA 4.0';
   return (
-    <section className="space-y-1.5" aria-label={tx('Rulings')}>
+    <section className="space-y-1.5" aria-label={tx('Rulings')} data-help="card.rulings">
       <h3 className="text-[13px] font-semibold uppercase tracking-wider text-rift-400">{tx('Rulings')} · {entry.rulings.length}</h3>
       <div className="border border-rift-700/70 divide-y divide-rift-700/70">
         {entry.rulings.map(r => (

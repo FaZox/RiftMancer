@@ -9,7 +9,8 @@ import { cardmarketUrl } from '../../lib/cardmarket.js';
 import CardmarketWantsButton from '../../components/common/CardmarketWantsButton.jsx';
 import { ChangeBadge } from '../../components/common/PriceHistory.jsx';
 import { thumbSrc, handleImageError } from '../../lib/nativeAssets.js';
-import { AlertInput } from '../../components/collection/CollectionTab.jsx';import { tx } from '../../lib/i18n.js';
+import { AlertInput } from '../../components/collection/CollectionTab.jsx';
+import { tx } from '../../lib/i18n.js';
 
 
 // ─── Wish list (PC): same layout as the collection table ───────────────────
@@ -35,13 +36,13 @@ export function WishlistPanel({ ownedByCard, wishlist, onOpen }) {
   return (
     <div className="flex-1 min-h-0 flex flex-col">
       <div className="flex-shrink-0 px-8 h-14 flex items-center gap-3 border-b border-rift-600/30">
-        <p className="text-sm text-rift-300">
+        <p className="text-sm text-rift-300" data-help="wish.summary">
           {items.length} {tx('carte')}{items.length > 1 ? 's' : ''} {tx('souhaitée')}{items.length > 1 ? 's' : ''} · <span className="text-rift-100 font-semibold">{toGet.length}</span> {tx('encore à obtenir')}
           {cost > 0 && <> {tx('· coût estimé')} <span className="font-semibold text-gold-400">{euro(cost)}</span></>}
         </p>
         <span className="ml-auto" />
-        <CardmarketWantsButton label={tx('Envoyer vers mes souhaits Cardmarket')} className="btn-secondary h-9 px-3 text-sm"
-          items={toGet.map(r => ({ cardData: r.cardData, quantity: r.missing }))} />
+        <span data-help="wish.cardmarket"><CardmarketWantsButton label={tx('Envoyer vers mes souhaits Cardmarket')} className="btn-secondary h-9 px-3 text-sm"
+          items={toGet.map(r => ({ cardData: r.cardData, quantity: r.missing }))} /></span>
       </div>
       {alerts.length > 0 && (
         <p className="mx-8 mt-4 px-4 py-2.5 text-sm text-[#7fd6a4] border border-[#7fd6a4]/40 bg-[#7fd6a4]/5">
@@ -50,7 +51,7 @@ export function WishlistPanel({ ownedByCard, wishlist, onOpen }) {
       )}
       <div className="flex-1 min-h-0 overflow-y-auto px-8 py-5">
         {items.length === 0 ? (
-          <div className="py-24 text-center space-y-2">
+          <div className="py-24 text-center space-y-2" data-help="wish.empty">
             <p className="font-display text-xl text-gold-400">{tx('Votre liste de souhaits est vide')}</p>
             <p className="text-sm text-rift-400">{tx('Ouvrez une carte (Mes cartes, Progression ou un deck) et cliquez sur ♡ pour l’ajouter.')}</p>
           </div>
@@ -71,7 +72,7 @@ export function WishlistPanel({ ownedByCard, wishlist, onOpen }) {
               </tr>
             </thead>
             <tbody>
-              {rows.map(r => {
+              {rows.map((r, ri) => {
                 const d = r.cardData;
                 const done = r.missing === 0;
                 return (
@@ -89,7 +90,7 @@ export function WishlistPanel({ ownedByCard, wishlist, onOpen }) {
                     </td>
                     <td className={`${td} text-rift-300 whitespace-nowrap`}>{d.setName || d.set} <span className="text-rift-500 font-mono">#{d.collectorNumber}</span></td>
                     <td className={td}>
-                      <div className="flex items-center justify-center">
+                      <div className="flex items-center justify-center" data-help={ri === 0 ? 'wish.wanted' : undefined}>
                         <button onClick={() => wishlist.setWanted(r.cardId, r.quantity - 1)} aria-label={tx('Un de moins')}
                           className="w-8 h-8 bg-rift-800 border border-rift-600 flex items-center justify-center text-rift-200 hover:border-gold-500/50"><Minus className="w-3.5 h-3.5" /></button>
                         <span className="w-9 text-center font-mono text-rift-100">{r.quantity}</span>
@@ -103,7 +104,7 @@ export function WishlistPanel({ ownedByCard, wishlist, onOpen }) {
                     <td className={`${td} text-right font-semibold ${r.missing ? 'text-gold-400' : 'text-rift-500'}`}>
                       {r.missing ? <>{r.missing} {tx('exemplaire')}{r.missing > 1 ? 's' : ''}{r.cost != null && <> · {euro(r.cost)}</>}</> : '—'}
                     </td>
-                    <td className={td}>{!done && <AlertInput item={r} hit={alerts.some(a => a.cardId === r.cardId)} onChange={(v) => wishlist.setMaxPrice(r.cardId, v)} />}</td>
+                    <td className={td} data-help={ri === 0 && !done ? 'wish.alert' : undefined}>{!done && <AlertInput item={r} hit={alerts.some(a => a.cardId === r.cardId)} onChange={(v) => wishlist.setMaxPrice(r.cardId, v)} />}</td>
                     <td className={`${td} text-right whitespace-nowrap`}>
                       <a href={cardmarketUrl(d)} target="_blank" rel="noreferrer" className="text-sm text-gold-400 hover:underline mr-3">{tx('Acheter')}</a>
                       <button onClick={() => wishlist.setWanted(r.cardId, 0)} aria-label={tx('Retirer {getLocalizedName} des souhaits', { getLocalizedName: getLocalizedName(d, displayLanguage()) })} title={tx('Retirer des souhaits')}

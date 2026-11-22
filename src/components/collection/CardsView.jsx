@@ -131,6 +131,7 @@ export function CardsView({ scannedCards, onUpdateCard, onRemoveCard, onDeleteSt
             {tx('FR')}
           </button>
           <button
+            data-help="collection.filters"
             onClick={() => setFiltersOpen(o => !o)}
             aria-label={tx('Filtres et tri{v0}', { v0: activeFilters ? ` (${activeFilters} actifs)` : '' })}
             aria-expanded={filtersOpen}
@@ -161,14 +162,14 @@ export function CardsView({ scannedCards, onUpdateCard, onRemoveCard, onDeleteSt
 
         {/* Sort: always visible (price, name, set…), and « Ajouter » (a card by its name or number) */}
         <div className="flex items-center gap-2">
-          <label className="flex-1 min-w-0 flex items-center gap-2 text-xs text-rift-400">
+          <label data-help="collection.sort" className="flex-1 min-w-0 flex items-center gap-2 text-xs text-rift-400">
             <ArrowUpDown className="w-4 h-4 text-gold-400 flex-shrink-0" />
             <span className="flex-shrink-0">{tx('Trier par')}</span>
             <select value={sort} onChange={e => setSort(e.target.value)} aria-label={tx('Trier par')} className={`${selectClass} flex-1 min-w-0`}>
               {SORTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
           </label>
-          <button onClick={() => requestOpen({ kind: 'search', mode: 'add' })} className="btn-primary h-10 px-3 text-sm flex-shrink-0" title={tx('Ajouter une carte par son nom ou son numéro')}>
+          <button data-help="collection.add" onClick={() => requestOpen({ kind: 'search', mode: 'add' })} className="btn-primary h-10 px-3 text-sm flex-shrink-0" title={tx('Ajouter une carte par son nom ou son numéro')}>
             <Plus className="w-4 h-4" /> {tx('Ajouter')}
           </button>
         </div>
@@ -299,9 +300,9 @@ export function CardsView({ scannedCards, onUpdateCard, onRemoveCard, onDeleteSt
                       className="absolute left-0 right-0 pb-3 grid gap-2.5"
                       style={{ gridTemplateColumns: `repeat(${COLS}, minmax(0, 1fr))`, transform: `translateY(${item.start - virtualizer.options.scrollMargin}px)` }}
                     >
-                      {row.map(card => (
+                      {row.map((card, ci) => (
                         <GridTile key={card.key} card={card} name={nameOf(card)} price={prices ? priceOf(card) : null} place={placeOf(card, org)} onOpen={openInList}
-                          selecting={selecting} selected={selected.has(card.key)} onToggle={toggleSelect} />
+                          selecting={selecting} selected={selected.has(card.key)} onToggle={toggleSelect} help={item.index === 0 && ci === 0 ? 'collection.card' : undefined} />
                       ))}
                     </div>
                   );

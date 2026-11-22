@@ -251,6 +251,30 @@ The app in English by default (French when the phone or PC is in French), French
 - [x] **Lot 5 · Documentation**: README (+ README.fr.md), friends’ guide, release notes (app and package), studies, AI report, roadmap in English, French versions kept; CHANGELOG in English from now on
 - [ ] Check on the phone and the PC in both languages
 
+## Phase 14 — Help on the screens (22/11)
+
+- [x] Guided tour the first time each page is opened (spotlight, Previous / Next / Skip)
+- [x] « ? » help mode: a label under every explained button (PC sidebar, phone round button)
+- [x] Settings → Help: replay the explanations
+- [ ] Check the tours on the phone
+
+## Phase 15 — Scanner after OpenRift (REPRODUIRE-SCANNER-OPENRIFT.md, 22/11)
+
+- [x] Phase A: pixel check ported and measured — not better than the app, not wired (docs/AI-MODELS-REPORT.md § 9)
+- [x] Phase C: printing pick ported and measured — no setting with 0 wrong printing, not wired (§ 10)
+- [x] Instead: the set chosen per artwork remembered on the device, every scan mode; sets to choose in « À ajouter »
+- [ ] Phase E: exact outlines (the crop sometimes cuts the bottom of the card) — then measure A and C again
+- [ ] Real pictures of the 6 UNL runes (no source yet)
+
+## Phase 16 — « Cartes » tab, the whole catalog (ONGLET-CARTES.md, design A, 22/11)
+
+- [x] Search line with keys (cardQuery.js) and its tests
+- [x] Filters ↔ text (domains, sets, type, energy, might, rarity, others), ownership with counts, chips
+- [x] Navigation: PC « Explorer », phone tab (Valeur in « Plus »), « Mes cartes », links from Progression and the global search
+- [x] PC page and phone tab (design A), printings grouped, « Griser les manquantes » off by default
+- [x] Quick add with « Annuler », multiple selection, wishes, add to a deck, CSV of the view
+- [ ] Measure the filtering time on the phone; screenshots of the test apps for the user
+
 ## Other ideas (later)
 
 - [x] Starting hand simulator (Lot 4, finally requested)

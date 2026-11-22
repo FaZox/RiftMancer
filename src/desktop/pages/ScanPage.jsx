@@ -68,24 +68,24 @@ export default function ScanPage(props) {
             <span className="w-2 h-2 rounded-full" style={{ background: ai[1] }} />{ai[0]}
           </p>
         </div>
-        <div className="seg w-[420px]" role="tablist" aria-label={tx('Mode de scan')}>
+        <div className="seg w-[420px]" role="tablist" aria-label={tx('Mode de scan')} data-help="scan.modes">
           <button role="tab" aria-selected={mode === 'photos'} onClick={() => switchMode('photos')}><ImageIcon className="w-4 h-4" /> {tx('Photos')}</button>
           <button role="tab" aria-selected={mode === 'webcam'} onClick={() => switchMode('webcam')}><Camera className="w-4 h-4" /> {tx('Webcam')}</button>
           <button role="tab" aria-selected={mode === 'grid'} onClick={() => switchMode('grid')} title={tx('Grille : une page de classeur ou plusieurs cartes')}><LayoutGrid className="w-4 h-4" /> {tx('Grille')}</button>
         </div>
         <div className="ml-auto flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2 h-10 pl-3 border border-gold-500/30 bg-rift-800 w-[300px]">
+          <div className="flex items-center gap-2 h-10 pl-3 border border-gold-500/30 bg-rift-800 w-[300px]" data-help="scan.place">
             <MapPin className="w-4 h-4 text-gold-400 flex-shrink-0" />
             <span className="text-sm text-rift-400 flex-shrink-0">{tx('Ranger dans')}</span>
             <ThemedSelect value={batchDefaults.target || ''} options={placeOptions}
               onChange={(v) => onUpdateDefaults({ ...batchDefaults, target: v })}
               label={tx('Ranger les cartes scannées dans')} className="flex-1 min-w-0" buttonClassName="h-9 text-sm font-bold text-gold-400" />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" data-help="scan.lang">
             <span className="text-sm text-rift-400">{tx('Langue des cartes')}</span>
             <LanguageToggle value={batchDefaults.language} onChange={(language) => onUpdateDefaults({ ...batchDefaults, language })} />
           </div>
-          <button onClick={() => { onClearScan(); setSearching(true); }} className="btn-secondary h-10 px-4 text-sm" title={tx('Carte non reconnue ? La chercher par son nom')}>
+          <button data-help="scan.search" onClick={() => { onClearScan(); setSearching(true); }} className="btn-secondary h-10 px-4 text-sm" title={tx('Carte non reconnue ? La chercher par son nom')}>
             <Search className="w-4 h-4" /> {tx('Chercher une carte')}
           </button>
         </div>
@@ -169,7 +169,7 @@ export default function ScanPage(props) {
 function PendingPanel({ pendingCards, onUpdate, onRemove, onConfirmAll, onClear }) {
   const total = pendingCards.reduce((n, c) => n + c.quantity, 0);
   return (
-    <aside className="w-[420px] 2xl:w-[480px] flex-shrink-0 flex flex-col border-l border-gold-500/20 bg-rift-800/50">
+    <aside data-help="scan.pending" className="w-[420px] 2xl:w-[480px] flex-shrink-0 flex flex-col border-l border-gold-500/20 bg-rift-800/50">
       <div className="px-5 pt-5 pb-4 border-b border-rift-600/40 space-y-3">
         <div className="flex items-baseline gap-2">
           <h2 className="font-display text-lg font-bold text-gold-400">{tx('À ajouter')}</h2>

@@ -3,6 +3,46 @@
 Entries are in English from 21/11/2026; the earlier history is in French (*l’historique antérieur est en français*).
 
 
+## [Unreleased] - 2026-11-22 · « Cartes » tab: the whole catalog, owned or not (ONGLET-CARTES.md, design A « Bibliothèque »)
+
+- **New main tab « Cartes »** — PC: first item of the sidebar (« Explorer »), Ctrl+F searches the page (Ctrl+K stays the global search), Ctrl+9 opens it; phone: Collection · **Cartes** · Scanner · Decks · Plus, **Valeur moved to « Plus »** (first entry). The Collection view « Cartes » is renamed « Mes cartes »; Progression has « Voir les manquantes dans Cartes » and the global search « Voir tous les résultats dans Cartes ».
+- **One search line** (`src/lib/cardQuery.js`): FR/EN name, number, or keys in the style of OpenRift / Scryfall with French aliases — `t:` type, `d:` domain, `e:` energy, `p:` might, `r:` rarity (ordered: `r>=rare`), `s:` set, `o:` card text, `n:` number, `is:` foil/promo/signature/bannie/champion/deck, `own:` copies owned; operators `: = != < <= > >=`, `-` reverses, quotes group words; an unknown key is plain text. « ? » shows the syntax.
+- **Filters ↔ text**: domains (hexagons), sets with their progress, type, energy, **might** (0–6, 7+, several at once, only cards that have a might), rarity, others; a click writes the key in the line (« p:4,5 »), a typed key lights its filter (« e<=3 » lights 0–3). Active filters as chips with ✕ and « Tout effacer ». Ownership Toutes · Possédées · Manquantes with their counts.
+- **Tiles**: real pictures, ×N in gold when owned, missing cards **in normal colours by default**; « Griser les manquantes » (off by default, remembered) dims them with the word « Manquante ». Printings grouped by default (« +2 impressions »), set titles with « owned / total of this selection », price on the PC, sorts of the collection plus energy, S/M/L on the PC, 3 columns on the phone; virtual grid (`@tanstack/react-virtual`).
+- **Actions**: click = card sheet (swipe / arrows walk through the results); PC: hover « + » adds a copy in the default language with « Annuler », Ctrl/Shift = multiple selection; phone: long press starts the selection; selection → wishes, « Ajouter à un deck… », one copy each; « Manquantes → souhaits » (confirmation with the count); « Exporter la vue » (CSV). Phone: the scanner icon of the search finds a card (its sheet opens, nothing is added).
+- **Memory**: search, filters, sort, size, grouping, dimming and scroll position kept between tabs and launches (`localStorage` `rm.cards.view.v1`).
+- **Speed**: filtering + sorting the 1 415 printings takes about 2 ms on the PC (`tests/cardsBrowser.test.mjs`); **to measure on the phone** (goal < 50 ms).
+- Tests: `tests/cardQuery.test.mjs` (every key, operator, negation, quotes, aliases, accents, unknown key, empty query, filters ↔ text), `tests/cardsBrowser.test.mjs` (acceptance queries on the real catalog, grouping, counts, sorts, deck, CSV); 351 of 353 pass, 1 skipped (the rifthunt test that already failed before this change is unchanged). Checked in the PC app and in a phone-sized window; **not yet on the phone itself**.
+
+## [Unreleased] - 2026-11-22 · Choosing the set of an artwork printed several times
+
+- **The set chosen for an artwork is remembered on the device** (`src/lib/printingChoice.js`), per artwork (runes of every set, « signée » cards, reprinted tokens), for every scan mode — camera, photos, grid, auto — and the next sessions (it was the camera only, until the app closed). A card searched by hand or corrected keeps exactly the one chosen.
+- **« À ajouter »** (PC and phone): an artwork printed several times shows its sets under the card (« Même illustration : OGN · RAD · UNL · VEN »): one tap changes the printing, remembered for the next scans.
+- Why not read the set on the photo: measured in docs/AI-MODELS-REPORT.md § 10 — even at the photo's full resolution no real photo of the bench tells the printings apart; on one of them the detector's crop cuts off the bottom of the card, where the code is.
+- The 6 UNL runes keep the VEN runes' picture (same art): no source has the UNL picture (rifthunt serves the OGN rune under that number, the official gallery has no UNL rune); noted in `model/manual-cards/manual-cards.json`.
+- Checked in the PC app: a Calm Rune searched on the Scanner page shows OGN · RAD · UNL · VEN in « À ajouter », RAD chosen and remembered. Tests: 337 passed.
+
+## [Unreleased] - 2026-11-22 · Reading the printing measured (scanner, phase C)
+
+- `src/lib/printingPick.js`: OpenRift's printing pick (name, code and stamp bands, tournament on the pixels where two printings differ, « unanimous » rule), adapted from OpenRift (AGPL-3.0, NOTICE), plus two variants of ours (each band looked for within ±4 % of the card; code strip searched per printing). Bench `node scripts/eval-printings.mjs`.
+- Result (docs/AI-MODELS-REPORT.md § 10): on the 53 artworks printed several times, no setting gives 0 wrong printing while finding some (best: 18 % of the simulated photos, 0.6 % wrong; none of the 11 real photos). **Not wired into the scanner.**
+- Found: the pictures of the 6 UNL runes are the VEN runes' files.
+
+## [Unreleased] - 2026-11-22 · OpenRift's pixel check measured (scanner, phase A)
+
+- `src/lib/alignedVerify.js` and `src/lib/edgeSnap.js`: OpenRift's pixel check (40 × 56 grey, 10 × 10 patches, best correlation within ±2 px, median; winner ≥ 0.60 and 0.15 ahead) and outline snapping, adapted from OpenRift (AGPL-3.0, credited in NOTICE). Tests: `tests/alignedVerify.test.mjs`.
+- Bench: `eval:matcher … --verify K[,K] --verify-opts score/margin,…` measures the check alone, then the app's decision with the check as veto or rescue (signatures cached in `model/cache/aligned-<n>.json`).
+- Result (docs/AI-MODELS-REPORT.md § 9): alone, the check does worse than the app (simulated photos: 64 % right and 0.5 % wrong against 84.5 % and 0.2 %); added as a rescue it gains at most 0.5 point without more cards outside the catalog. **Not wired into the scanner.**
+
+## [Unreleased] - 2026-11-22 · Help on the screens: guided tour and « ? » mode
+
+- **Guided tour** the first time a page is opened (Collection, Scanner, Decks, Value, Settings → Content, and a card's sheet): its buttons one at a time in a spotlight, with a short explanation, « Previous », « Next » and « Skip » (Esc closes). It waits for the welcome and what's new windows. The pages seen are kept on the device.
+- **Help mode** (« ? »): a label under every explained button of the screen; a label opens its explanation, « Guided tour » replays the page's tour. PC: « Help on this screen » in the sidebar; phone: a small round « ? » above the tab bar.
+- **Progress and Wishes** have their own tour (a set and its filters, « Add all to wishes »; wanted quantity, price alert, sending to Cardmarket), and the Collection tour starts with its three views. The first time, Progress opens its first set so that its tour shows everything.
+- Settings → Help → « Show the button explanations again » replays every tour.
+- Buttons are marked with `data-help` in the JSX; texts and tour order in `src/lib/help.js`, the layer in `src/components/common/HelpLayer.jsx`.
+- Checked in the PC app: the Collection tour (8 steps), the help mode labels, the card sheet's tour, the Scanner tour (5 steps). Tests: 321 passed.
+
 ## [2.3.0] - 2026-11-21
 
 - Released: friends' package `release/v2.3.0/`, public package `release/v2.3.0-public/` (GitHub release), tag `v2.3.0`.
