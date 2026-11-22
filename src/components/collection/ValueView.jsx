@@ -4,6 +4,7 @@ import { RefreshCw } from 'lucide-react';
 import { euro, refreshPrices, valueHistory } from '../../lib/prices.js';
 import { isNative } from '../../lib/nativeAssets.js';
 import { ChangeBadge } from '../common/PriceHistory.jsx';
+import PriceChart from '../common/PriceChart.jsx';
 import { isDesktop } from '../../lib/collectionDB.js';
 import CardTile from './CardTile.jsx';
 import CardImage from '../common/CardImage.jsx';
@@ -16,24 +17,11 @@ import MovementsPanel from '../common/MovementsPanel.jsx';import { tx, locale }
 
 
 // ─── Value (Cardmarket trend prices) ─────────────────────────────────────
-export function ValueChart({ history, className = 'w-full h-28' }) {
-  const pts = valueHistory(history);
-  if (pts.length < 2) return <p className="text-[11px] text-rift-500">{tx('L’historique se remplit jour après jour (un point par jour où les prix sont mis à jour).')}</p>;
-  const W = 600; const H = 160; const pad = 28;
-  const vs = pts.map(p => p.v);
-  const min = Math.min(...vs); const max = Math.max(...vs);
-  const span = max - min || 1;
-  const x = (i) => pad + (i * (W - 2 * pad)) / (pts.length - 1);
-  const y = (v) => H - pad - ((v - min) * (H - 2 * pad)) / span;
-  const d = pts.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
+/** Collection value over 1, 3, 6 months or all of it (PriceChart). */
+export function ValueChart({ history, height = 'h-28' }) {
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className={className} role="img" aria-label={tx('Évolution de la valeur de la collection')}>
-      <path d={`${d} L${x(pts.length - 1)},${H - pad} L${x(0)},${H - pad} Z`} fill="rgba(200,168,78,0.12)" />
-      <path d={d} fill="none" stroke="#c8a84e" strokeWidth="2" />
-      <text x={pad} y={14} fontSize="11" fill="#94a3b8">{euro(max)}</text>
-      <text x={pad} y={H - 8} fontSize="11" fill="#94a3b8">{euro(min)}</text>
-      <text x={W - pad} y={H - 8} fontSize="11" fill="#94a3b8" textAnchor="end">{new Date(pts[pts.length - 1].d).toLocaleDateString(locale())}</text>
-    </svg>
+    <PriceChart points={valueHistory(history)} height={height} label={tx('Valeur de la collection')} showChange={false}
+      empty={tx('L’historique se remplit jour après jour (un point par jour où les prix sont mis à jour).')} />
   );
 }
 

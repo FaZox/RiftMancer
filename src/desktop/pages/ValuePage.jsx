@@ -6,6 +6,7 @@ import { getLocalizedName, displayLanguage } from '../../lib/cardLocale.js';
 import { rarityLabel } from '../../data/sampleCards.js';
 import CardImage from '../../components/common/CardImage.jsx';
 import { ChangeBadge } from '../../components/common/PriceHistory.jsx';
+import PriceChart from '../../components/common/PriceChart.jsx';
 import PriceText from '../../components/common/PriceText.jsx';
 import StatusPill from '../../components/common/StatusPill.jsx';
 import StatsView from '../../components/collection/StatsView.jsx';
@@ -133,37 +134,9 @@ function Kpi({ icon: Icon, label, value, sub, extra, tone, big, help }) {
   );
 }
 
-/** Value over time, drawn in real pixels (text is not stretched). */
+/** Value over 1, 3, 6 months or all of it (PriceChart, prices and dates in real pixels). */
 function BigChart({ history }) {
-  const pts = valueHistory(history);
-  if (pts.length < 2) {
-    return <div className="h-[240px] flex items-center justify-center text-sm text-rift-500 border border-dashed border-rift-600">{tx('L’historique se remplit jour après jour.')}</div>;
-  }
-  const vs = pts.map(p => p.v);
-  const min = Math.min(...vs); const max = Math.max(...vs); const span = max - min || 1;
-  const x = (i) => (i / (pts.length - 1)) * 100;
-  const y = (v) => 100 - ((v - min) / span) * 100;
-  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${x(i)},${y(p.v)}`).join(' ');
-  return (
-    <div className="flex gap-3 h-[240px]">
-      <div className="flex flex-col justify-between text-xs text-rift-400 text-right py-1 w-16">
-        <span>{euro(max)}</span><span>{euro((min + max) / 2)}</span><span>{euro(min)}</span>
-      </div>
-      <div className="flex-1 flex flex-col">
-        <div className="relative flex-1 border-l border-b border-rift-600">
-          {[25, 50, 75].map(t => <div key={t} className="absolute inset-x-0 border-t border-rift-700/70" style={{ top: `${t}%` }} />)}
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full" role="img" aria-label={tx('Évolution de la valeur de la collection')}>
-            <path d={`${line} L100,100 L0,100 Z`} fill="rgba(200,168,78,0.14)" />
-            <path d={line} fill="none" stroke="#c8a84e" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-          </svg>
-        </div>
-        <div className="flex justify-between text-xs text-rift-400 pt-1.5">
-          <span>{new Date(pts[0].d).toLocaleDateString(locale())}</span>
-          <span>{new Date(pts[pts.length - 1].d).toLocaleDateString(locale())}</span>
-        </div>
-      </div>
-    </div>
-  );
+  return <PriceChart points={valueHistory(history)} height="h-[240px]" label={tx('Valeur de la collection')} showChange={false} />;
 }
 
 const COLS = [

@@ -22,7 +22,7 @@ export const TEST_FILES = [
   'navigation.test.mjs', 'settingsSections.test.mjs', 'globalSearch.test.mjs', 'welcome.test.mjs', 'polish.test.mjs',
   'deckVersions.test.mjs', 'opponentNotes.test.mjs', 'scoreGame.test.mjs', 'errata.test.mjs', 'deckCodes.test.mjs',
   'handsFree.test.mjs', 'gridScan.test.mjs', 'binder.test.mjs', 'i18n.test.mjs', 'scanSounds.test.mjs', 'variants.test.mjs',
-  'priceMoves.test.mjs', 'priceHistory.test.mjs', 'friendLists.test.mjs', 'electronCheck.test.mjs', 'contentFetch.test.mjs', 'publicExport.test.mjs', 'cardQuery.test.mjs', 'cardsBrowser.test.mjs',
+  'priceMoves.test.mjs', 'priceHistory.test.mjs', 'priceChart.test.mjs', 'friendLists.test.mjs', 'electronCheck.test.mjs', 'contentFetch.test.mjs', 'publicExport.test.mjs', 'cardQuery.test.mjs', 'cardsBrowser.test.mjs',
 ];
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {

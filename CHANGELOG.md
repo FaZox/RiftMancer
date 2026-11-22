@@ -3,6 +3,12 @@
 Entries are in English from 21/11/2026; the earlier history is in French (*l’historique antérieur est en français*).
 
 
+## [Unreleased] - 2026-11-22 · Price chart: 1 month, 3 months, 6 months, all
+
+- **Price chart** in the card sheet (Price tab, normal or foil) and in Value (collection value, phone and PC): « 1 mois · 3 mois · 6 mois · Tout », prices at the left and dates below, points placed by date (a point a day for the last month, a point a week before), the price of a day under the finger or the mouse, the change over the period for a card (not for the collection value, which grows with the cards added). When the history is shorter than the period: « Prix gardés depuis le … ».
+- One component for all of them (`components/common/PriceChart.jsx`, pure functions in `src/lib/priceChart.js`, `tests/priceChart.test.mjs`); the former curves of Value (phone and PC) and of the card sheet are replaced.
+- Checked in the PC app on a copy of real data: Value and a card sheet, periods, point under the mouse.
+
 ## [Unreleased] - 2026-11-22 · Price history beyond a month
 
 - **Cardmarket price history kept beyond 31 days**: every day of the last month, then one day a week, as far back as it goes (`thinHistory`), for each reference price and finish. Prices are still Cardmarket's only (its public price guide has no older days, so the longer curves fill up with time).

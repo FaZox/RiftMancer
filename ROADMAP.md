@@ -96,7 +96,7 @@ Key: `[x]` done · `[~]` in progress · `[ ]` to do
 - [x] Cardmarket link: direct product page, normal and promo (`Singles/Unleashed/Mutated-Mouser`, `Singles/Unleashed-Promos/Mutated-Mouser`), names and versions written as Cardmarket does
 - [x] Price history of each card over 1 month (one point per day, on the PC, sent to the phone) + 7-day / 30-day change (Cardmarket averages while the history fills up)
 - [x] Price history kept beyond a month (every day of the last month, then one a week), older versions’ files taken back, days missed filled from rifthunt’s copy of Cardmarket’s trend price, merged with the phone’s
-- [ ] Price chart: 1 month, 3 months, 6 months, all (card sheet and Value)
+- [x] Price chart: 1 month, 3 months, 6 months, all (card sheet and Value), price of a day under the finger
 - [x] Biggest rises / drops of your cards over 7 days (Value view)
 - [x] Price alerts on the wish list (« Alert under €X », notification when the prices are updated)
 - [x] Purchase price per copy (« Paid » field) and gain
