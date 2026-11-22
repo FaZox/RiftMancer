@@ -5,6 +5,11 @@ Texte pour les utilisateurs de l’appli, une section par version distribuée
 docs/WHATS-NEW.md). `npm run release -- <version>` en tire `NOUVEAUTES.txt` et refuse
 de construire un paquet tant que la section de la version n’est pas écrite, dans les deux fichiers.
 
+## 2.4.3 — graphique des prix
+
+- **Graphique des prix** : dans la fiche d’une carte et dans Valeur, la courbe sur 1 mois, 3 mois, 6 mois ou tout, avec le prix d’un jour sous le doigt.
+- **Historique plus long** : un relevé chaque jour du dernier mois puis un par semaine ; les jours manqués sont complétés, et les historiques du PC et du téléphone se rejoignent à la synchro.
+
 ## 2.4.2 — liens Cardmarket directs
 
 - **Liens Cardmarket** : chaque carte ouvre directement sa page (…/Singles/Unleashed/Mutated-Mouser), et sa promo la page promo (…/Unleashed-Promos/Mutated-Mouser).

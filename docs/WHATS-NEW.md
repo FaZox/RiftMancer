@@ -6,6 +6,11 @@ version is docs/NOUVEAUTES.md). `npm run release -- <version>` takes
 `WHATS-NEW.txt` from it and refuses to build a package until the section of the
 version is written, in both files.
 
+## 2.4.3 — price chart
+
+- **Price chart**: in a card's sheet and in Value, the curve over 1 month, 3 months, 6 months or all, with the price of a day under your finger.
+- **Longer history**: one price a day for the last month, then one a week; missed days are filled in, and the PC and phone histories are merged at sync.
+
 ## 2.4.2 — direct Cardmarket links
 
 - **Cardmarket links**: each card opens its own page (…/Singles/Unleashed/Mutated-Mouser), and its promo the promo page (…/Unleashed-Promos/Mutated-Mouser).
