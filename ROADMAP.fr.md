@@ -86,14 +86,14 @@ Légende : `[x]` fait · `[~]` en cours · `[ ]` à faire
 ## Phase 5 — Prix ✅
 
 - [x] Source : fichiers publics de Cardmarket pour Riftbound (jeu n° 22 : catalogue produits + guide des prix, mis à jour chaque jour, sans compte)
-- [x] Correspondance cartes ↔ produits Cardmarket (`electron/prices.cjs`) : extension par noms communs, noms anglais complets via l'API Riftcodex (mis en cache 7 jours), variantes (base / illustration alternative / hors-série / signée) dans l'ordre d'ajout Cardmarket — **1 303 / 1 408 cartes** reconnues (manquent surtout des cartes de Radiance pas encore dans Riftcodex, jetons, promos)
+- [x] Correspondance cartes ↔ produits Cardmarket (`electron/prices.cjs`, `src/lib/priceBuilder.js`) : le produit de chaque impression vient de rifthunt (mis en cache 7 jours ; par nom anglais complet via Riftcodex quand rifthunt ne répond pas, extension par noms communs, variantes dans l'ordre d'ajout Cardmarket) — **1 408 / 1 408 cartes** reconnues, impressions promo et prix des promos compris
 - [x] Récupération par le PC au démarrage puis toutes les 3 h (téléchargement au plus une fois par jour) ; bouton « Mettre à jour les prix » ; envoi au téléphone à la synchro (fonctionne ensuite hors ligne)
 - [x] Prix « tendance » ; prix foil pour les exemplaires foil ; pas de distinction FR/EN
 - [x] Prix par carte (zoom + lien « Voir sur Cardmarket »), par ligne de la Collection, tri par prix, valeur totale (filtrée)
 - [x] Vue « Valeur » : total, par extension, les plus chères, courbe d'évolution
 - [x] Valeur des decks et coût des cartes manquantes ; coût estimé de la liste de souhaits
 - [x] Historique de la valeur : un point par jour (gardé 2 ans), calculé sur le PC
-- [x] Lien Cardmarket : recherche par nom complet (« Jinx, Demolitionist ») qui tombe sur la bonne carte — lien direct vers la fiche produit non vérifiable (Cardmarket bloque les navigateurs automatisés)
+- [x] Lien Cardmarket : fiche produit directe, normale et promo (`Singles/Unleashed/Mutated-Mouser`, `Singles/Unleashed-Promos/Mutated-Mouser`), noms et versions écrits comme Cardmarket
 - [x] Historique du prix de chaque carte sur 1 mois (un point par jour, sur le PC, envoyé au téléphone) + variation 7 j / 30 j (moyennes Cardmarket tant que l'historique se remplit)
 - [x] Plus fortes hausses / baisses de vos cartes sur 7 jours (vue Valeur)
 - [x] Alertes de prix sur la liste de souhaits (« Alerte sous X € », notification quand les prix sont mis à jour)

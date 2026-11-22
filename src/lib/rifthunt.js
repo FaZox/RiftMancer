@@ -157,18 +157,25 @@ export function cardSourceChanges(text, catalog) {
   return { ...galleryChanges(extractGalleryCards(text), catalog), links: [], source: 'gallery' };
 }
 
-/** Cards and Cardmarket links for the prices: { names: { id: full English name }, cardmarket: { id: idProduct } }. */
+/**
+ * Cards and Cardmarket links for the prices: { names: { id: full English name },
+ * cardmarket: { id: idProduct }, paths: { idProduct: 'Expansion/Product-Name' } }.
+ * paths come from every printing (promos too); rifthunt sometimes gives a promo
+ * the normal set's address, so the price table only keeps the version part.
+ */
 export function rifthuntCardIndex(printings) {
   const ids = printingIds(printings);
-  const names = {}, cardmarket = {};
+  const names = {}, cardmarket = {}, paths = {};
   for (const p of printings) {
+    const m = /\/Products\/Singles\/([\w-]+\/[\w-]+)$/.exec(String(p.cardmarketUrl || ''));
+    if (m && Number(p.cardmarketId) > 0 && !paths[Number(p.cardmarketId)]) paths[Number(p.cardmarketId)] = m[1];
     const id = ids.get(p);
     if (!ID.test(id)) continue;
     if (!names[id]) names[id] = String(p.name || '');
     const cm = Number(p.cardmarketId);
     if (cm > 0 && !cardmarket[id]) cardmarket[id] = cm;
   }
-  return { names, cardmarket };
+  return { names, cardmarket, paths };
 }
 
 const KIND = { legend: 'legends', battlefield: 'battlefields' };

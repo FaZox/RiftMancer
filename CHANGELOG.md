@@ -3,6 +3,13 @@
 Entries are in English from 21/11/2026; the earlier history is in French (*l’historique antérieur est en français*).
 
 
+## [Unreleased] - 2026-11-22 · Direct Cardmarket links, prices of every card and promo again
+
+- **Cardmarket links**: card pages open directly, as on Cardmarket: `…/Products/Singles/Unleashed/Mutated-Mouser` for the normal card, `…/Singles/Unleashed-Promos/Mutated-Mouser` for the promo (no minimum condition: promos are few), instead of `Products?idProduct=…` or a search. Set and card names written as Cardmarket does (« Kai'Sa, Survivor » → `KaiSa-Survivor`, « B.F. Sword » → `BF-Sword`), with Cardmarket's versions (`KSante-Dauntless-V2-Showcase`). Card sheet → Price: a second button « Voir la promo sur Cardmarket » when Cardmarket has one. Wishes, missing cards for the decks and the card sheet use the same pages; the catalog's promo printings (« opp-036-219 ») open their promo page.
+- **Prices fixed**: since 21/11 the Cardmarket products were found by name with Riftcodex's names, which answer in ~50 s a page and were stuck in an old cache without Radiance: 105 cards without a price (Radiance champions, some Proving Grounds legends, tokens) and K'Sante's alternate art swapped with the normal one. rifthunt's product of each printing is used again (1,408 of 1,408 cards priced; by name with Riftcodex only when rifthunt does not answer); the links no longer come from its ids.
+- **Promo prices fixed**: the catalog's promo printings (225, « opp-036-219 ») were matched by name (58, some wrongly) and then counted as sets, so the promo expansions they sat in were left out of the promo prices (192 cards). They now take rifthunt's product only and are left out of that count, and each set's expansion is the one holding most of its cards: 371 cards have a promo price, 180 of the 225 promo printings their own price. With the catalog of this PC: 1,675 of 1,726 cards priced (1,372 before).
+- Prices table: `links: { cardId: [normalPath, promoPath] }` (PC and phone, built the same way).
+
 ## [Unreleased] - 2026-11-22 · Price paid and purchase date, phone tab bar, Cards tab polish
 
 - **Card sheet**: the price paid and the purchase date show on the right of the rarity (« Payé 4,50 € · le 12/11/2026 », the average when copies were bought at different prices). They are set in the Price tab → « Mon achat », for every copy of the card; copies get a `paidAt` field (YYYY-MM-DD) next to `paid`.

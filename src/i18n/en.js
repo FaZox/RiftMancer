@@ -171,6 +171,7 @@ export default {
   ") s’écarte de plus de 30 % de la moyenne des ventes sur 7 jours (": ") is more than 30 % away from the 7-day average sale (",
   "). Carte peu échangée.": "). Rarely traded card.",
   "Voir sur Cardmarket": "See on Cardmarket",
+  "Voir la promo sur Cardmarket": "See the promo on Cardmarket",
   "exemplaire": "copy",
   "Vous n’avez pas encore cette carte.": "You don’t have this card yet.",
   "Promo": "Promo",

@@ -374,7 +374,7 @@ collection goes to that PC.
 
 | What | Where | Content |
 |---|---|---|
-| Cardmarket prices (PC) | `prices.json` | `{ updatedAt, priceDate, source, matched, total, cards: { [cardId]: [trend, trendFoil, idProduct, avg7, avg30, …] }, hist }` (`electron/prices.cjs`) |
+| Cardmarket prices (PC) | `prices.json` | `{ updatedAt, priceDate, source, matched, total, cards: { [cardId]: [trend, trendFoil, idProduct, avg7, avg30, …] }, promo: { [cardId]: [trend, trendFoil, n] }, links: { [cardId]: [normalPath, promoPath] }, hist }` (`electron/prices.cjs`) |
 | Cardmarket links and full English names (PC) | `card-index.json` | `{ fetchedAt, index: { source: 'rifthunt' \| 'riftcodex', names, cardmarket: { cardId → idProduct } } }`, a week |
 | Backups of the files | IndexedDB `riftbound-backups` (browser) | store `files` |
 | Test bench | IndexedDB `rb-bench` | stores `items` (key `name`) and `photos` |

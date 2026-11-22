@@ -387,7 +387,7 @@ collection part vers ce PC.
 
 | Quoi | Où | Contenu |
 |---|---|---|
-| Prix Cardmarket (PC) | `prices.json` | `{ updatedAt, priceDate, source, matched, total, cards: { [cardId]: [trend, trendFoil, idProduct, avg7, avg30, …] }, hist }` (`electron/prices.cjs`) |
+| Prix Cardmarket (PC) | `prices.json` | `{ updatedAt, priceDate, source, matched, total, cards: { [cardId]: [trend, trendFoil, idProduct, avg7, avg30, …] }, promo: { [cardId]: [trend, trendFoil, n] }, links: { [cardId]: [normalPath, promoPath] }, hist }` (`electron/prices.cjs`) |
 | Liens Cardmarket et noms anglais complets (PC) | `card-index.json` | `{ fetchedAt, index: { source: 'rifthunt' \| 'riftcodex', names, cardmarket: { cardId → idProduct } } }`, une semaine |
 | Sauvegardes en fichiers | IndexedDB `riftbound-backups` (navigateur) | magasin `files` |
 | Banc de test | IndexedDB `rb-bench` | magasins `items` (clé `name`) et `photos` |

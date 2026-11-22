@@ -6,8 +6,8 @@
  *       products_singles_22.json  idProduct, name, idExpansion
  *       price_guide_22.json       trend / trend-foil / avg / low per idProduct
  *   - Cardmarket gives names but no collector numbers, so full English names
- *     ("Jinx, Loose Cannon") come from the Riftcodex API (riftbound_id → name),
- *     cached for a week.
+ *     ("Jinx, Loose Cannon") and each printing's product come from rifthunt
+ *     (Riftcodex's names when it does not answer), cached for a week.
  *   - Matching: our set → the Cardmarket expansion sharing most names; then by
  *     name. When a name has several prints (base, alternate art, overnumbered,
  *     signature), they are matched in that order with Cardmarket's products in
@@ -27,6 +27,7 @@ const path = require('node:path');
 const CM_PRODUCTS = 'https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_22.json';
 const CM_PRICES = 'https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_22.json';
 const RIFTCODEX = 'https://api.riftcodex.com/cards';
+const RIFTHUNT_CARDS = 'https://api.rifthunt.com/bulk/cards'; // first source of the Cardmarket products (src/lib/rifthunt.js)
 const HEADERS = { 'User-Agent': 'RiftMancer (local collection app; https://github.com/FaZox/RiftMancer)' };
 const REFRESH_EVERY = 20 * 60 * 60 * 1000; // ~ daily
 const NAMES_EVERY = 7 * 24 * 60 * 60 * 1000;
@@ -35,6 +36,32 @@ async function getJSON(url) {
   const r = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(60000) });
   if (!r.ok) throw new Error(`${url} → HTTP ${r.status}`);
   return r.json();
+}
+
+/**
+ * rifthunt's printings: { names: { id → full English name }, cardmarket: { id → idProduct },
+ * paths: { idProduct → 'Expansion/Name' } } (same as rifthuntCardIndex).
+ */
+async function fetchRifthuntIndex() {
+  const d = await getJSON(RIFTHUNT_CARDS);
+  const cards = Array.isArray(d) ? d : d?.cards;
+  if (!Array.isArray(cards) || cards.length < 100) throw new Error('rifthunt: unexpected file');
+  const names = {}, cardmarket = {}, paths = {};
+  const base = (p) => String(p.riftboundId || '').toLowerCase().replace('*', '-star');
+  const count = new Map();
+  for (const p of cards) count.set(base(p), (count.get(base(p)) || 0) + 1);
+  const slug = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/['’.]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  for (const p of cards) {
+    const m = /\/Products\/Singles\/([\w-]+\/[\w-]+)$/.exec(String(p.cardmarketUrl || ''));
+    if (m && Number(p.cardmarketId) > 0 && !paths[Number(p.cardmarketId)]) paths[Number(p.cardmarketId)] = m[1];
+    const label = /\(([^)]+)\)\s*$/.exec(String(p.name || ''))?.[1];
+    const id = count.get(base(p)) > 1 && label ? `${base(p)}-${slug(label)}` : base(p);
+    if (!/^[a-z0-9][a-z0-9-]{1,60}$/.test(id)) continue;
+    if (!names[id]) names[id] = String(p.name || '');
+    const cm = Number(p.cardmarketId);
+    if (cm > 0 && !cardmarket[id]) cardmarket[id] = cm;
+  }
+  return { source: 'rifthunt', names, cardmarket, paths };
 }
 
 /** All Riftcodex cards: { riftbound_id → full English name, flags }. */
@@ -86,7 +113,7 @@ function buildMapping(cards, products, index) {
   }
   // The others (rifthunt not reached, or a card it does not link): by name, as before
   products = products.filter(p => !used.has(p.idProduct));
-  cards = cards.filter(c => !mapping[c.id]);
+  cards = cards.filter(c => !mapping[c.id] && c.variant !== 'promo'); // a promo printing: rifthunt's product only
   const namesByExp = new Map();
   const byExpName = new Map();
   for (const p of [...products].sort((a, b) => a.idProduct - b.idProduct)) {
@@ -173,6 +200,26 @@ const median = (xs) => {
 };
 
 /**
+ * Cardmarket expansions of our sets: for each set (card id prefix), the one
+ * most of its cards are in (rifthunt puts a few in the set's promos).
+ */
+function mainExpansions(mapping, byId) {
+  const count = new Map();
+  for (const [cardId, id] of Object.entries(mapping)) {
+    const e = byId.get(id)?.idExpansion;
+    if (e == null) continue;
+    const k = `${cardId.split('-')[0]}|${e}`;
+    count.set(k, (count.get(k) || 0) + 1);
+  }
+  const best = new Map();
+  for (const [k, n] of count) {
+    const [s, e] = k.split('|');
+    if (!best.has(s) || n > best.get(s)[1]) best.set(s, [Number(e), n]);
+  }
+  return new Set([...best.values()].map(([e]) => e));
+}
+
+/**
  * Prices of the promo versions: Cardmarket products of the same card (same
  * idMetacard) in expansions that hold none of our sets. { cardId: [trend,
  * trendFoil, n] }: n = 1 → that promo's own price; n > 1 → median of the
@@ -180,7 +227,7 @@ const median = (xs) => {
  */
 function buildPromoPrices(mapping, products, guideById) {
   const byId = new Map(products.map(p => [p.idProduct, p]));
-  const setExpansions = new Set(Object.values(mapping).map(id => byId.get(id)?.idExpansion));
+  const setExpansions = mainExpansions(mapping, byId);
   const byMeta = new Map();
   for (const p of products) {
     if (p.idMetacard == null || setExpansions.has(p.idExpansion)) continue;
@@ -200,6 +247,82 @@ function buildPromoPrices(mapping, products, guideById) {
   return out;
 }
 
+/** Cardmarket's way of writing a name in its addresses: « Kai'Sa, Survivor » → « KaiSa-Survivor », « B.F. Sword » → « BF-Sword ». */
+function cardmarketSlug(s) {
+  return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/['’.]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+/** 'Expansion/Name' of a product; rifthunt's name part when it is this very product there (it adds « -V2-Showcase »…). */
+function productPath(exp, p, paths) {
+  const name = cardmarketSlug(p.name);
+  const [e, n] = String(paths?.[p.idProduct] || '').split('/');
+  return `${exp}/${e === exp && n && (n === name || n.startsWith(`${name}-V`)) ? n : name}`;
+}
+
+/**
+ * Card pages on Cardmarket: { cardId: [normal, promo] }, each 'Expansion/Name'
+ * (« Unleashed/Mutated-Mouser », « Unleashed-Promos/Mutated-Mouser »), promo
+ * null when Cardmarket has none. Same as buildLinks in src/lib/priceBuilder.js.
+ */
+function buildLinks(catalog, mapping, products, paths) {
+  const byId = new Map(products.map(p => [p.idProduct, p]));
+  // our sets' expansions, their names, and the set of each card (by Cardmarket's idMetacard)
+  const setExpansions = mainExpansions(withoutPromos(catalog, mapping), byId);
+  const setNames = new Set();
+  const setOfMeta = new Map();
+  for (const c of catalog) {
+    const p = byId.get(mapping[c.id]);
+    if (!p || !setExpansions.has(p.idExpansion)) continue;
+    const exp = cardmarketSlug(c.setName || c.set);
+    setNames.add(exp);
+    if (!setOfMeta.has(p.idMetacard)) setOfMeta.set(p.idMetacard, exp);
+  }
+  // the other expansions (promos…): rifthunt's name when it is not one of our sets
+  // (« Origins-Promos », « Secret-Garden-Bundle »), else « <set of most of its cards>-Promos »
+  const votes = new Map();
+  const vote = (e, name, n) => {
+    if (!votes.has(e)) votes.set(e, new Map());
+    votes.get(e).set(name, (votes.get(e).get(name) || 0) + n);
+  };
+  const promos = new Map();
+  for (const p of [...products].sort((a, b) => a.idProduct - b.idProduct)) {
+    if (p.idMetacard == null || setExpansions.has(p.idExpansion)) continue;
+    const e = String(paths?.[p.idProduct] || '').split('/')[0];
+    if (e && !setNames.has(e)) vote(p.idExpansion, e, 1000);
+    else if (setOfMeta.has(p.idMetacard)) vote(p.idExpansion, `${setOfMeta.get(p.idMetacard)}-Promos`, 1);
+    if (!promos.has(p.idMetacard)) promos.set(p.idMetacard, []);
+    promos.get(p.idMetacard).push(p);
+  }
+  const expName = (e) => [...(votes.get(e) || [])].sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+  const out = {};
+  for (const c of catalog) {
+    const p = byId.get(mapping[c.id]);
+    if (!p) continue;
+    const exp = cardmarketSlug(c.setName || c.set);
+    if (!setExpansions.has(p.idExpansion)) {
+      // a promo printing of the catalog (« opp-036-219 »), or a card Cardmarket sells among the promos
+      const path = productPath(expName(p.idExpansion) || exp, p, paths);
+      out[c.id] = [path, path];
+      continue;
+    }
+    const list = promos.get(p.idMetacard) || [];
+    const promo = list.find(q => expName(q.idExpansion) === `${exp}-Promos`) || list[0];
+    out[c.id] = [productPath(exp, p, paths), promo ? productPath(expName(promo.idExpansion) || `${exp}-Promos`, promo, paths) : null];
+  }
+  return out;
+}
+
+/**
+ * The mapping without the catalog's promo printings and promo sets (« OPP »,
+ * « PR »…: they have their own price; the promo table is for the others).
+ */
+function withoutPromos(catalog, mapping) {
+  const promoSets = new Set(catalog.filter(c => c.variant === 'promo').map(c => c.set));
+  const promo = new Set(catalog.filter(c => c.variant === 'promo' || promoSets.has(c.set)).map(c => c.id));
+  return Object.fromEntries(Object.entries(mapping).filter(([id]) => !promo.has(id)));
+}
+
 function createPrices({ userData, distDir, onUpdated, catalogFile = null }) {
   const file = path.join(userData, 'prices.json');
   const indexFile = path.join(userData, 'card-index.json'); // rifthunt (or Riftcodex) links and names, a week
@@ -212,11 +335,14 @@ function createPrices({ userData, distDir, onUpdated, catalogFile = null }) {
   async function loadNames() {
     let cached = null;
     try { cached = JSON.parse(fs.readFileSync(indexFile, 'utf8')); } catch { /* none yet */ }
-    // a cache made from rifthunt's ids is not used any more
-    if (cached && cached.index?.source === 'riftcodex' && Date.now() - cached.fetchedAt < NAMES_EVERY) return cached.index;
-    // Riftcodex's names, products found by name (rifthunt's Cardmarket ids gave links that did not work)
+    // rifthunt's (with the Cardmarket addresses) only: a Riftcodex cache may lack the new sets, rifthunt is tried again
+    if (cached && cached.index?.source === 'rifthunt' && cached.index.paths && Date.now() - cached.fetchedAt < NAMES_EVERY) return cached.index;
+    // rifthunt first (each printing's product), Riftcodex's names when it does not answer (very slow: ~50 s a page)
     let index = null;
-    try { index = { source: 'riftcodex', names: await fetchRiftcodexNames(), cardmarket: {} }; } catch (err) { console.warn('[prices] Riftcodex unavailable:', err.message); }
+    try { index = await fetchRifthuntIndex(); } catch (err) { console.warn('[prices] rifthunt unavailable, Riftcodex used:', err.message); }
+    if (!index) {
+      try { index = { source: 'riftcodex', names: await fetchRiftcodexNames(), cardmarket: {} }; } catch (err) { console.warn('[prices] Riftcodex unavailable too:', err.message); }
+    }
     if (index) {
       fs.writeFileSync(indexFile, JSON.stringify({ fetchedAt: Date.now(), index }));
       return index;
@@ -249,7 +375,8 @@ function createPrices({ userData, distDir, onUpdated, catalogFile = null }) {
       matched: Object.keys(cards).length,
       total: catalog.length,
       cards,
-      promo: buildPromoPrices(mapping, products.products || [], guideById),
+      promo: buildPromoPrices(withoutPromos(catalog, mapping), products.products || [], guideById),
+      links: buildLinks(catalog, mapping, products.products || [], rcNames?.paths),
       hist: updateHistory(current?.hist, day, cards),
     };
     fs.writeFileSync(file, JSON.stringify(current));
@@ -294,4 +421,4 @@ function copiesValue(copies, prices, ref = 'trend') {
   return Math.round(v * 100) / 100;
 }
 
-module.exports = { createPrices, copiesValue, buildMapping, updateHistory, buildPromoPrices };
+module.exports = { createPrices, copiesValue, buildMapping, updateHistory, buildPromoPrices, buildLinks, withoutPromos, cardmarketSlug };

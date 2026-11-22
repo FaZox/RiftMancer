@@ -15,7 +15,7 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 export const TEST_FILES = [
   'decks.test.mjs', 'collection.test.mjs', 'sync.test.cjs', 'syncmodes.test.cjs', 'security.test.cjs', 'sanitize.test.mjs',
   'syncproto.test.cjs', 'matcher.test.mjs', 'play.test.mjs', 'detector.test.mjs', 'mdns.test.cjs', 'engines.test.mjs',
-  'cornerCache.test.mjs', 'alignedVerify.test.mjs', 'printingPick.test.mjs', 'printingChoice.test.mjs', 'catalogBase.test.mjs', 'rifthunt.test.mjs', 'rulings.test.mjs', 'manualCards.test.mjs', 'catalogChoice.test.mjs', 'bench.test.mjs', 'cropSame.test.mjs',
+  'cornerCache.test.mjs', 'alignedVerify.test.mjs', 'printingPick.test.mjs', 'printingChoice.test.mjs', 'catalogBase.test.mjs', 'rifthunt.test.mjs', 'cardmarketLinks.test.mjs', 'rulings.test.mjs', 'manualCards.test.mjs', 'catalogChoice.test.mjs', 'bench.test.mjs', 'cropSame.test.mjs',
   'banlist.test.mjs', 'prices.test.mjs', 'conditions.test.mjs', 'scanRules.test.mjs', 'release.test.mjs', 'backups.test.mjs',
   'conflicts.test.cjs', 'content.test.cjs', 'banUpdate.test.mjs', 'frTranslations.test.mjs', 'galleryCards.test.mjs',
   'pack.test.cjs', 'dataFolder.test.cjs', 'versionCompat.test.mjs', 'diagnostic.test.mjs', 'splash.test.mjs',

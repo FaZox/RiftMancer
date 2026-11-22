@@ -1,11 +1,13 @@
 import { tx } from './i18n.js';
+import { RIFTHUNT_CARDS_URL, rifthuntCardIndex } from './rifthunt.js';
 /**
  * Builds the Cardmarket price table from the public Cardmarket files, on the
  * phone (no PC needed). Same rules as electron/prices.cjs — keep both in step.
  *
  *   products_singles_22.json  Cardmarket products (Riftbound = game 22)
  *   price_guide_22.json       daily price guide
- *   api.riftcodex.com/cards   full English names ("Jinx, Loose Cannon")
+ *   api.rifthunt.com/bulk/cards  each printing's Cardmarket product and full English name
+ *   api.riftcodex.com/cards   full English names ("Jinx, Loose Cannon"), when rifthunt does not answer
  */
 export const CM_PRODUCTS = 'https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_22.json';
 export const CM_PRICES = 'https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_22.json';
@@ -49,7 +51,7 @@ export function buildMapping(cards, products, index) {
   }
   // The others (rifthunt not reached, or a card it does not link): by name, as before
   products = products.filter(p => !used.has(p.idProduct));
-  cards = cards.filter(c => !mapping[c.id]);
+  cards = cards.filter(c => !mapping[c.id] && c.variant !== 'promo'); // a promo printing: rifthunt's product only
   const namesByExp = new Map();
   const byExpName = new Map();
   for (const p of [...products].sort((a, b) => a.idProduct - b.idProduct)) {
@@ -133,6 +135,26 @@ const median = (xs) => {
 };
 
 /**
+ * Cardmarket expansions of our sets: for each set (card id prefix), the one
+ * most of its cards are in (rifthunt puts a few in the set's promos).
+ */
+export function mainExpansions(mapping, byId) {
+  const count = new Map();
+  for (const [cardId, id] of Object.entries(mapping)) {
+    const e = byId.get(id)?.idExpansion;
+    if (e == null) continue;
+    const k = `${cardId.split('-')[0]}|${e}`;
+    count.set(k, (count.get(k) || 0) + 1);
+  }
+  const best = new Map();
+  for (const [k, n] of count) {
+    const [s, e] = k.split('|');
+    if (!best.has(s) || n > best.get(s)[1]) best.set(s, [Number(e), n]);
+  }
+  return new Set([...best.values()].map(([e]) => e));
+}
+
+/**
  * Prices of the promo versions: Cardmarket products of the same card (same
  * idMetacard) in expansions that hold none of our sets. { cardId: [trend,
  * trendFoil, n] }: n = 1 → that promo's own price; n > 1 → median of the
@@ -140,7 +162,7 @@ const median = (xs) => {
  */
 export function buildPromoPrices(mapping, products, guideById) {
   const byId = new Map(products.map(p => [p.idProduct, p]));
-  const setExpansions = new Set(Object.values(mapping).map(id => byId.get(id)?.idExpansion));
+  const setExpansions = mainExpansions(mapping, byId);
   const byMeta = new Map();
   for (const p of products) {
     if (p.idMetacard == null || setExpansions.has(p.idExpansion)) continue;
@@ -160,13 +182,100 @@ export function buildPromoPrices(mapping, products, guideById) {
   return out;
 }
 
+/** Cardmarket's way of writing a name in its addresses: « Kai'Sa, Survivor » → « KaiSa-Survivor », « B.F. Sword » → « BF-Sword ». */
+export function cardmarketSlug(s) {
+  return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/['’.]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+/** 'Expansion/Name' of a product; rifthunt's name part when it is this very product there (it adds « -V2-Showcase »…). */
+function productPath(exp, p, paths) {
+  const name = cardmarketSlug(p.name);
+  const [e, n] = String(paths?.[p.idProduct] || '').split('/');
+  return `${exp}/${e === exp && n && (n === name || n.startsWith(`${name}-V`)) ? n : name}`;
+}
+
 /**
- * Names for the Cardmarket links: Riftcodex's full English names, products
- * found by name (rifthunt's Cardmarket ids were tried on 21/11/2026 and given
- * up: the links they gave did not work). Same shape as before: { source, names, cardmarket: {} }.
+ * Card pages on Cardmarket: { cardId: [normal, promo] }, each 'Expansion/Name'
+ * (« Unleashed/Mutated-Mouser », « Unleashed-Promos/Mutated-Mouser »), promo
+ * null when Cardmarket has none. The expansion is our set's name (« -Promos »
+ * added for the promos), the name Cardmarket's product name.
+ */
+export function buildLinks(catalog, mapping, products, paths) {
+  const byId = new Map(products.map(p => [p.idProduct, p]));
+  // our sets' expansions, their names, and the set of each card (by Cardmarket's idMetacard)
+  const setExpansions = mainExpansions(withoutPromos(catalog, mapping), byId);
+  const setNames = new Set();
+  const setOfMeta = new Map();
+  for (const c of catalog) {
+    const p = byId.get(mapping[c.id]);
+    if (!p || !setExpansions.has(p.idExpansion)) continue;
+    const exp = cardmarketSlug(c.setName || c.set);
+    setNames.add(exp);
+    if (!setOfMeta.has(p.idMetacard)) setOfMeta.set(p.idMetacard, exp);
+  }
+  // the other expansions (promos…): rifthunt's name when it is not one of our sets
+  // (« Origins-Promos », « Secret-Garden-Bundle »), else « <set of most of its cards>-Promos »
+  const votes = new Map();
+  const vote = (e, name, n) => {
+    if (!votes.has(e)) votes.set(e, new Map());
+    votes.get(e).set(name, (votes.get(e).get(name) || 0) + n);
+  };
+  const promos = new Map();
+  for (const p of [...products].sort((a, b) => a.idProduct - b.idProduct)) {
+    if (p.idMetacard == null || setExpansions.has(p.idExpansion)) continue;
+    const e = String(paths?.[p.idProduct] || '').split('/')[0];
+    if (e && !setNames.has(e)) vote(p.idExpansion, e, 1000);
+    else if (setOfMeta.has(p.idMetacard)) vote(p.idExpansion, `${setOfMeta.get(p.idMetacard)}-Promos`, 1);
+    if (!promos.has(p.idMetacard)) promos.set(p.idMetacard, []);
+    promos.get(p.idMetacard).push(p);
+  }
+  const expName = (e) => [...(votes.get(e) || [])].sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+  const out = {};
+  for (const c of catalog) {
+    const p = byId.get(mapping[c.id]);
+    if (!p) continue;
+    const exp = cardmarketSlug(c.setName || c.set);
+    if (!setExpansions.has(p.idExpansion)) {
+      // a promo printing of the catalog (« opp-036-219 »), or a card Cardmarket sells among the promos
+      const path = productPath(expName(p.idExpansion) || exp, p, paths);
+      out[c.id] = [path, path];
+      continue;
+    }
+    const list = promos.get(p.idMetacard) || [];
+    const promo = list.find(q => expName(q.idExpansion) === `${exp}-Promos`) || list[0];
+    out[c.id] = [productPath(exp, p, paths), promo ? productPath(expName(promo.idExpansion) || `${exp}-Promos`, promo, paths) : null];
+  }
+  return out;
+}
+
+/**
+ * The mapping without the catalog's promo printings and promo sets (« OPP »,
+ * « PR »…: they have their own price; the promo table is for the others).
+ */
+export function withoutPromos(catalog, mapping) {
+  const promoSets = new Set(catalog.filter(c => c.variant === 'promo').map(c => c.set));
+  const promo = new Set(catalog.filter(c => c.variant === 'promo' || promoSets.has(c.set)).map(c => c.id));
+  return Object.fromEntries(Object.entries(mapping).filter(([id]) => !promo.has(id)));
+}
+
+/**
+ * Cardmarket products and names for the prices: rifthunt first ({ source,
+ * names, cardmarket, paths }: each printing's product, right for 1,408 of
+ * 1,408 cards), Riftcodex's names when rifthunt does not answer (then by name
+ * only). The links are built from the names (buildLinks), not from rifthunt's
+ * addresses.
  */
 export async function fetchCardIndex(getJSON) {
-  return { source: 'riftcodex', names: await fetchRiftcodexNames(getJSON), cardmarket: {} };
+  try {
+    const d = await getJSON(RIFTHUNT_CARDS_URL);
+    const cards = Array.isArray(d) ? d : d?.cards;
+    if (!Array.isArray(cards) || cards.length < 100) throw new Error('rifthunt: unexpected file');
+    return { source: 'rifthunt', ...rifthuntCardIndex(cards) };
+  } catch (err) {
+    console.warn('[prices] rifthunt unavailable, Riftcodex used:', err?.message || err);
+    return { source: 'riftcodex', names: await fetchRiftcodexNames(getJSON), cardmarket: {} };
+  }
 }
 
 /** Riftcodex: { riftbound_id → full English name }. */
@@ -212,7 +321,8 @@ export function buildPriceTable(catalog, products, guide, rcNames, prev) {
     matched: Object.keys(cards).length,
     total: catalog.length,
     cards,
-    promo: buildPromoPrices(mapping, products.products || [], guideById),
+    promo: buildPromoPrices(withoutPromos(catalog, mapping), products.products || [], guideById),
+    links: buildLinks(catalog, mapping, products.products || [], rcNames?.paths),
     hist: updateHistory(prev?.hist, day, cards),
   };
 }

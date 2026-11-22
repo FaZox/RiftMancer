@@ -71,7 +71,8 @@ async function getJSON(url) {
 /** Cardmarket links and names (rifthunt, else Riftcodex), kept a week. */
 async function cardIndex() {
   const cached = await getMeta('cardIndex');
-  if (cached && cached.index?.source === 'riftcodex' && Date.now() - cached.fetchedAt < NAMES_EVERY) return cached.index;
+  // rifthunt's (with the Cardmarket addresses) only: a Riftcodex cache may lack the new sets, rifthunt is tried again
+  if (cached && cached.index?.source === 'rifthunt' && cached.index.paths && Date.now() - cached.fetchedAt < NAMES_EVERY) return cached.index;
   try {
     const index = await fetchCardIndex(getJSON);
     await setMeta('cardIndex', { fetchedAt: Date.now(), index });

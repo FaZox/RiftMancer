@@ -151,11 +151,11 @@ export function usePrefs() {
 }
 
 /** Query string of the Cardmarket filters, e.g. "sellerCountry=12&language=1,2&minCondition=4". */
-export function cardmarketFilters() {
+export function cardmarketFilters({ condition = true } = {}) {
   const { country, languages, minCondition } = prefs.cm;
   const q = [];
   if (country) q.push(`sellerCountry=${country}`);
   if (languages?.length) q.push(`language=${languages.join(',')}`);
-  if (minCondition) q.push(`minCondition=${minCondition}`);
+  if (minCondition && condition) q.push(`minCondition=${minCondition}`);
   return q.join('&');
 }

@@ -152,6 +152,5 @@ for (const f of readdirSync(out).sort()) console.log(`  ${f}`);
 console.log(`\nPaquet public (sans les cartes) : release/v${version}-public/`);
 for (const f of readdirSync(outPublic).sort()) console.log(`  ${f}`);
 console.log('\nÀ faire :');
-console.log(`  - envoyer la version sur le dépôt privé : git push origin main v${version}`);
 console.log('  - copier release/v' + version + '/ dans le Drive partagé (jamais sur GitHub : il contient les cartes) ;');
 console.log(`  - dépôt public : npm run public:export, commit, tag v${version}, puis une Release GitHub avec les fichiers de release/v${version}-public/.`);

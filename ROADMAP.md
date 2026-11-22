@@ -86,14 +86,14 @@ Key: `[x]` done · `[~]` in progress · `[ ]` to do
 ## Phase 5 — Prices ✅
 
 - [x] Source: Cardmarket’s public files for Riftbound (game no. 22: product catalog + price guide, updated every day, no account)
-- [x] Cards ↔ Cardmarket products matching (`electron/prices.cjs`): set by common names, full English names through the Riftcodex API (cached 7 days), variants (base / alternate art / overnumbered / signed) in Cardmarket’s order of addition — **1,303 / 1,408 cards** found (mostly missing: Radiance cards not yet in Riftcodex, tokens, promos)
+- [x] Cards ↔ Cardmarket products matching (`electron/prices.cjs`, `src/lib/priceBuilder.js`): each printing’s product from rifthunt (cached 7 days; by full English name through Riftcodex when rifthunt does not answer, set by common names, variants in Cardmarket’s order of addition) — **1,408 / 1,408 cards** found, promo printings and promo prices included
 - [x] Fetched by the PC at start then every 3 h (downloaded at most once a day); « Update the prices » button; sent to the phone at the sync (then works offline)
 - [x] « Trend » price; foil price for foil copies; no FR/EN distinction
 - [x] Price per card (zoom + « See on Cardmarket » link), per Collection line, sort by price, total value (filtered)
 - [x] « Value » view: total, per set, the most expensive, value chart
 - [x] Value of the decks and cost of the missing cards; estimated cost of the wish list
 - [x] Value history: one point per day (kept 2 years), computed on the PC
-- [x] Cardmarket link: search by full name (« Jinx, Demolitionist ») that lands on the right card — direct link to the product page not checkable (Cardmarket blocks automated browsers)
+- [x] Cardmarket link: direct product page, normal and promo (`Singles/Unleashed/Mutated-Mouser`, `Singles/Unleashed-Promos/Mutated-Mouser`), names and versions written as Cardmarket does
 - [x] Price history of each card over 1 month (one point per day, on the PC, sent to the phone) + 7-day / 30-day change (Cardmarket averages while the history fills up)
 - [x] Biggest rises / drops of your cards over 7 days (Value view)
 - [x] Price alerts on the wish list (« Alert under €X », notification when the prices are updated)

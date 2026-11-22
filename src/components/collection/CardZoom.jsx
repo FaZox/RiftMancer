@@ -292,6 +292,11 @@ export default function CardZoom({ cardId: openedId, language: initialLanguage, 
                   <a href={cardmarketUrl(cardData)} target="_blank" rel="noreferrer" className="btn-secondary text-sm w-full">
                     <ExternalLink className="w-4 h-4" /> {tx('Voir sur Cardmarket')}
                   </a>
+                  {prices.links?.[cardId]?.[1] && (
+                    <a href={cardmarketUrl(cardData, { promo: true })} target="_blank" rel="noreferrer" className="btn-secondary text-sm w-full">
+                      <ExternalLink className="w-4 h-4" /> {tx('Voir la promo sur Cardmarket')}
+                    </a>
+                  )}
                 </>
               )
             )}

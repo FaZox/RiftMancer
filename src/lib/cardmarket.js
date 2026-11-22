@@ -6,6 +6,7 @@
  */
 import { getPricesState } from './prices.js';
 import { cardmarketFilters } from './uiPrefs.js';
+import { cardmarketSlug } from './priceBuilder.js';
 
 const BASE = 'https://www.cardmarket.com/fr/Riftbound';
 export const WANTS_URL = `${BASE}/Wants`;
@@ -17,12 +18,19 @@ export function cardmarketName(cardData) {
   return cardData.name;
 }
 
-/** Card page (by Cardmarket product id when known, else a search), with the filters. */
-export function cardmarketUrl(cardData) {
-  const q = cardmarketFilters();
-  const id = getPricesState().prices?.cards?.[cardData.id]?.[2];
-  if (id) return `${BASE}/Products?idProduct=${id}${q ? `&${q}` : ''}`;
-  return `${BASE}/Products/Search?searchString=${encodeURIComponent(cardmarketName(cardData))}${q ? `&${q}` : ''}`;
+/**
+ * Card page, with the filters: …/Products/Singles/Unleashed/Mutated-Mouser, or
+ * …/Singles/Unleashed-Promos/Mutated-Mouser for the promo (no minimum condition:
+ * promos are few). The path comes from the price table (prices.links, the
+ * product Cardmarket really has, « -V2-Showcase » included), else from the set
+ * and the English name.
+ */
+export function cardmarketUrl(cardData, { promo = false } = {}) {
+  const q = cardmarketFilters({ condition: !promo && cardData.variant !== 'promo' });
+  const known = getPricesState().prices?.links?.[cardData.id]?.[promo ? 1 : 0];
+  const exp = cardmarketSlug(cardData.setName || cardData.set);
+  const path = known || `${exp}${promo ? '-Promos' : ''}/${cardmarketSlug(cardmarketName(cardData))}`;
+  return `${BASE}/Products/Singles/${path}${q ? `?${q}` : ''}`;
 }
 
 /** Opens a web page outside the app (PC: default browser, phone: browser app). */

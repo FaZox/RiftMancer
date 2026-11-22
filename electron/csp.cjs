@@ -16,7 +16,7 @@ const COMMON = {
   'base-uri': ["'self'"],
   'form-action': ["'none'"],
 };
-const PRICE_HOSTS = ['https://downloads.s3.cardmarket.com', 'https://api.riftcodex.com'];
+const PRICE_HOSTS = ['https://downloads.s3.cardmarket.com', 'https://api.rifthunt.com', 'https://api.riftcodex.com'];
 
 function build(extra) {
   const p = { ...COMMON, ...extra };
