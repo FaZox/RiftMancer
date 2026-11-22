@@ -27,8 +27,10 @@ export function cardmarketName(cardData) {
  * and the English name.
  */
 export function cardmarketUrl(cardData, { promo = false } = {}) {
-  // A promo printing of its own (« Organized Play ») is its normal card's promo on Cardmarket
-  const base = !promo && cardData.variant === 'promo' ? promoBaseOf(cardData.id) : null;
+  // A promo printing of its own (« Organized Play ») has its own page when its product is known
+  // (« Radiance-Promos/Akali-Brash-V2-Rare »), else its normal card's promo page
+  const ownPage = getPricesState().prices?.links?.[cardData.id]?.[0];
+  const base = !promo && cardData.variant === 'promo' && !ownPage ? promoBaseOf(cardData.id) : null;
   if (base) return cardmarketUrl(getMatcher().getCardData(base.id) || base, { promo: true });
   const q = cardmarketFilters({ condition: !promo && cardData.variant !== 'promo' });
   const known = getPricesState().prices?.links?.[cardData.id]?.[promo ? 1 : 0];

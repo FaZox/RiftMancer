@@ -104,3 +104,44 @@ test('card pages: the user\'s Mutated Mouser, normal and promo, with the filters
   assert.equal(cardmarketUrl({ id: 'x', name: 'Jinx - Loose Cannon', nameEn: 'Jinx - Loose Cannon', setName: 'Origins' }), `${FR}/Origins/Jinx-Loose-Cannon?sellerCountry=12&language=1,2&minCondition=4`);
   assert.equal(cardmarketUrl({ id: 'x', name: 'Mutated Mouser', setName: 'Unleashed' }, { promo: true }), `${FR}/Unleashed-Promos/Mutated-Mouser?sellerCountry=12&language=1,2`);
 });
+
+test('several products of one name with no rifthunt address: « -V<n>-<Rarity> » in Cardmarket\'s order; Top 8 / Champion promos', () => {
+  // Radiance 6659, Radiance Promos 6921 (17/11/2026): the user's Akali, Brash promo is « Radiance-Promos/Akali-Brash-V2-Rare »
+  const prods = [
+    { idProduct: 917220, name: 'Akali, Brash', idExpansion: 6659, idMetacard: 471432 },
+    { idProduct: 917410, name: 'Akali, Brash', idExpansion: 6659, idMetacard: 471432 },
+    { idProduct: 917404, name: 'Akali, Brash', idExpansion: 6921, idMetacard: 471432 },
+    { idProduct: 917405, name: 'Akali, Brash', idExpansion: 6921, idMetacard: 471432 },
+    { idProduct: 917300, name: 'Lulu, Whimsical', idExpansion: 6659, idMetacard: 471500 },
+    { idProduct: 917301, name: 'Lulu, Whimsical', idExpansion: 6659, idMetacard: 471500 },
+  ];
+  const oracle = '5a45c9790d094c45';
+  const cat = [
+    card('rad-015-167', 'Akali', 'RAD', 'Radiance', { rarity: 'rare', variant: 'base', oracle }),
+    card('rad-sp2-005', 'Akali', 'RAD', 'Radiance', { rarity: 'showcase', variant: 'showcase', oracle }),
+    card('rad-110-167', 'Lulu', 'RAD', 'Radiance', { rarity: 'epic', variant: 'base' }),
+    card('rad-110a-167', 'Lulu', 'RAD', 'Radiance', { rarity: 'epic', variant: 'alternate' }),
+    card('opp-015-167-champion', 'Akali', 'OPP', 'Riftbound Organized Play Promotional Cards', { variant: 'promo', printLabel: 'Champion', oracle }),
+    card('opp-015-167-top-8', 'Akali', 'OPP', 'Riftbound Organized Play Promotional Cards', { variant: 'promo', printLabel: 'Top 8', oracle }),
+  ];
+  const idx = rifthuntCardIndex([
+    rh('rad-015-167', 'Akali, Brash', 917220, 'Radiance/Akali-Brash-V1-Rare'),
+    rh('rad-sp2-005', 'Akali, Brash (K/DA Special Art Card)', 917410, 'Radiance/Akali-Brash'),
+    rh('rad-110-167', 'Lulu, Whimsical', 917300, ''), rh('rad-110a-167', 'Lulu, Whimsical (Alternate Art)', 917301, ''),
+  ]);
+  const t = pb.buildPriceTable(cat, { products: prods }, { priceGuides: prods.map(p => ({ idProduct: p.idProduct, trend: 1 })) }, { source: 'rifthunt', ...idx }, null);
+  // rifthunt does not link the promo printings: Top 8 first, then Champion (Cardmarket's order of addition)
+  assert.equal(t.cards['opp-015-167-top-8'][2], 917404);
+  assert.equal(t.cards['opp-015-167-champion'][2], 917405);
+  assert.deepEqual(t.links['opp-015-167-champion'], ['Radiance-Promos/Akali-Brash-V2-Rare', 'Radiance-Promos/Akali-Brash-V2-Rare']);
+  assert.equal(t.links['opp-015-167-top-8'][0], 'Radiance-Promos/Akali-Brash-V1-Rare');
+  // the normal card: rifthunt's address; its promo button: the Champion one
+  assert.deepEqual(t.links['rad-015-167'], ['Radiance/Akali-Brash-V1-Rare', 'Radiance-Promos/Akali-Brash-V2-Rare']);
+  // no address at all: versions numbered in Cardmarket's order, with the rarity of the printing
+  assert.equal(t.links['rad-110-167'][0], 'Radiance/Lulu-Whimsical-V1-Epic');
+  assert.equal(t.links['rad-110a-167'][0], 'Radiance/Lulu-Whimsical-V2-Showcase');
+  const m = pc.buildMapping(cat, prods, idx);
+  assert.deepEqual(pc.buildLinks(cat, m, prods, idx.paths), t.links, 'same on the PC');
+  getPricesState().prices = t;
+  assert.equal(cardmarketUrl(cat[4]), `${FR}/Radiance-Promos/Akali-Brash-V2-Rare?sellerCountry=12&language=1,2`);
+});

@@ -3,6 +3,11 @@
 Entries are in English from 21/11/2026; the earlier history is in French (*l’historique antérieur est en français*).
 
 
+## [Unreleased] - 2026-11-22 · Cardmarket links of cards with several versions
+
+- **Cardmarket links**: when Cardmarket has several products of one name in an expansion and rifthunt gives no address, the link adds Cardmarket's « -V<n>-<Rarity> » (numbered in Cardmarket's order, the numbers rifthunt's other versions leave): « Radiance-Promos/Akali-Brash-V2-Rare » instead of « Radiance-Promos/Akali-Brash », which did not exist; same for alternate arts such as « Origins/Jinx-Rebel-V2-Showcase ».
+- **Promo printings « Champion » and « Top 8 »** that rifthunt does not link: each takes its own Cardmarket product (Top 8 added first, then Champion, as on Vendetta and Radiance), so its own page and its own price (Akali, Brash: Top 8 ≈ 1 €, Champion ≈ 18 € in foil). 184 of the 225 promo printings priced (180 before). The normal card's promo button opens the Champion one when the catalog has it.
+
 ## [Unreleased] - 2026-11-22 · Price chart: 1 month, 3 months, 6 months, all
 
 - **Price chart** in the card sheet (Price tab, normal or foil) and in Value (collection value, phone and PC): « 1 mois · 3 mois · 6 mois · Tout », prices at the left and dates below, points placed by date (a point a day for the last month, a point a week before), the price of a day under the finger or the mouse, the change over the period for a card (not for the collection value, which grows with the cards added). When the history is shorter than the period: « Prix gardés depuis le … ».

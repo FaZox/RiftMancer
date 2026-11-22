@@ -107,6 +107,7 @@ function cardmarketName(card, rcNames) {
 
 /** Link our cards to Cardmarket products. Returns { cardId: idProduct }. */
 function buildMapping(cards, products, index) {
+  const cardsAll = cards, productsAll = products;
   // index: { names, cardmarket } (rifthunt: each printing's Cardmarket product), or Riftcodex's names alone
   const rcNames = index?.names || index || {};
   const direct = index?.cardmarket || {};
@@ -158,7 +159,7 @@ function buildMapping(cards, products, index) {
     if (prods.length === list.length) list.forEach((c, i) => { mapping[c.id] = prods[i].idProduct; });
     else mapping[list[0].id] = prods[0].idProduct; // only the base print is certain
   }
-  return mapping;
+  return matchPromoPrintings(cardsAll, productsAll, mapping);
 }
 
 const DAILY_DAYS = 31; // price history: one column per day for the last month, then one per week
@@ -318,6 +319,44 @@ const median = (xs) => {
   return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
 };
 
+// Cardmarket's order of addition for the promos of one card (seen on Vendetta and Radiance)
+const PROMO_ORDER = ['top 8', 'champion'];
+
+/**
+ * Promo printings of the catalog rifthunt does not link (« Champion », « Top 8 »):
+ * the promo products of their card (same idMetacard as the normal printing, out
+ * of our sets' expansions, not taken yet), when there are as many of each.
+ */
+function matchPromoPrintings(cards, products, mapping) {
+  const byId = new Map(products.map(p => [p.idProduct, p]));
+  const main = mainExpansions(withoutPromos(cards, mapping), byId);
+  const used = new Set(Object.values(mapping));
+  const metaOf = new Map();
+  for (const c of cards) {
+    const p = byId.get(mapping[c.id]);
+    if (c.oracle && p && c.variant !== 'promo' && main.has(p.idExpansion) && !metaOf.has(c.oracle)) metaOf.set(c.oracle, p.idMetacard);
+  }
+  const groups = new Map();
+  for (const c of cards) {
+    if (c.variant !== 'promo' || mapping[c.id] || !metaOf.has(c.oracle)) continue;
+    if (!groups.has(c.oracle)) groups.set(c.oracle, []);
+    groups.get(c.oracle).push(c);
+  }
+  const rank = (c) => {
+    const i = PROMO_ORDER.indexOf(String(c.printLabel || '').toLowerCase());
+    return i < 0 ? PROMO_ORDER.length : i;
+  };
+  for (const [oracle, list] of groups) {
+    const meta = metaOf.get(oracle);
+    const prods = products.filter(p => p.idMetacard === meta && !main.has(p.idExpansion) && !used.has(p.idProduct))
+      .sort((a, b) => a.idProduct - b.idProduct);
+    if (prods.length !== list.length) continue;
+    list.sort((a, b) => rank(a) - rank(b) || a.id.localeCompare(b.id));
+    list.forEach((c, i) => { mapping[c.id] = prods[i].idProduct; used.add(prods[i].idProduct); });
+  }
+  return mapping;
+}
+
 /**
  * Cardmarket expansions of our sets: for each set (card id prefix), the one
  * most of its cards are in (rifthunt puts a few in the set's promos).
@@ -372,11 +411,38 @@ function cardmarketSlug(s) {
     .replace(/['’.]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
-/** 'Expansion/Name' of a product; rifthunt's name part when it is this very product there (it adds « -V2-Showcase »…). */
-function productPath(exp, p, paths) {
+/**
+ * 'Expansion/Name' of a product. Several products of one name in an expansion:
+ * Cardmarket adds « -V<n>-<Rarity> » (« Akali-Brash-V2-Rare »): rifthunt's name
+ * part when it has this product, else the numbers its other versions leave, in
+ * Cardmarket's order (idProduct), with the rarity given.
+ */
+function productPath(exp, p, paths, versions, rarity) {
   const name = cardmarketSlug(p.name);
-  const [e, n] = String(paths?.[p.idProduct] || '').split('/');
-  return `${exp}/${e === exp && n && (n === name || n.startsWith(`${name}-V`)) ? n : name}`;
+  const ok = (n) => n && (n === name || n.startsWith(`${name}-V`));
+  const own = String(paths?.[p.idProduct] || '').split('/')[1];
+  if (ok(own)) return `${exp}/${own}`;
+  const list = versions?.get(`${p.idExpansion}|${p.name}`) || [];
+  if (list.length < 2 || !rarity) return `${exp}/${name}`;
+  const taken = new Set();
+  for (const q of list) {
+    const m = new RegExp(`^${name}-V(\\d+)-`).exec(String(paths?.[q.idProduct] || '').split('/')[1] || '');
+    if (m) taken.add(Number(m[1]));
+  }
+  let v = 0;
+  for (const q of list) {
+    if (/-V\d+-/.test(String(paths?.[q.idProduct] || '').split('/')[1] || '')) continue;
+    do v++; while (taken.has(v));
+    if (q === p) break;
+  }
+  return `${exp}/${name}-V${v}-${rarity}`;
+}
+
+/** Cardmarket's rarity word for a card of the catalog (in its versions' addresses). */
+function cardmarketRarity(c) {
+  const kind = { overnumbered: 'Overnumbered', signature: 'Signed-Showcase', alternate: 'Showcase', showcase: 'Showcase' }[c?.variant];
+  const r = String(c?.rarity || '');
+  return kind || (r ? r[0].toUpperCase() + r.slice(1) : null);
 }
 
 /**
@@ -390,13 +456,23 @@ function buildLinks(catalog, mapping, products, paths) {
   const setExpansions = mainExpansions(withoutPromos(catalog, mapping), byId);
   const setNames = new Set();
   const setOfMeta = new Map();
+  const cardOfMeta = new Map();
+  const versions = new Map();
+  for (const p of [...products].sort((a, b) => a.idProduct - b.idProduct)) {
+    const k = `${p.idExpansion}|${p.name}`;
+    if (!versions.has(k)) versions.set(k, []);
+    versions.get(k).push(p);
+  }
   for (const c of catalog) {
     const p = byId.get(mapping[c.id]);
     if (!p || !setExpansions.has(p.idExpansion)) continue;
     const exp = cardmarketSlug(c.setName || c.set);
     setNames.add(exp);
     if (!setOfMeta.has(p.idMetacard)) setOfMeta.set(p.idMetacard, exp);
+    if (!cardOfMeta.has(p.idMetacard) || (c.variant || 'base') === 'base') cardOfMeta.set(p.idMetacard, cardOfMeta.get(p.idMetacard)?.variant === 'base' ? cardOfMeta.get(p.idMetacard) : c);
   }
+  // a promo: the rarity of its normal card (« Akali-Brash-V2-Rare »)
+  const promoRarity = (p) => cardmarketRarity(cardOfMeta.get(p.idMetacard));
   // the other expansions (promos…): rifthunt's name when it is not one of our sets
   // (« Origins-Promos », « Secret-Garden-Bundle »), else « <set of most of its cards>-Promos »
   const votes = new Map();
@@ -413,6 +489,8 @@ function buildLinks(catalog, mapping, products, paths) {
     if (!promos.has(p.idMetacard)) promos.set(p.idMetacard, []);
     promos.get(p.idMetacard).push(p);
   }
+  const labels = new Map();
+  for (const c of catalog) if (c.variant === 'promo' && mapping[c.id]) labels.set(mapping[c.id], String(c.printLabel || '').toLowerCase());
   const expName = (e) => [...(votes.get(e) || [])].sort((a, b) => b[1] - a[1])[0]?.[0] || null;
   const out = {};
   for (const c of catalog) {
@@ -421,13 +499,15 @@ function buildLinks(catalog, mapping, products, paths) {
     const exp = cardmarketSlug(c.setName || c.set);
     if (!setExpansions.has(p.idExpansion)) {
       // a promo printing of the catalog (« opp-036-219 »), or a card Cardmarket sells among the promos
-      const path = productPath(expName(p.idExpansion) || exp, p, paths);
+      const path = productPath(expName(p.idExpansion) || exp, p, paths, versions, promoRarity(p) || cardmarketRarity(c));
       out[c.id] = [path, path];
       continue;
     }
     const list = promos.get(p.idMetacard) || [];
-    const promo = list.find(q => expName(q.idExpansion) === `${exp}-Promos`) || list[0];
-    out[c.id] = [productPath(exp, p, paths), promo ? productPath(expName(promo.idExpansion) || `${exp}-Promos`, promo, paths) : null];
+    // several promos: the catalog's « Champion » one when there is one, else the first of the set's promos
+    const inSet = list.filter(q => expName(q.idExpansion) === `${exp}-Promos`);
+    const promo = [...inSet, ...list].find(q => labels.get(q.idProduct) === 'champion') || inSet[0] || list[0];
+    out[c.id] = [productPath(exp, p, paths, versions, cardmarketRarity(c)), promo ? productPath(expName(promo.idExpansion) || `${exp}-Promos`, promo, paths, versions, promoRarity(promo)) : null];
   }
   return out;
 }
