@@ -88,11 +88,19 @@
       "output": "release",
       "buildResources": "build"
     },
-    
     "extraResources": [
-      { "from": "LICENSE", "to": "LICENSE.txt" },
-      { "from": "NOTICE", "to": "NOTICE.txt" },
-      { "from": "THIRD_PARTY_LICENSES.md", "to": "THIRD_PARTY_LICENSES.md" }
+      {
+        "from": "LICENSE",
+        "to": "LICENSE.txt"
+      },
+      {
+        "from": "NOTICE",
+        "to": "NOTICE.txt"
+      },
+      {
+        "from": "THIRD_PARTY_LICENSES.md",
+        "to": "THIRD_PARTY_LICENSES.md"
+      }
     ],
     "files": [
       "electron/**",
@@ -112,6 +120,17 @@
       "createStartMenuShortcut": true,
       "shortcutName": "RiftMancer",
       "deleteAppDataOnUninstall": false
+    }
+  },
+  "overrides": {
+    "workbox-build": {
+      "glob": "^14.0.6"
+    },
+    "@electron/universal": {
+      "minimatch": "^11.0.9"
+    },
+    "app-builder-lib": {
+      "minimatch": "^11.0.9"
     }
   }
 }
