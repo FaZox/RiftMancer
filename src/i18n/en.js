@@ -295,7 +295,6 @@ export default {
   "sous votre prix d’alerte :": "under your alert price:",
   "souhaitée": "wished",
   "encore à obtenir": "still to get",
-  "· coût estimé": "· estimated cost",
   "· coût estimé à obtenir": "· estimated cost to get",
   "· valeur totale": "· total value",
   "· total wishlist": "· total wishlist value",
