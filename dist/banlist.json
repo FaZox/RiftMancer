@@ -1,0 +1,263 @@
+{
+  "version": 2,
+  "updatedAt": "2026-11-17",
+  "note": "Bannissements officiels de Riot, vérifiés sur les pages sources. Entrée : name (nom anglais officiel), ids (toutes les impressions, quand le nom du catalogue ne suffit pas : champions), since (date d effet). Une entrée ne compte qu à partir de sa date. legalSets : extensions autorisées (absent = toutes ; rotation annoncée pour 2028).",
+  "sources": [
+    {
+      "date": "2026-09-18",
+      "url": "https://playriftbound.com/en-us/news/organizedplay/riftbound-tournament-rules/",
+      "label": "Règlement officiel des tournois (Constructed Format Legality)"
+    },
+    {
+      "date": "2026-11-23",
+      "url": "https://playriftbound.com/en-us/news/announcements/radiance-ban-list-updates-effective-november-23-2026",
+      "label": "Radiance Ban List Updates"
+    }
+  ],
+  "formats": {
+    "standard": {
+      "label": "Standard",
+      "banned": [
+        {
+          "name": "Called Shot",
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Ekko, Recurrent",
+          "ids": [
+            "ogn-110-298"
+          ],
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Draven, Vanquisher",
+          "ids": [
+            "sfd-020-221",
+            "sfd-020a-221"
+          ],
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Fight or Flight",
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Scrapheap",
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Stealthy Pursuer",
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Stacked Deck",
+          "since": "2026-09-18"
+        },
+        {
+          "name": "The Arena's Greatest",
+          "battlefield": true,
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Aspirant's Climb",
+          "battlefield": true,
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Dreaming Tree",
+          "ids": [
+            "ogn-292-298"
+          ],
+          "battlefield": true,
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Obelisk of Power",
+          "battlefield": true,
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Reaver's Row",
+          "battlefield": true,
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Riven, Broken Blade",
+          "ids": [
+            "rad-043-167",
+            "rad-043a-167"
+          ],
+          "since": "2026-11-23"
+        },
+        {
+          "name": "Zhonya's Hourglass",
+          "since": "2026-11-23"
+        },
+        {
+          "name": "Stellacorn Herder",
+          "since": "2026-11-23"
+        },
+        {
+          "name": "Nocturne, Horrifying",
+          "ids": [
+            "ogn-194-298"
+          ],
+          "since": "2026-11-23"
+        },
+        {
+          "name": "Rhasa the Sunderer",
+          "since": "2026-11-23"
+        },
+        {
+          "name": "Brynhir Thundersong",
+          "since": "2026-11-23"
+        },
+        {
+          "name": "Dazzling Aurora",
+          "since": "2026-11-23"
+        },
+        {
+          "name": "Baited Hook",
+          "since": "2026-11-23"
+        },
+        {
+          "name": "Emperor's Dais",
+          "battlefield": true,
+          "since": "2026-11-23"
+        },
+        {
+          "name": "Star Spring",
+          "battlefield": true,
+          "since": "2026-11-23"
+        }
+      ],
+      "restricted": {}
+    },
+    "2v2": {
+      "label": "2v2",
+      "banned": [
+        {
+          "name": "Called Shot",
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Ekko, Recurrent",
+          "ids": [
+            "ogn-110-298"
+          ],
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Draven, Vanquisher",
+          "ids": [
+            "sfd-020-221",
+            "sfd-020a-221"
+          ],
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Fight or Flight",
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Scrapheap",
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Stealthy Pursuer",
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Stacked Deck",
+          "since": "2026-09-18"
+        },
+        {
+          "name": "The Arena's Greatest",
+          "battlefield": true,
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Aspirant's Climb",
+          "battlefield": true,
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Dreaming Tree",
+          "ids": [
+            "ogn-292-298"
+          ],
+          "battlefield": true,
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Obelisk of Power",
+          "battlefield": true,
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Reaver's Row",
+          "battlefield": true,
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Master Yi, Wuju Bladesman",
+          "ids": [
+            "ogs-019-024"
+          ],
+          "legend": true,
+          "since": "2026-09-18"
+        },
+        {
+          "name": "Riven, Broken Blade",
+          "ids": [
+            "rad-043-167",
+            "rad-043a-167"
+          ],
+          "since": "2026-11-23"
+        },
+        {
+          "name": "Zhonya's Hourglass",
+          "since": "2026-11-23"
+        },
+        {
+          "name": "Stellacorn Herder",
+          "since": "2026-11-23"
+        },
+        {
+          "name": "Nocturne, Horrifying",
+          "ids": [
+            "ogn-194-298"
+          ],
+          "since": "2026-11-23"
+        },
+        {
+          "name": "Rhasa the Sunderer",
+          "since": "2026-11-23"
+        },
+        {
+          "name": "Brynhir Thundersong",
+          "since": "2026-11-23"
+        },
+        {
+          "name": "Dazzling Aurora",
+          "since": "2026-11-23"
+        },
+        {
+          "name": "Baited Hook",
+          "since": "2026-11-23"
+        },
+        {
+          "name": "Emperor's Dais",
+          "battlefield": true,
+          "since": "2026-11-23"
+        },
+        {
+          "name": "Star Spring",
+          "battlefield": true,
+          "since": "2026-11-23"
+        }
+      ],
+      "restricted": {}
+    }
+  }
+}

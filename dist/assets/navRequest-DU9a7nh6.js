@@ -1,0 +1,1 @@
+var e=null,t=new Set;function n(n){e=n;for(let e of t)e(n)}function r(t){if(e?.kind!==t)return null;let n=e;return e=null,n}function i(e){return t.add(e),()=>t.delete(e)}var a=()=>e;export{r as i,a as n,n as r,i as t};
