@@ -12,7 +12,7 @@ Deux applications qui partagent les mêmes données et se synchronisent entre el
 
 Reconnaissance des cartes par intelligence artificielle (YOLO11 + empreintes couleur, puis DINOv2), hors ligne, sans compte.
 
-**Documentation** : [sécurité](SECURITY.md) · [guide pour les amis](docs/LISEZ-MOI-AMIS.md) ([anglais](docs/FRIENDS-GUIDE.md)) (installer, appairer, synchroniser, mettre à jour) · [nouveautés par version](docs/NOUVEAUTES.md) ([anglais](docs/WHATS-NEW.md)) · [bilan de la distribution aux amis, M0 à M14](docs/PHASE-10.fr.md) · [feuille de route](ROADMAP.fr.md) · [journal des changements](CHANGELOG.md) · [données et base de données](docs/BASE-DE-DONNEES.md) · études : [modèles d’IA](docs/RAPPORT-MODELES-IA.md), [langue détectée](docs/ETUDE-LANGUE.md), [variantes](docs/ETUDE-VARIANTES.md).
+**Documentation** : [sécurité](SECURITY.md) · [guide pour les amis](docs/LISEZ-MOI-AMIS.md) ([anglais](docs/FRIENDS-GUIDE.md)) (installer, appairer, synchroniser, mettre à jour) · [nouveautés par version](docs/NOUVEAUTES.md) ([anglais](docs/WHATS-NEW.md)) · [journal des changements](CHANGELOG.md) · [données et base de données](docs/BASE-DE-DONNEES.md) · études : [modèles d’IA](docs/RAPPORT-MODELES-IA.md), [langue détectée](docs/ETUDE-LANGUE.md), [variantes](docs/ETUDE-VARIANTES.md).
 
 ## Télécharger
 
@@ -728,7 +728,7 @@ The PC app downloads Cardmarket's public Riftbound files (`productCatalog/produc
 
 #### Collection storage
 
-The collection is stored in IndexedDB (`riftbound-collection`), one record per physical copy (card id, language, finish, condition…), with `updatedAt` and a `deleted` tombstone for the phone ↔ PC sync. On the PC app the same records live in SQLite (see above). See `ROADMAP.md` for planned features.
+The collection is stored in IndexedDB (`riftbound-collection`), one record per physical copy (card id, language, finish, condition…), with `updatedAt` and a `deleted` tombstone for the phone ↔ PC sync. On the PC app the same records live in SQLite (see above).
 
 #### French card names and texts
 

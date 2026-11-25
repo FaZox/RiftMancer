@@ -12,7 +12,7 @@ Two apps that share the same data and sync with each other:
 
 Card recognition by artificial intelligence (YOLO11 + colour fingerprints, then DINOv2), offline, no account. The app is in **English or French** (Settings → Display; French by default when the phone or PC is in French).
 
-**Documentation**: [security policy](SECURITY.md) · [friends’ guide](docs/FRIENDS-GUIDE.md) (install, pair, sync, update; [French](docs/LISEZ-MOI-AMIS.md)) · [what’s new per version](docs/WHATS-NEW.md) ([French](docs/NOUVEAUTES.md)) · [roadmap](ROADMAP.md) ([French](ROADMAP.fr.md)) · [changelog](CHANGELOG.md) · [data and database](docs/DATABASE.md) · studies: [AI models](docs/AI-MODELS-REPORT.md), [detected language](docs/STUDY-LANGUAGE.md), [variants](docs/STUDY-VARIANTS.md) (French versions next to them).
+**Documentation**: [security policy](SECURITY.md) · [friends’ guide](docs/FRIENDS-GUIDE.md) (install, pair, sync, update; [French](docs/LISEZ-MOI-AMIS.md)) · [what’s new per version](docs/WHATS-NEW.md) ([French](docs/NOUVEAUTES.md)) · [changelog](CHANGELOG.md) · [data and database](docs/DATABASE.md) · studies: [AI models](docs/AI-MODELS-REPORT.md), [detected language](docs/STUDY-LANGUAGE.md), [variants](docs/STUDY-VARIANTS.md) (French versions next to them).
 
 ## Download
 
@@ -738,7 +738,7 @@ The PC app downloads Cardmarket's public Riftbound files (`productCatalog/produc
 
 #### Collection storage
 
-The collection is stored in IndexedDB (`riftbound-collection`), one record per physical copy (card id, language, finish, condition…), with `updatedAt` and a `deleted` tombstone for the phone ↔ PC sync. On the PC app the same records live in SQLite (see above). See `ROADMAP.md` for planned features.
+The collection is stored in IndexedDB (`riftbound-collection`), one record per physical copy (card id, language, finish, condition…), with `updatedAt` and a `deleted` tombstone for the phone ↔ PC sync. On the PC app the same records live in SQLite (see above).
 
 #### French card names and texts
 
