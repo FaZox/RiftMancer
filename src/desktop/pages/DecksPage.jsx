@@ -35,7 +35,7 @@ export default function DecksPage({ collection, org, wishlist, onAddCopy }) {
   const open = openId && decks.byId.get(openId);
 
   const zoomView = zoom && (
-    <CardZoom cardId={zoom} stacks={collection.stacks} wanted={wishlist.byCard.get(zoom)?.quantity || 0}
+    <CardZoom cardId={zoom} stacks={collection.stacks} byCard={wishlist.byCard}
       onSetWanted={wishlist.setWanted} onAddCopy={onAddCopy} onClose={() => setZoom(null)} />
   );
 

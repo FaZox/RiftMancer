@@ -26,10 +26,11 @@ export function WishlistPanel({ ownedByCard, wishlist, onOpen }) {
     const owned = ownedByCard.get(i.cardId) || 0;
     const unit = prices ? unitPrice(prices, i.cardId) : null;
     const missing = Math.max(0, i.quantity - owned);
-    return { ...i, owned, unit, missing, cost: unit != null ? unit * missing : null };
+    return { ...i, owned, unit, missing, cost: unit != null ? unit * missing : null, totalCost: unit != null ? unit * i.quantity : null };
   });
   const toGet = rows.filter(r => r.missing > 0);
   const cost = toGet.reduce((v, r) => v + (r.cost || 0), 0);
+  const totalWishlistCost = rows.reduce((v, r) => v + (r.totalCost || 0), 0);
   const th = 'sticky top-0 z-10 bg-rift-900 text-left text-xs font-semibold uppercase tracking-wider text-rift-400 py-2.5 px-2 border-b border-gold-500/30';
   const td = 'py-2 px-2 border-b border-rift-700/70 align-middle';
 
@@ -38,7 +39,8 @@ export function WishlistPanel({ ownedByCard, wishlist, onOpen }) {
       <div className="flex-shrink-0 px-8 h-14 flex items-center gap-3 border-b border-rift-600/30">
         <p className="text-sm text-rift-300" data-help="wish.summary">
           {items.length} {tx('carte')}{items.length > 1 ? 's' : ''} {tx('souhaitée')}{items.length > 1 ? 's' : ''} · <span className="text-rift-100 font-semibold">{toGet.length}</span> {tx('encore à obtenir')}
-          {cost > 0 && <> {tx('· coût estimé')} <span className="font-semibold text-gold-400">{euro(cost)}</span></>}
+          {cost > 0 && <> {tx('· coût estimé à obtenir')} <span className="font-semibold text-gold-400">{euro(cost)}</span></>}
+          {totalWishlistCost > 0 && <> {tx('· total wishlist')} <span className="font-semibold text-gold-400">{euro(totalWishlistCost)}</span></>}
         </p>
         <span className="ml-auto" />
         <span data-help="wish.cardmarket"><CardmarketWantsButton label={tx('Envoyer vers mes souhaits Cardmarket')} className="btn-secondary h-9 px-3 text-sm"

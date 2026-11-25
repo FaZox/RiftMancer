@@ -42,7 +42,7 @@ export default function GlobalSearch({ open, mode, onClose, onOpen, scannedCards
     <>
       {open && data && <SearchPalette open mode={mode} data={data} onPick={pick} onClose={onClose} />}
       {zoom && (
-        <CardZoom cardId={zoom} stacks={scannedCards} wanted={wishlist?.byCard?.get(zoom)?.quantity || 0}
+        <CardZoom cardId={zoom} stacks={scannedCards} byCard={wishlist?.byCard}
           onSetWanted={wishlist?.setWanted} onAddCopy={onAddCopy} onClose={() => setZoom(null)} />
       )}
     </>

@@ -32,7 +32,7 @@ export default function ValuePage({ scannedCards, wishlist, onAddCopy }) {
       </header>
       {tab === 'value' ? <Dashboard scannedCards={scannedCards} wishItems={wishlist.items} onOpen={setZoom} /> : <StatsView scannedCards={scannedCards} />}
       {zoom && (
-        <CardZoom cardId={zoom} stacks={scannedCards} wanted={wishlist.byCard.get(zoom)?.quantity || 0}
+        <CardZoom cardId={zoom} stacks={scannedCards} byCard={wishlist.byCard}
           onSetWanted={wishlist.setWanted} onAddCopy={onAddCopy} onClose={() => setZoom(null)} />
       )}
     </div>

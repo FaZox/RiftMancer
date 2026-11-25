@@ -24,6 +24,9 @@ export function WishlistView({ ownedByCard, wishlist, onOpen }) {
   const toBuy = prices
     ? missing.reduce((v, i) => v + (unitPrice(prices, i.cardId) || 0) * (i.quantity - (ownedByCard.get(i.cardId) || 0)), 0)
     : null;
+  const totalWishlistCost = prices
+    ? items.reduce((v, i) => v + (unitPrice(prices, i.cardId) || 0) * i.quantity, 0)
+    : null;
 
   return (
     <div className="flex-1 overflow-y-auto pb-20">
@@ -44,7 +47,8 @@ export function WishlistView({ ownedByCard, wishlist, onOpen }) {
             )}
             <p className="text-xs text-rift-400" data-help="wish.summary">
               {items.length} {tx('carte')}{items.length > 1 ? 's' : ''} {tx('souhaitée')}{items.length > 1 ? 's' : ''} · {missing.length} {tx('encore à obtenir')}
-              {toBuy > 0 && <> {tx('· coût estimé')} <span className="font-semibold text-gold-400">{euro(toBuy)}</span></>}
+              {toBuy > 0 && <> {tx('· coût à obtenir')} <span className="font-semibold text-gold-400">{euro(toBuy)}</span></>}
+              {totalWishlistCost > 0 && <> {tx('· valeur totale')} <span className="font-semibold text-gold-400">{euro(totalWishlistCost)}</span></>}
             </p>
             <div data-help="wish.cardmarket"><CardmarketWantsButton label={tx('Envoyer vers mes souhaits Cardmarket')}
               items={missing.map(i => ({ cardData: i.cardData, quantity: i.quantity - (ownedByCard.get(i.cardId) || 0) }))} /></div>

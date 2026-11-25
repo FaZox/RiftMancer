@@ -296,6 +296,8 @@ export default {
   "souhaitée": "wished",
   "encore à obtenir": "still to get",
   "· coût estimé": "· estimated cost",
+  "\u00b7 co\u00fbt \u00e0 obtenir": "\u00b7 cost to get",
+  "\u00b7 valeur totale": "\u00b7 total value",
   "Envoyer vers mes souhaits Cardmarket": "Send to my Cardmarket wants",
   "Obtenue": "Obtained",
   "l’unité": "each",

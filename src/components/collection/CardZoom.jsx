@@ -31,7 +31,7 @@ const TABS = [
  * Infos / Prix / Ma collection, and « Ajouter » always at hand.
  */
 // onRemoveCopy (collection): one copy of a stack less; onUpdateCard: change a stack (promo)
-export default function CardZoom({ cardId: openedId, language: initialLanguage, stacks, wanted, onSetWanted, onAddCopy, onRemoveCopy = null, onUpdateCard = null, onClose, onPrev = null, onNext = null, position = null, deckControls = null }) {
+export default function CardZoom({ cardId: openedId, language: initialLanguage, stacks, wanted, byCard, onSetWanted, onAddCopy, onRemoveCopy = null, onUpdateCard = null, onClose, onPrev = null, onNext = null, position = null, deckControls = null }) {
   useBackHandler(true, onClose);
   useHelpPage('card'); // its tour the first time a card is opened
   const [prefs] = usePrefs();
@@ -41,6 +41,9 @@ export default function CardZoom({ cardId: openedId, language: initialLanguage, 
   const cardData = getMatcher().getCardData(cardId);
   const [language, setLanguage] = useState(displayLanguage(initialLanguage) === 'English' ? 'English' : 'French');
   const [tab, setTab] = useState('infos');
+  
+  // Calculate wanted dynamically from byCard if available, otherwise use the prop
+  const currentWanted = byCard ? (byCard.get(cardId)?.quantity || 0) : wanted;
   // Thumbnail at once, full-size image as soon as it is loaded (no empty frame).
   const [imgSrc, setImgSrc] = useState(thumbSrc(cardId));
   const [noHd, setNoHd] = useState(false); // phone before its first sync (lot 4.6)
@@ -337,13 +340,13 @@ export default function CardZoom({ cardId: openedId, language: initialLanguage, 
                   )}
                 </div>
                 <div className="panel p-3 flex items-center gap-2">
-                  <Heart className={`w-4 h-4 ${wanted > 0 ? 'text-[#ff8ab8] fill-[#ff8ab8]' : 'text-rift-400'}`} />
+                  <Heart className={`w-4 h-4 ${currentWanted > 0 ? 'text-[#ff8ab8] fill-[#ff8ab8]' : 'text-rift-400'}`} />
                   <span className="text-sm text-rift-200 mr-auto">{tx('Liste de souhaits')}</span>
-                  {wanted > 0 ? (
+                  {currentWanted > 0 ? (
                     <div className="flex items-center">
-                      <button onClick={() => onSetWanted(cardId, wanted - 1)} aria-label={tx('Un de moins')} className="w-9 h-9 bg-rift-900 border border-rift-600 flex items-center justify-center text-rift-200"><Minus className="w-4 h-4" /></button>
-                      <span className="w-8 text-center font-display font-bold text-rift-100">{wanted}</span>
-                      <button onClick={() => onSetWanted(cardId, wanted + 1)} aria-label={tx('Un de plus')} className="w-9 h-9 bg-rift-900 border border-rift-600 flex items-center justify-center text-rift-200"><Plus className="w-4 h-4" /></button>
+                      <button onClick={() => onSetWanted(cardId, currentWanted - 1)} aria-label={tx('Un de moins')} className="w-9 h-9 bg-rift-900 border border-rift-600 flex items-center justify-center text-rift-200"><Minus className="w-4 h-4" /></button>
+                      <span className="w-8 text-center font-display font-bold text-rift-100">{currentWanted}</span>
+                      <button onClick={() => onSetWanted(cardId, currentWanted + 1)} aria-label={tx('Un de plus')} className="w-9 h-9 bg-rift-900 border border-rift-600 flex items-center justify-center text-rift-200"><Plus className="w-4 h-4" /></button>
                     </div>
                   ) : (
                     <button onClick={() => onSetWanted(cardId, 1)} className="btn-ghost text-sm">{tx('Ajouter')}</button>
@@ -392,13 +395,13 @@ export default function CardZoom({ cardId: openedId, language: initialLanguage, 
             </button>
           )}
           <button
-            onClick={() => onSetWanted(cardId, wanted > 0 ? 0 : 1)}
-            aria-pressed={wanted > 0}
-            aria-label={wanted > 0 ? tx('Retirer des souhaits') : tx('Ajouter aux souhaits')}
+            onClick={() => onSetWanted(cardId, currentWanted > 0 ? 0 : 1)}
+            aria-pressed={currentWanted > 0}
+            aria-label={currentWanted > 0 ? tx('Retirer des souhaits') : tx('Ajouter aux souhaits')}
             data-help="card.wish"
             className="w-[50px] h-[50px] flex items-center justify-center bg-rift-800 border border-gold-500/50"
           >
-            <Heart className={`w-5 h-5 ${wanted > 0 ? 'text-[#ff8ab8] fill-[#ff8ab8]' : 'text-gold-400'}`} />
+            <Heart className={`w-5 h-5 ${currentWanted > 0 ? 'text-[#ff8ab8] fill-[#ff8ab8]' : 'text-gold-400'}`} />
           </button>
         </div>
       </div>

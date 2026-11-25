@@ -267,7 +267,7 @@ export default function DeckEditor({ deck, decks, org, copies, ownedByCard, coll
       {zoomId && (
         // above the « Ajouter » window (same z-index otherwise)
         <div className="relative z-[60]">
-        <CardZoom cardId={zoomId} stacks={collection.stacks} wanted={wishlist.byCard.get(zoomId)?.quantity || 0}
+        <CardZoom cardId={zoomId} stacks={collection.stacks} byCard={wishlist.byCard}
           onSetWanted={wishlist.setWanted} onAddCopy={() => {}} onClose={() => setZoomId(null)}
           deckControls={deckZoomControls(ed, deck, ed.m.getCardData(zoomId), addTo === 'side' && picker === 'cards')} />
         </div>

@@ -237,7 +237,7 @@ export function DeckWorkspace({ deck, decks, org, copies, collection, wishlist, 
       {dialog === 'hand' && <HandDialog deck={deck} onClose={() => setDialog(null)} />}
       {dialog === 'lend' && <LendDeckDialog deck={deck} count={lendable.length} people={org.people} onLend={ed.lendDeck} onClose={() => setDialog(null)} />}
       {zoomId && (
-        <CardZoom cardId={zoomId} stacks={collection.stacks} wanted={wishlist.byCard.get(zoomId)?.quantity || 0}
+        <CardZoom cardId={zoomId} stacks={collection.stacks} byCard={wishlist.byCard}
           onSetWanted={wishlist.setWanted} onAddCopy={() => {}} onClose={() => setZoomId(null)}
           deckControls={deckZoomControls(ed, deck, m.getCardData(zoomId), toSide && pick === 'cards')} />
       )}

@@ -24,7 +24,7 @@ function Page({ title, sub, children, zoom, setZoom, c }) {
       </header>
       <div className="flex-1 min-h-0 flex">{children}</div>
       {zoom && (
-        <CardZoom cardId={zoom} stacks={c.collection.stacks} wanted={c.wishlist.byCard.get(zoom)?.quantity || 0}
+        <CardZoom cardId={zoom} stacks={c.collection.stacks} byCard={c.wishlist.byCard}
           onSetWanted={c.wishlist.setWanted} onAddCopy={c.handleAddCopy} onClose={() => setZoom(null)} />
       )}
     </div>
