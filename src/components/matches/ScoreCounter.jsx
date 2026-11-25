@@ -108,7 +108,7 @@ export default function ScoreCounter({ decks, matches = [], legends, defaultDeck
     <div key={side} className={`flex-1 min-w-0 flex flex-col items-center justify-center gap-2 ${compact ? 'p-2' : 'p-3'} ${flipped ? 'rotate-180 lg:rotate-0' : ''}`}
       style={{ background: `linear-gradient(${flipped ? '0deg' : '180deg'}, ${SIDE_COLORS[side]}33, transparent 70%), #0b1120` }}>
       <p className="flex items-center gap-1.5 text-[13px] text-rift-300">
-        {legendsOf(side).filter(Boolean).map(id => <img key={id} src={getCardThumbUrl(id)} alt="" className="w-7 h-7 object-cover object-top" />)}
+        {legendsOf(side).filter(Boolean).map(id => <img key={id} src={getCardThumbUrl(id)} alt="" loading="lazy" className="w-7 h-7 object-cover object-top" />)}
         <span>{names[side]}{mode === '1v1' ? ` · ${legendName(legendsOf(side)[0])}` : ''}</span>
         {g.first === side && <span className="text-gold-400">{tx('● commence')}</span>}
       </p>

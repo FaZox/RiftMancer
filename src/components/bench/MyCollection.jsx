@@ -111,7 +111,7 @@ export default function MyCollection() {
             return (
               <li key={it.name}>
                 <button onClick={() => setEditing(it)} className="w-full flex gap-3 p-2 border border-rift-600/60 bg-rift-800/40 hover:border-gold-500/50 text-left">
-                  {it.thumb ? <img src={it.thumb} alt="" className="w-16 h-16 object-cover flex-shrink-0 bg-rift-900" /> : <span className="w-16 h-16 bg-rift-900 flex-shrink-0" />}
+                  {it.thumb ? <img src={it.thumb} alt="" loading="lazy" className="w-16 h-16 object-cover flex-shrink-0 bg-rift-900" /> : <span className="w-16 h-16 bg-rift-900 flex-shrink-0" />}
                   <span className="flex-1 min-w-0 space-y-0.5">
                     <span className="flex items-center gap-1.5 text-sm font-semibold text-rift-100">
                       {it.type === 'grille' ? <LayoutGrid className="w-4 h-4 text-gold-400" /> : <Square className="w-4 h-4 text-gold-400" />}

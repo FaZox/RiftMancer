@@ -118,8 +118,8 @@ function DeckTile({ deck, copies, org, onOpen }) {
         style={{ background: `radial-gradient(circle at 50% 100%, ${color || '#3a4258'}55, transparent 70%), #0b0f19` }}>
         {deck.legendId ? (
           <>
-            <img src={thumbSrc(deck.legendId)} onError={e => handleImageError(e, deck.legendId)} alt="" className="h-[150px] shadow-[0_8px_24px_rgba(0,0,0,.6)] -rotate-3" />
-            {deck.championId && <img src={thumbSrc(deck.championId)} onError={e => handleImageError(e, deck.championId)} alt="" className="h-[150px] shadow-[0_8px_24px_rgba(0,0,0,.6)] rotate-3" />}
+            <img src={thumbSrc(deck.legendId)} onError={e => handleImageError(e, deck.legendId)} alt="" loading="lazy" className="h-[150px] shadow-[0_8px_24px_rgba(0,0,0,.6)] -rotate-3" />
+            {deck.championId && <img src={thumbSrc(deck.championId)} onError={e => handleImageError(e, deck.championId)} alt="" loading="lazy" className="h-[150px] shadow-[0_8px_24px_rgba(0,0,0,.6)] rotate-3" />}
           </>
         ) : <Crown className="w-12 h-12 text-rift-500 mb-12" />}
       </div>

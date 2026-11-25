@@ -314,7 +314,7 @@ function PhotosMode({ language, onAddCards, showNotification, detectorReady }) {
           {queue.map(it => (
             <button key={it.id} onClick={() => setCurrentId(it.id)} title={it.name}
               className={`relative flex-shrink-0 w-[72px] h-[72px] border-2 overflow-hidden ${it.id === currentId ? 'border-gold-400' : 'border-rift-600 hover:border-rift-400'}`}>
-              <img src={it.url} alt="" className="w-full h-full object-cover" />
+              <img src={it.url} alt="" loading="lazy" className="w-full h-full object-cover" />
               <span className="absolute bottom-0 inset-x-0 h-5 flex items-center justify-center text-[11px] font-bold bg-rift-900/85">
                 {it.status === 'analyzing' && <Loader2 className="w-3 h-3 animate-spin text-gold-400" />}
                 {it.status === 'waiting' && <span className="text-rift-400">{tx('à analyser')}</span>}

@@ -174,7 +174,7 @@ function DecksView({ org, copies, ownedByCard, collection, wishlist, onOpen, onD
             <button key={d.id} onClick={() => setOpenId(d.id)} className="w-full text-left flex items-center gap-3 rounded-xl bg-rift-800/60 border border-rift-600/20 p-2.5 hover:border-gold-400/40">
               <div className="w-12 h-16 lg:w-[72px] lg:h-[100px] rounded-md overflow-hidden bg-rift-900 flex-shrink-0 flex items-center justify-center">
                 {d.legendId
-                  ? <img src={thumbSrc(d.legendId)} onError={e => handleImageError(e, d.legendId)} alt="" className="w-full h-full object-cover" />
+                  ? <img src={thumbSrc(d.legendId)} onError={e => handleImageError(e, d.legendId)} alt="" loading="lazy" className="w-full h-full object-cover" />
                   : <Swords className="w-5 h-5 text-rift-500" />}
               </div>
               <div className="flex-1 min-w-0">
