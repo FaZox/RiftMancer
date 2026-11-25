@@ -47,7 +47,7 @@ export function WishlistView({ ownedByCard, wishlist, onOpen }) {
             )}
             <p className="text-xs text-rift-400" data-help="wish.summary">
               {items.length} {tx('carte')}{items.length > 1 ? 's' : ''} {tx('souhaitée')}{items.length > 1 ? 's' : ''} · {missing.length} {tx('encore à obtenir')}
-              {toBuy > 0 && <> {tx('· coût à obtenir')} <span className="font-semibold text-gold-400">{euro(toBuy)}</span></>}
+              {toBuy > 0 && <> {tx('· coût estimé à obtenir')} <span className="font-semibold text-gold-400">{euro(toBuy)}</span></>}
               {totalWishlistCost > 0 && <> {tx('· valeur totale')} <span className="font-semibold text-gold-400">{euro(totalWishlistCost)}</span></>}
             </p>
             <div data-help="wish.cardmarket"><CardmarketWantsButton label={tx('Envoyer vers mes souhaits Cardmarket')}
