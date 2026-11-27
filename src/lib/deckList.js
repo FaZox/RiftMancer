@@ -198,7 +198,11 @@ export function formatDeckList(deck, language = 'English') {
   };
   const slots = deck.cards || [];
   const zone = (z) => slots.filter(s => s.zone === z && s.quantity > 0)
-    .sort((a, b) => nameOf(a.cardId).localeCompare(nameOf(b.cardId), 'fr'))
+    .sort((a, b) => {
+      const nameA = nameOf(a.cardId) || '';
+      const nameB = nameOf(b.cardId) || '';
+      return nameA.localeCompare(nameB, 'fr');
+    })
     .map(s => [s.cardId, s.quantity]);
 
   block(fr ? 'Légende' : 'Legend', deck.legendId ? [[deck.legendId, 1]] : []);

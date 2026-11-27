@@ -10,7 +10,17 @@ export function setRank(set) {
 
 /** Natural order inside a set: base cards by number, then variants. */
 export function compareCollector(a, b) {
-  return setRank(a.set) - setRank(b.set)
-    || a.set.localeCompare(b.set)
-    || (a.collectorNumber || '').localeCompare(b.collectorNumber || '', 'fr', { numeric: true });
+  // Handle undefined/null cards (fallback to empty strings)
+  const aSet = (a?.set) || '';
+  const bSet = (b?.set) || '';
+  const aNum = (a?.collectorNumber) || '';
+  const bNum = (b?.collectorNumber) || '';
+  
+  const rankDiff = setRank(aSet) - setRank(bSet);
+  if (rankDiff !== 0) return rankDiff;
+  
+  const setDiff = aSet.localeCompare(bSet);
+  if (setDiff !== 0) return setDiff;
+  
+  return aNum.localeCompare(bNum, 'fr', { numeric: true });
 }

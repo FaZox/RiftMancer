@@ -189,6 +189,18 @@ function createContent({ dir, distDir }) {
   };
   const base = () => readJSON(baseFile());
   const baseBanlist = () => { try { return readJSON(path.join(distDir, 'banlist.json')); } catch { return null; } };
+  const shippedRulingsFr = () => { try { return readJSON(path.join(distDir, 'rulings-fr.json')); } catch { return null; } };
+  /** Rulings of the served FAQ that public/rulings-fr.json does not translate yet. */
+  function rulingsFrMissing() {
+    const fr = shippedRulingsFr();
+    const rulings = mergedNow().rulings;
+    if (!fr || !rulings?.cards) return [];
+    const out = [];
+    for (const e of rulings.cards) for (const r of e.rulings || []) {
+      if (!fr.cards?.[e.name]?.[r.id]) out.push({ card: e.name, id: r.id, question: r.question });
+    }
+    return out;
+  }
   const errataFile = path.join(dir, 'errata.json');
   function getErrata() { try { return readJSON(errataFile); } catch { return {}; } }
   /** The catalog as served now (base and active layers). */
@@ -408,6 +420,7 @@ function createContent({ dir, distDir }) {
       namesFr: merged.cards.filter(c => c.nameFr).length,
       textsFr: merged.cards.filter(c => c.textFr).length,
       rulings: merged.rulings ? { cards: merged.rulings.cards.length, count: merged.rulings.cards.reduce((n, e) => n + e.rulings.length, 0), updatedAt: merged.rulings.updatedAt || null } : null,
+      rulingsFrMissing: rulingsFrMissing().length,
       errata: Object.keys(getErrata()).length,
       lastSet: merged.cards.at(-1)?.setName || null,
       banlist: banlist ? { updatedAt: banlist.updatedAt, formats: banlist.formats } : null,
@@ -420,7 +433,7 @@ function createContent({ dir, distDir }) {
     };
   }
 
-  return { rebuild, resolve, install, installCards, importFolder, restorePrevious, reset, status, getState, setState, exportLayers, importLayers, layerDates };
+  return { rebuild, resolve, install, installCards, importFolder, restorePrevious, reset, status, getState, setState, exportLayers, importLayers, layerDates, rulingsFrMissing };
 }
 
 module.exports = { createContent, mergeCatalog, layerProblem, textChanges, applyErrata, KINDS };

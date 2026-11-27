@@ -37,7 +37,12 @@ export function catalogSets() {
     s.cards.push(c);
     (isBaseCard(c) ? s.base : s.variants).push(c);
   }
-  return [...bySet.values()].sort((a, b) => setRank(a.set) - setRank(b.set) || a.set.localeCompare(b.set));
+  return [...bySet.values()].sort((a, b) => {
+    const aSet = a.set || '';
+    const bSet = b.set || '';
+    const rankDiff = setRank(aSet) - setRank(bSet);
+    return rankDiff !== 0 ? rankDiff : aSet.localeCompare(bSet);
+  });
 }
 
 const RARITY_RANK = { common: 0, uncommon: 1, rare: 2, epic: 3, showcase: 4 };
@@ -68,14 +73,24 @@ export function priceComparator(sort, unitOf, nameOf) {
   return (a, b) => {
     const pa = get(a); const pb = get(b);
     if (pa == null || pb == null) return (pa == null) - (pb == null);
-    return dir * (pa - pb) || nameOf(a).localeCompare(nameOf(b), 'fr');
+    const diff = dir * (pa - pb);
+    if (diff !== 0) return diff;
+    // Ensure names are strings to avoid localeCompare on undefined
+    const nameA = nameOf(a) || '';
+    const nameB = nameOf(b) || '';
+    return nameA.localeCompare(nameB, 'fr');
   };
 }
 
 /** Comparator for collection stacks. `nameOf(stack)` gives the displayed name. */
 export function stackComparator(sort, nameOf) {
   switch (sort) {
-    case 'name': return (a, b) => nameOf(a).localeCompare(nameOf(b), 'fr');
+    case 'name':
+      return (a, b) => {
+        const nameA = nameOf(a) || '';
+        const nameB = nameOf(b) || '';
+        return nameA.localeCompare(nameB, 'fr');
+      };
     case 'rarity': return (a, b) => (RARITY_RANK[b.cardData.rarity] ?? -1) - (RARITY_RANK[a.cardData.rarity] ?? -1) || compareCollector(a.cardData, b.cardData);
     case 'quantity': return (a, b) => b.quantity - a.quantity || compareCollector(a.cardData, b.cardData);
     case 'recent': return (a, b) => b.scanTimestamp - a.scanTimestamp;

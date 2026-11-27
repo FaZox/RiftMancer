@@ -17,7 +17,7 @@
     "desktop": "npm run build && electron .",
     "desktop:start": "electron .",
     "icons": "node scripts/make-icons.mjs",
-    "desktop:exe": "npm run build && node scripts/make-icons.mjs && node scripts/desktop-exe.mjs",
+    "desktop:exe": "node scripts/copy-ort.mjs && npm run build --ignore-scripts && node scripts/make-icons.mjs && node scripts/desktop-exe.mjs",
     "desktop:exe:test": "npm run build && node scripts/make-icons.mjs && node scripts/desktop-exe.mjs --test",
     "catalog:enrich": "node scripts/enrich-catalog.mjs",
     "catalog:update": "node scripts/update-catalog.mjs",

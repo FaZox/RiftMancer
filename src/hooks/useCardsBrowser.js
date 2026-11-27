@@ -38,7 +38,7 @@ function applyRequest(v, r) {
   return r ? { ...v, query: r.query ?? v.query, ownership: r.ownership ?? v.ownership, scroll: 0 } : v;
 }
 
-export default function useCardsBrowser({ scannedCards, decks }) {
+export default function useCardsBrowser({ scannedCards, decks, wishlist }) {
   const [view, setViewState] = useState(() => {
     const v = applyRequest(loadView(), takeRequest('cards'));
     if (v !== memory) saveView(v);
@@ -102,5 +102,6 @@ export default function useCardsBrowser({ scannedCards, decks }) {
   return {
     view, setView, input, setInput, setQuery, parsed, cards, owned, sets, ownedCount,
     items: result.items, counts: result.counts, filterMs: result.ms, nameOf, priceOf,
+    wishlist,
   };
 }

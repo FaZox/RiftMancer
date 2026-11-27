@@ -259,10 +259,16 @@ const Tile = React.memo(function Tile({ g, b, dim, hd, showPrice, selected, onPr
   const price = showPrice ? b.priceOf(c) : null;
   const extra = g.prints.length - 1;
   const name = b.nameOf(c);
+  // Check if this card is in the wishlist (using c.id which is the specific card/printing id)
+  const wishlistBadge = b.wishlist?.byCard?.has(c.id) ? '♥' : undefined;
+  const ownedBadge = g.owned > 0 ? `×${g.owned}` : undefined;
+  
   return (
     <div className="relative group">
       <CardTile cardData={c} name={name} hd={hd} dim={dim && missing} tag={dim && missing ? tx('Manquante') : null}
-        badge={g.owned > 0 ? `×${g.owned}` : undefined} selected={selected}
+        badge={ownedBadge || wishlistBadge} 
+        badgeClass={ownedBadge ? undefined : wishlistBadge ? 'bg-pink-500/80 text-white' : undefined}
+        selected={selected}
         onPress={onPress} onZoom={onZoom}
         meta={(
           <p className="mt-0.5 flex justify-between gap-1 text-[11px] text-rift-500">

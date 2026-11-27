@@ -8,7 +8,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
-const { app, BrowserWindow, ipcMain, shell, dialog, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog, screen, Notification } = require('electron');
 const { Store } = require('./store.cjs');
 const { createServer } = require('./server.cjs');
 const { createPrices, copiesValue } = require('./prices.cjs');
@@ -338,7 +338,20 @@ async function start() {
   // Translations and banned cards: the layer built on screen after the user's « Installer » (checked again here).
   ipcMain.handle('content:install', (_e, kind, layer) => {
     if (kind !== 'bannies' && kind !== 'traductions' && kind !== 'rulings') throw new Error(etx('Type de contenu refusé.'));
-    return contentChanged(content.install(kind, layer));
+    const s = contentChanged(content.install(kind, layer));
+    // New English rulings without a French translation yet: tell the user so they can be translated (rulings-fr.json)
+    if (kind === 'rulings') {
+      const missing = content.rulingsFrMissing();
+      if (missing.length) {
+        try {
+          new Notification({
+            title: etx('Rulings : traductions françaises à faire'),
+            body: etx('{n} ruling(s) en anglais sans traduction française pour l’instant.', { n: missing.length }),
+          }).show();
+        } catch { /* notifications unavailable: the badge in Réglages → Contenu still shows it */ }
+      }
+    }
+    return s;
   });
 
   // Cardmarket prices: refreshed at startup and every few hours (at most daily

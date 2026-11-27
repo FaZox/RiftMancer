@@ -236,16 +236,18 @@ export default function CardZoom({ cardId: openedId, language: initialLanguage, 
                       <div className="flex items-center gap-3 p-2.5 bg-rift-800" title={tx('Coût de recyclage : {n} rune(s) {domain}', { n: cardData.power, domain: domainLabel(cardData.domain || domains[0] || 'colorless') })}>
                         <span className="flex items-center gap-0.5">
                           {Array.from({ length: cardData.power }, (_, i) => (domainIcon(cardData.domain || domains[0])
-                            ? <img key={i} src={domainIcon(cardData.domain || domains[0])} alt="" className="w-5 h-5" />
-                            : <span key={i} className="w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center text-white" style={{ background: (DOMAIN_COLORS[cardData.domain] || DOMAIN_COLORS.colorless).hex }}>◆</span>))}
+                            ? <img key={i} src={domainIcon(cardData.domain || domains[0])} alt="" className="w-8 h-8" />
+                            : <span key={i} className="w-8 h-8 rounded-full text-[13px] font-bold flex items-center justify-center text-white" style={{ background: (DOMAIN_COLORS[cardData.domain] || DOMAIN_COLORS.colorless).hex }}>◆</span>))}
                         </span>
                         <span className="text-[13px] text-rift-400">{tx('Recyclage')}</span>
                       </div>
                     )}
                     {cardData.might != null && (
                       <div className="flex items-center gap-3 p-2.5 bg-rift-800">
-                        <span className="hexagon w-9 h-9 flex items-center justify-center bg-[#5a1d19] text-[#ffb4ab] font-bold">{cardData.might}</span>
-                        {symbolsReady() && <img src={MIGHT_ICON} alt="" className="w-4 h-4 -mr-1.5" />}
+                        {symbolsReady()
+                          ? <img src={MIGHT_ICON} alt={tx('Puissance')} title={tx('Puissance')} className="w-9 h-9 object-contain" />
+                          : <span className="hexagon w-9 h-9 flex items-center justify-center bg-[#5a1d19] text-[#ffb4ab] font-bold" />}
+                        <span className="font-bold text-[#ffb4ab]">{cardData.might}</span>
                         <span className="text-[13px] text-rift-400">{tx('Puissance')}</span>
                       </div>
                     )}
@@ -253,7 +255,8 @@ export default function CardZoom({ cardId: openedId, language: initialLanguage, 
                 )}
                 {text && (
                   <div className="border border-[#e8a33a]/55 bg-[#e8a33a]/10 p-3">
-                    {!text.translated && <p className="text-[11px] text-state-warn mb-1">{tx('Traduction indisponible — texte anglais')}</p>}
+                    {text.unofficial && <p className="text-[11px] text-gold-400 mb-1">{tx('Traduction française non officielle')}</p>}
+                    {!text.translated && !text.unofficial && <p className="text-[11px] text-state-warn mb-1">{tx('Traduction indisponible — texte anglais')}</p>}
                     <ErrataNote cardData={cardData} text={text} language={language}>
                       <div className="text-[15px] text-rift-100 leading-relaxed" dangerouslySetInnerHTML={{ __html: rulesTextHtml(text) }} />
                     </ErrataNote>

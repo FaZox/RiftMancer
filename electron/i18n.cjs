@@ -23,6 +23,8 @@ const EN = {
   'Traductions françaises': 'French translations',
   'Cartes bannies': 'Banned cards',
   'Rulings': 'Rulings',
+  'Rulings : traductions françaises à faire': 'Rulings: French translations to do',
+  '{n} ruling(s) en anglais sans traduction française pour l’instant.': '{n} ruling(s) in English without a French translation yet.',
   'liste des cartes retirées invalide': 'invalid list of removed cards',
   'nom de fichier refusé ({rel})': 'file name refused ({rel})',
   'fichier altéré ({rel})': 'file altered ({rel})',

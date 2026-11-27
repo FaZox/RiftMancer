@@ -78,6 +78,7 @@ export default function OrganizeTab({ collection, org, wishlist, onAddCopy, fixe
           cardId={zoom}
           stacks={collection.stacks}
           wanted={wishlist.byCard.get(zoom)?.quantity || 0}
+          byCard={wishlist.byCard}
           onSetWanted={wishlist.setWanted}
           onAddCopy={onAddCopy}
           onClose={() => setZoom(null)}

@@ -76,6 +76,7 @@ export default function CollectionPage({
           language={zoom.language}
           stacks={scannedCards}
           wanted={wishlist.byCard.get(zoom.cardId)?.quantity || 0}
+          byCard={wishlist.byCard}
           onSetWanted={wishlist.setWanted}
           onAddCopy={onAddCopy}
           onRemoveCopy={onRemoveCopy}

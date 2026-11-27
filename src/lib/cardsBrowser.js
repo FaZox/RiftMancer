@@ -61,9 +61,21 @@ export function groupKey(card) {
 export function cardComparator(sort, { nameOf, priceOf, ownedOf }) {
   const byNum = (a, b) => compareCollector(a.card, b.card);
   switch (sort) {
-    case 'name': return (a, b) => nameOf(a.card).localeCompare(nameOf(b.card), 'fr') || byNum(a, b);
+    case 'name':
+      return (a, b) => {
+        const nameA = nameOf(a.card) || '';
+        const nameB = nameOf(b.card) || '';
+        return nameA.localeCompare(nameB, 'fr') || byNum(a, b);
+      };
     case 'rarity': return (a, b) => (RARITY_RANK[b.card.rarity] ?? -1) - (RARITY_RANK[a.card.rarity] ?? -1) || byNum(a, b);
-    case 'energy': return (a, b) => (a.card.energy ?? 99) - (b.card.energy ?? 99) || nameOf(a.card).localeCompare(nameOf(b.card), 'fr');
+    case 'energy':
+      return (a, b) => {
+        const energyDiff = (a.card.energy ?? 99) - (b.card.energy ?? 99);
+        if (energyDiff !== 0) return energyDiff;
+        const nameA = nameOf(a.card) || '';
+        const nameB = nameOf(b.card) || '';
+        return nameA.localeCompare(nameB, 'fr');
+      };
     case 'quantity': return (a, b) => ownedOf(b) - ownedOf(a) || byNum(a, b);
     case 'price': case 'priceAsc': {
       const dir = sort === 'priceAsc' ? 1 : -1;

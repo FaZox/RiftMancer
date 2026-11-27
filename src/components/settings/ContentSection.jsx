@@ -65,6 +65,11 @@ export function ContentCards({ info, actions = {}, cardsStatus = null }) {
         <p className="text-[13px] text-rift-400 mt-0.5">
           {tx('Riftbound FAQ (riftboundfaq.com), Christian « Near » Ivicevic · licence CC BY-SA 4.0 · non officiel · via rifthunt.com')}
         </p>
+        {info.rulingsFrMissing > 0 && (
+          <p className="text-[13px] text-state-warn mt-0.5">
+            {tx('{n} ruling(s) en anglais sans traduction française pour l’instant — à traduire dans rulings-fr.json.', { n: n(info.rulingsFrMissing) })}
+          </p>
+        )}
         {actions.rulings}
       </SectionCard>
     </>

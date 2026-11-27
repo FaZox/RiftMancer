@@ -1,7 +1,7 @@
 /**
- * Riftbound's game symbols (Riot Games), in public/sym/ (from rifthunt.com/sym/):
- * the rarity gems, the domains / runes (fury … order, wild = any rune), Might,
- * Exhaust and the generic rune. Like the card pictures, they stay out
+ * Riftbound's game symbols (Riot Games), in public/sym/: the rarity gems, the
+ * domains / runes (fury … order, wild = any rune), Exhaust and the generic rune
+ * come from rifthunt.com/sym/; the Might logo from riftmana.com (resized 24×24). Like the card pictures, they stay out
  * of the public repository (scripts/lib/content.mjs): an app built without
  * them keeps its own signs (⚔, no gem). initSymbols() checks once that they are
  * there; symbolsReady() says so.

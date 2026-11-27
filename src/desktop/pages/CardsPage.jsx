@@ -13,7 +13,7 @@ import { locale, tx, tp } from '../../lib/i18n.js';
 const SIZES = [['s', 112], ['m', 140], ['l', 190]];
 
 export default function CardsPage({ scannedCards, wishlist, org, onAddCopy, onRemoveCopy, onUpdateCard, onQuickAdd, notify }) {
-  const b = useCardsBrowser({ scannedCards, decks: org.decks.items });
+  const b = useCardsBrowser({ scannedCards, decks: org.decks.items, wishlist });
   const a = useCardsActions({ b, wishlist, decks: org.decks, onQuickAdd, notify });
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
@@ -136,6 +136,7 @@ export default function CardsPage({ scannedCards, wishlist, org, onAddCopy, onRe
           cardId={zoomCard.id}
           stacks={scannedCards}
           wanted={wishlist.byCard.get(zoomCard.id)?.quantity || 0}
+          byCard={wishlist.byCard}
           onSetWanted={wishlist.setWanted}
           onAddCopy={onAddCopy}
           onRemoveCopy={onRemoveCopy}

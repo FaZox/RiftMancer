@@ -47,7 +47,15 @@ export function searchAll(query, data, { allCards = false } = {}) {
     else { if (owned && !prev.owned) prev.c = c; prev.owned += owned; prev.s = Math.max(prev.s, s); }
   }
   const cards = [...byName.values()]
-    .sort((a, b) => (b.owned > 0) - (a.owned > 0) || b.s - a.s || fold(a.c.nameFr || a.c.name).localeCompare(fold(b.c.nameFr || b.c.name)))
+    .sort((a, b) => {
+      const diffOwned = (b.owned > 0) - (a.owned > 0);
+      if (diffOwned !== 0) return diffOwned;
+      const diffScore = b.s - a.s;
+      if (diffScore !== 0) return diffScore;
+      const nameA = fold(a.c.nameFr || a.c.name || a.c.id || '');
+      const nameB = fold(b.c.nameFr || b.c.name || b.c.id || '');
+      return nameA.localeCompare(nameB);
+    })
     .slice(0, MAX)
     .map(({ c, owned }) => ({ type: 'card', id: c.id, cardId: c.id, label: c.nameFr || c.nameEn || c.name, detail: owned ? tx('×{owned} possédée{v1}', { owned, v1: owned > 1 ? 's' : '' }) : tx('non possédée') }));
   if (cards.length) out.push({ group: 'cards', label: GROUP_LABEL.cards, items: cards });

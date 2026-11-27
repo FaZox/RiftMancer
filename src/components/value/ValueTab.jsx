@@ -32,6 +32,7 @@ export default function ValueTab({ scannedCards, wishlist, onAddCopy }) {
           cardId={zoom}
           stacks={scannedCards}
           wanted={wishlist.byCard.get(zoom)?.quantity || 0}
+          byCard={wishlist.byCard}
           onSetWanted={wishlist.setWanted}
           onAddCopy={onAddCopy}
           onClose={() => setZoom(null)}

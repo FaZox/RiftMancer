@@ -103,6 +103,7 @@ export default function MoreTab({ scannedCards, collection, org, wishlist, onAdd
           cardId={zoom}
           stacks={scannedCards}
           wanted={wishlist.byCard.get(zoom)?.quantity || 0}
+          byCard={wishlist.byCard}
           onSetWanted={wishlist.setWanted}
           onAddCopy={onAddCopy}
           onClose={() => setZoom(null)}

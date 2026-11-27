@@ -10,6 +10,8 @@ import { getDetector, DetectorState } from '../../lib/yoloDetector.js';
 import { runWeeklyChecks } from '../../lib/contentNotices.js';
 import { getMatcher } from '../../lib/cardMatcher.js';
 import { loadBanlist } from '../../lib/banlist.js';
+import { loadCardTextsFr } from '../../lib/cardLocale.js';
+import { loadRulingsFr } from '../../lib/rulingsFr.js';
 import { reloadAllViews } from '../../lib/collectionDB.js';
 import { initLearning } from '../../lib/learning.js';
 import { startRecognition } from '../../lib/recognition.js';
@@ -49,6 +51,8 @@ export function useStartup({ initDetector, loadCollection }) {
         const matcher = getMatcher();
         await matcher.initialize();
         loadBanlist();
+        loadCardTextsFr(); // unofficial French texts of the cards riftboundfr.fr does not cover
+        loadRulingsFr();
         // PC: content updated (Réglages → Contenu, lot 4) → new catalog and banned list at once
         window.riftboundDesktop?.content?.onChanged(async () => {
           await matcher.initialize();

@@ -14,7 +14,7 @@ const ibtn = 'relative w-11 h-11 flex items-center justify-center border border-
 const ibtnOn = 'bg-gold-500/20 border-gold-400 text-gold-400';
 
 export default function CardsTab({ scannedCards, wishlist, org, onAddCopy, onRemoveCopy, onUpdateCard, onQuickAdd, notify, onFind }) {
-  const b = useCardsBrowser({ scannedCards, decks: org.decks.items });
+  const b = useCardsBrowser({ scannedCards, decks: org.decks.items, wishlist });
   const a = useCardsActions({ b, wishlist, decks: org.decks, onQuickAdd, notify });
   const scrollRef = useRef(null);
   const [sheet, setSheet] = useState(null); // 'filters' | 'sort' | 'help'
@@ -117,6 +117,7 @@ export default function CardsTab({ scannedCards, wishlist, org, onAddCopy, onRem
           cardId={zoomId}
           stacks={scannedCards}
           wanted={wishlist.byCard.get(zoomId)?.quantity || 0}
+          byCard={wishlist.byCard}
           onSetWanted={wishlist.setWanted}
           onAddCopy={onAddCopy}
           onRemoveCopy={onRemoveCopy}

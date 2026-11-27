@@ -45,7 +45,52 @@ export function displayLanguage(language) {
 
 function frenchEntry(cardData) {
   if (!cardData?.id) return null;
-  return getMatcher().getCard(cardData.id);
+  const m = getMatcher();
+  const direct = m.getCard(cardData.id);
+  if (direct?.nameFr) return direct;
+  // Another printing of the same card (same oracle): reuse its French entry.
+  const oracle = cardData.oracle || direct?.oracle;
+  if (oracle) return m.cards.find(c => c.oracle === oracle && c.nameFr) || direct;
+  return direct;
+}
+
+/** French entry carrying a rules text, by id then by oracle (variants share it). */
+function frenchTextEntry(cardData) {
+  const fr = frenchEntry(cardData);
+  if (fr?.textFr) return fr;
+  const oracle = cardData?.oracle || fr?.oracle;
+  if (oracle) return getMatcher().cards.find(c => c.oracle === oracle && c.textFr) || null;
+  return null;
+}
+
+/**
+ * Unofficial French card texts (public/card-texts-fr.json): for cards the
+ * official French files (riftboundfr.fr) do not cover yet. Keyed by oracle
+ * (variants share the text), falling back to the card id. Loaded once at
+ * startup like the banlist; shown with a « non officielle » mark, and the
+ * card sheet's FR/EN switch still shows the English text.
+ */
+let cardTextsFr = null;
+
+export function setCardTextsFr(data) {
+  if (!data || typeof data.texts !== 'object') return false;
+  cardTextsFr = data.texts;
+  return true;
+}
+
+export async function loadCardTextsFr(url = '/card-texts-fr.json', fetchImpl = fetch) {
+  try {
+    const res = await fetchImpl(url);
+    if (!res.ok) return false;
+    return setCardTextsFr(await res.json());
+  } catch { return false; }
+}
+
+/** The unofficial French text of a card, or null. */
+export function unofficialTextFr(cardData) {
+  if (!cardTextsFr || !cardData) return null;
+  const oracle = cardData.oracle || getMatcher().getCard(cardData.id)?.oracle;
+  return (oracle && cardTextsFr[oracle]) || cardTextsFr[cardData.id] || null;
 }
 
 /**
@@ -57,20 +102,24 @@ export function getLocalizedName(cardData, language) {
     if (fr?.nameFr) return fr.nameFr;
   }
   // Full English name ("Jinx - Demolitionist") when known.
-  return cardData?.nameEn || frenchEntry(cardData)?.nameEn || cardData?.name || '';
+  return cardData?.nameEn || frenchEntry(cardData)?.nameEn || cardData?.name || cardData?.id || '';
 }
 
 /**
  * Rules text of a card in the given language.
  *
- * @returns {{ text: string, isHtml: boolean, translated: boolean } | null}
+ * @returns {{ text: string, isHtml: boolean, translated: boolean, unofficial?: boolean } | null}
  *   English text from Riot is HTML; French text is plain text.
  *   `translated` is false when French was asked but is unavailable.
+ *   `unofficial` marks a community French text (card-texts-fr.json) used when
+ *   the official French text does not exist.
  */
 export function getLocalizedText(cardData, language) {
   if (language === 'French') {
-    const fr = frenchEntry(cardData);
+    const fr = frenchTextEntry(cardData);
     if (fr?.textFr) return { text: fr.textFr, isHtml: false, translated: true };
+    const unofficial = unofficialTextFr(cardData);
+    if (unofficial) return { text: unofficial, isHtml: false, translated: true, unofficial: true };
     if (cardData?.text) return { text: cardData.text, isHtml: true, translated: false };
     return null;
   }
