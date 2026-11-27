@@ -1,6 +1,8 @@
 {
   "gridSize": 16,
   "featureFormat": "u8b64",
+  "cards": [],
+  "generatedAt": null,
   "embeddings": {
     "engine": "dinov2s-ft-fp16-mean-168",
     "region": "art",
@@ -23,8 +25,6 @@
       }
     },
     "detector": "yolo11s-pose-riftbound-dyn.onnx",
-    "detectorSha256": "980a89fd434d01cdbf33d095e649c006d76d4d7c51bcb02bbce048c48be5f0d1"
-  },
-  "generatedAt": null,
-  "cards": []
+    "detectorSha256": "06df918b37a7dcb64305c5f4681d02f87904ffac6a67d30af14cbbd13d89f417"
+  }
 }
