@@ -10,8 +10,9 @@ model/dataset.tar.gz.sha256
 model/riftbound.db
 model/pictures
 model/runs
-# public/: everything is kept (models, card catalog, card images, icons)
-# except the ONNX runtime files copied from node_modules by scripts/copy-ort.mjs
+# public/: everything is kept (models, card catalog, icons)
+# except card images (Riot copyright — never committed) and the ONNX runtime files copied from node_modules by scripts/copy-ort.mjs
+public/cards/
 public/ort/
 nul
 dist/
