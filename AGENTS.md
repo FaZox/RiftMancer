@@ -13,6 +13,7 @@
 
 | Fichier | Rôle |
 |---------|------|
+| `CLAUDE.md` | Point d'entrée Claude Code (wrappers skills dans `.claude/skills/`, gitignoré) |
 | `.vibe/INIT.md` | Point d'entrée |
 | `.vibe/ai-context.md` | Contexte + règles de session |
 | `DEV_NOTES.md` | Référence technique complète |

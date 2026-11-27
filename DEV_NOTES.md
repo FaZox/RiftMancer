@@ -61,6 +61,7 @@ RiftMancer/
 │   │   ├── yolo11s-pose-riftbound-dyn.onnx  # Détection (float32, input variable)
 │   │   └── dinov2s-ft-fp16.onnx             # Reconnaissance (DINOv2-small, 168x168px)
 │   ├── card-hashes.json      # Catalogue + fingerprints couleurs
+│   ├── sym/                  # Symboles du jeu : runes de domaines, gemmes de rareté, icônes de types (type-*.png)
 │   └── ort/                  # ONNX Runtime WASM
 │
 ├── scripts/                   # Scripts utilitaires
@@ -74,6 +75,13 @@ RiftMancer/
     ├── RiftMancer Test Setup <version>.exe # Installeur PC **test**
     └── RiftMancer.apk                   # APK Android
 ```
+
+### Page « Cartes » (PC) — `src/desktop/pages/CardsPage.jsx`
+- En-tête en **2 bandeaux** (design « aéré » A) : ligne 1 = titre + actions (Manquantes→souhaits, Exporter, **Filtres**) ; ligne 2 = recherche à **largeur fixe** (380–460 px, pas pleine largeur) + possession + bascules icônes (griser manquantes, regrouper) + tri. La ligne « résultats + chips » ne s'affiche que si un filtre est actif ou une sélection en cours.
+- Panneau de filtres de gauche **repliable** (état local `filtersOpen`).
+- Grille **6 cartes par ligne exactement** (`fixedCols={6}` sur `CardsGrid`, `gap=24`), tuiles de 230 px comme la Collection : plus de sélecteur S/M/L (`DEFAULT_VIEW.size = 'l'` dans `useCardsBrowser.js`).
+- Filtres PC (`CardsFiltersDesktop` dans `src/components/cards/CardsParts.jsx`) : domaines en icônes de runes (`public/sym/<domaine>.svg`), déroulants multi-sélection Type / Rareté / Autres, curseurs Énergie / Puissance (`numTerm` / `setNumQuery` dans `src/lib/cardQuery.js`). Les icônes de type sont des glyphes blancs `public/sym/type-<id>.png`, affichés en **masque CSS** teinté par le texte (sonde au démarrage dans `src/lib/symbols.js` : déposer le fichier suffit).
+- Collection PC (`src/desktop/pages/CollectionCards.jsx`) : taille fixe « Grandes » (230 px), sélecteur S/M/L supprimé lui aussi.
 
 ---
 
@@ -205,7 +213,10 @@ npm run release:check            # Vérifie les pré-requis
 ### Contenu des cartes
 - **Images** : `public/cards/<id>.webp` (2048px)
 - **Miniatures** : `public/cards/thumbs/<id>.webp` (300px)
-- **Catalogue** : `public/card-hashes.json` (métadonnées + fingerprints)
+- **Catalogue** : `public/card-hashes.json` (métadonnées + fingerprints couleurs `f` + **signatures IA `e` par carte** + header `embeddings` (moteur, `modelSha256`, seuils) + `artGroup` des reprints)
+  - Signatures IA régénérées localement : `node scripts/build-embeddings.mjs` (lit `public/cards/*.webp` + `public/models/dinov2s-ft-fp16.onnx`, cache `model/cache/`) — sans elles, Réglages → Scanner affiche « IA indisponible : empreinte couleurs utilisée ».
+  - Groupes de reprints : `node scripts/catalog-groups.mjs` (après build-embeddings). Header public : `npm run catalog:base` → `public/catalog-base.json`.
+- **Modèles** : `public/models/` (YOLO detecteur + DINOv2 reconnaissance)
 
 ### Rulings (FAQ) et affichage FR
 - **Rulings** : couche « rulings » (rifthunt `/bulk/rulings`, FAQ anglais CC BY-SA 4.0) → `src/lib/rulings.js`, affichés dans `src/components/collection/RulingsList.jsx`
@@ -280,6 +291,8 @@ npm run eval:detector    # Benchmark détection
 ### Fichiers importants
 | Fichier | Rôle |
 |---------|------|
+| `CLAUDE.md` | Point d'entrée Claude Code (règles + skills) ; wrappers `.claude/skills/<nom>/SKILL.md` → contenu canonique `.vibe/skills/<nom>/SKILL.md` (`.claude/` est gitignoré) |
+| `AGENTS.md` | Règles non négociables (lu aussi par Codex / Cursor / Copilot) |
 | `package.json` | Version, scripts, dépendances |
 | `vite.config.js` | Configuration Vite |
 | `capacitor.config.json` | Configuration Capacitor |
