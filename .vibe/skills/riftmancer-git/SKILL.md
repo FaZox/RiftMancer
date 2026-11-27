@@ -43,3 +43,20 @@ PR GitHub
     Closes #<numero> si applicable
 ```
 
+## Cartes (copyright Riot — jamais dans git)
+
+- `public/cards/` (images + miniatures) est dans `.gitignore` : **ne jamais forcer un ajout** (`git add -f` interdit sur ce dossier).
+- Seul le catalogue `public/card-hashes.json` (métadonnées, sans images) est versionné.
+- Les installeurs produits ne doivent pas embarquer les images de cartes.
+
+## Build production après chaque commit
+
+Après chaque commit (build OK) :
+
+```bash
+node scripts/desktop-exe.mjs --public   # exe production SANS les cartes (strip de public/cards/)
+node scripts/build-mobile.mjs --public && node scripts/android-apk.mjs   # apk production SANS les cartes
+```
+
+(Attention : `npm run desktop:exe` / `npm run android:apk` seuls embarquent les cartes si `public/cards/` est présent localement — c'est le paquet « amis ». Les variantes `--public` retirent le contenu des cartes. `npm run release -- <version>` produit d'ailleurs les deux paquets, le public dans `release/v<version>-public/`.)
+
