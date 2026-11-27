@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import './helpers.mjs';
 
 const Q = await import('../src/lib/cardQuery.js');
-const { parseQuery, compileQuery, selectionFor, setSelection, toggleOption, toggleFlag, removeToken, hasKeys, tokenLabel, canonValue } = Q;
+const { parseQuery, compileQuery, selectionFor, setSelection, toggleOption, toggleFlag, removeToken, hasKeys, tokenLabel, canonValue, numTerm, setNumQuery } = Q;
 
 const card = (o) => ({ set: 'OGN', setName: 'Origins', rarity: 'common', type: 'unit', domains: ['fury'], energy: 2, might: 3, ...o });
 const CARDS = [
@@ -124,4 +124,19 @@ test('chip labels', () => {
   assert.equal(tokenLabel(a), 'Type : Unité');
   assert.equal(tokenLabel(b), 'Énergie ≤ 3');
   assert.equal(tokenLabel(c), 'Pas Domaine : Fureur');
+});
+
+test('numeric slider: numTerm reads the term, setNumQuery writes it (=, >=, <=, 7+)', () => {
+  assert.equal(numTerm(parseQuery(''), 'e'), null);
+  assert.equal(numTerm(parseQuery('jinx'), 'e'), null);
+  assert.deepEqual(numTerm(parseQuery('jinx e<=3'), 'e'), { op: '<=', values: ['3'] });
+  assert.equal(setNumQuery('', 'e', ':', ['3']), 'e:3');
+  assert.equal(setNumQuery('', 'e', '>=', ['7']), 'e>=7');
+  assert.equal(setNumQuery('', 'e', ':', ['7+']), 'e:7+');
+  assert.equal(setNumQuery('jinx e<=3 t:unité', 'e', '>=', ['4']), 'jinx t:unité e>=4', 'the other tokens stay');
+  assert.equal(setNumQuery('jinx e<=3', 'e', ':', []), 'jinx', 'empty values removes the filter');
+  assert.equal(setNumQuery('-e:3 e:1', 'e', ':', []), '-e:3', 'a negation is kept');
+  assert.equal(run(setNumQuery('', 'e', ':', ['7+'])), run('e>=7'));
+  assert.equal(run(setNumQuery('', 'p', '>=', ['5'])), run('p>=5'));
+  assert.equal(run(setNumQuery('', 'e', '<=', ['1'])), run('e<=1'));
 });

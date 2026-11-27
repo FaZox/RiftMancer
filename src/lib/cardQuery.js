@@ -294,6 +294,23 @@ export function toggleFlag(text, flag, lang = getLang()) {
 }
 export const flagOn = (parsed, flag) => parsed.tokens.some(t => t.type === 'term' && t.key === 'is' && !t.neg && t.values.some(v => canonValue('is', v) === flag));
 
+/** The first positive numeric term of a key (« e<=3 » → { op: '<=', values: ['3'] }), or null. */
+export function numTerm(parsed, key) {
+  const t = positive(parsed, key)[0];
+  return t ? { op: t.op, values: t.values } : null;
+}
+
+/**
+ * New line where the numeric filter `key` becomes one term `key{op}v1,v2`
+ * (slider: ':' exact, '>=' at least, '<=' at most). Empty values removes it.
+ */
+export function setNumQuery(text, key, op, values) {
+  const parsed = parseQuery(text);
+  const keep = parsed.tokens.filter(t => !(t.type === 'term' && t.key === key && !t.neg));
+  const raw = values.length ? `${key}${op}${values.join(',')}` : null;
+  return [join(keep), raw].filter(Boolean).join(' ');
+}
+
 /** The line without its token n° `index` (chips of the active filters). */
 export function removeToken(text, index) {
   return join(parseQuery(text).tokens.filter((_, i) => i !== index));

@@ -15,8 +15,6 @@ import { GridTile, placeOf, PLACE_STYLE } from '../../components/collection/Coll
 import { requestOpen } from '../../lib/navRequest.js';import { tx } from '../../lib/i18n.js';
 
 
-export const SIZES = [['s', tx('Petites'), 140], ['m', tx('Moyennes'), 180], ['l', tx('Grandes'), 230]];
-
 export const PAGE = 300; // cards rendered at once (« Afficher plus » for the rest)
 
 export const store = {
@@ -35,8 +33,6 @@ export function CardsPanel({
   } = useCollectionFilter(scannedCards, allFrench);
   const [layout, setLayoutState] = useState(() => store.get('rb.pc.layout', 'grid'));
   const setLayout = (v) => { setLayoutState(v); store.set('rb.pc.layout', v); };
-  const [size, setSizeState] = useState(() => store.get('rb.pc.cardSize', 'l'));
-  const setSize = (v) => { setSizeState(v); store.set('rb.pc.cardSize', v); };
   const [shown, setShown] = useState(PAGE);
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState(() => new Set());
@@ -85,7 +81,7 @@ export function CardsPanel({
     ...org.decks.items.map(d => [`deck:${d.id}`, tx('Deck : {name}', { name: d.name })]),
     ['loan', tx('Prêtées')],
   ];
-  const minWidth = SIZES.find(s => s[0] === size)?.[2] || 180;
+  const minWidth = 230; // taille « Grandes » fixe (plus de sélecteur S/M/L)
   const visible = filteredCards.slice(0, shown);
   const filteredTotal = filteredCards.reduce((n, c) => n + c.quantity, 0);
 
@@ -109,16 +105,6 @@ export function CardsPanel({
               className={`h-10 px-3 text-sm border ${allFrench ? 'bg-gold-500/15 border-gold-500/60 text-gold-400' : 'border-rift-600 text-rift-300 hover:text-rift-100'}`}>
               {tx('Noms en français')}
             </button>
-            {layout === 'grid' && (
-              <div className="flex border border-rift-600" role="group" aria-label={tx('Taille des cartes')}>
-                {SIZES.map(([id, label]) => (
-                  <button key={id} onClick={() => setSize(id)} aria-pressed={size === id} title={`Cartes ${label.toLowerCase()}`}
-                    className={`h-10 px-3 text-sm ${size === id ? 'bg-gold-500/15 text-gold-400' : 'text-rift-400 hover:text-rift-100'}`}>
-                    {id.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-            )}
             <div className="flex border border-rift-600" role="group" aria-label={tx('Affichage')} data-help="collection.layout">
               <button onClick={() => setLayout('grid')} aria-pressed={layout === 'grid'} title={tx('Grille')}
                 className={`h-10 px-3 flex items-center gap-1.5 text-sm ${layout === 'grid' ? 'bg-gold-500/15 text-gold-400' : 'text-rift-400 hover:text-rift-100'}`}>

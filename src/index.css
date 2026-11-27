@@ -115,6 +115,12 @@
   }
   .chip:disabled { @apply opacity-40; }
 
+  /* Range slider (energy / might filters of the « Cartes » page) */
+  input[type='range'].rm-range {
+    @apply w-full h-1.5 bg-rift-700 cursor-pointer;
+    accent-color: theme('colors.gold.500');
+  }
+
   /* Standalone toggle button (B.1), for new screens */
   .toggle {
     @apply inline-flex items-center justify-center gap-1 min-h-[36px] px-3 border border-rift-600 text-rift-300
