@@ -414,7 +414,7 @@ export default function CardZoom({ cardId: openedId, language: initialLanguage, 
 }
 
 /** « Mon achat » (Prix tab): the price paid for one copy and the purchase date, for every copy of the card. */
-function PurchaseEditor({ owned, paid, paidAt, onSave }) {
+export function PurchaseEditor({ owned, paid, paidAt, onSave }) {
   const fmt = (v) => (v ? String(Math.round(v * 100) / 100).replace('.', ',') : '');
   const [price, setPrice] = useState(fmt(paid));
   const [date, setDate] = useState(paidAt || '');

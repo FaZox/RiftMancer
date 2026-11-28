@@ -76,12 +76,34 @@ RiftMancer/
     └── RiftMancer.apk                   # APK Android
 ```
 
-### Page « Cartes » (PC) — `src/desktop/pages/CardsPage.jsx`
-- En-tête en **2 bandeaux** (design « aéré » A) : ligne 1 = titre + actions (Manquantes→souhaits, Exporter, **Filtres**) ; ligne 2 = recherche à **largeur fixe** (380–460 px, pas pleine largeur) + possession + bascules icônes (griser manquantes, regrouper) + tri. La ligne « résultats + chips » ne s'affiche que si un filtre est actif ou une sélection en cours.
-- Panneau de filtres de gauche **repliable** (état local `filtersOpen`).
-- Grille **6 cartes par ligne exactement** (`fixedCols={6}` sur `CardsGrid`, `gap=24`), tuiles de 230 px comme la Collection : plus de sélecteur S/M/L (`DEFAULT_VIEW.size = 'l'` dans `useCardsBrowser.js`).
-- Filtres PC (`CardsFiltersDesktop` dans `src/components/cards/CardsParts.jsx`) : domaines en icônes de runes (`public/sym/<domaine>.svg`), déroulants multi-sélection Type / Rareté / Autres, curseurs Énergie / Puissance (`numTerm` / `setNumQuery` dans `src/lib/cardQuery.js`). Les icônes de type sont des glyphes blancs `public/sym/type-<id>.png`, affichés en **masque CSS** teinté par le texte (sonde au démarrage dans `src/lib/symbols.js` : déposer le fichier suffit).
-- Collection PC (`src/desktop/pages/CollectionCards.jsx`) : taille fixe « Grandes » (230 px), sélecteur S/M/L supprimé lui aussi.
+### Interface PC : Cartes, Collection, Souhaits, fiche carte (refonte 2026-11)
+Plan de référence : `maquettes/PLAN-refonte-cartes-collection-zoom.md` (maquette : `maquettes/reference-cartes-collection-zoom.html`). Android (`src/App.jsx`, `CardZoom`, `CardsView`, `ImportCsvDialog`…) **n'est pas concerné** et garde ses écrans.
+
+**Cartes « Atelier »** — `src/desktop/pages/CardsPage.jsx`
+- Panneau de filtres toujours visible, 262 px : `src/components/cards/AtelierFilters.jsx` (recherche, possession, boosters, runes, ronds d'énergie, hexagones de **puissance**, gemmes, types avec nombres). Chaque bouton écrit dans la ligne de recherche (`src/lib/cardQuery.js` : `toggleOption`, `setSelection`) : syntaxe et filtres restent une seule chose.
+- Barre de résultats : nombre, filtres actifs (`ActiveChips`), tri, curseur de taille (`view.tile`, 120–240 px, dans `DEFAULT_VIEW` de `useCardsBrowser.js`), menu ⋯ (manquantes → souhaits, regrouper les impressions). Plus d'export CSV, plus de sélection multiple, plus de « griser les manquantes ».
+- Tuile `src/components/cards/CardTile.jsx` : toujours en couleur, quantité (hexagone), ＋ (ouvre la fiche avec le panneau d'ajout) et ♥ au survol, nom complet (`displayName` de `cardLocale.js` : « Jinx, Demolitionist »). Rendu progressif (120 tuiles par pas, `IntersectionObserver`) + `content-visibility: auto`.
+- Clic = fiche « Reliquaire » avec la liste des résultats (±30 cartes autour de la carte cliquée).
+
+**Fiche « Reliquaire »** — `src/components/collection/CardReliquary.jsx` (+ `reliquaryFx.js`, `AddCopiesPanel.jsx`, `useReliquary.jsx`)
+- Mêmes props que `CardZoom` + `list` (ids), `forge`, `onAddCopies`, `org`. Les pages l'utilisent via le hook `useReliquary` : `open(id, { list, forge })` + `element`. ⚠️ `byCard={wishlist.byCard}` est passé par le hook (piège du cœur des souhaits).
+- Autel (carte 330 px, tilt/holo, 4 hexagones hors de la carte), carrousel des voisines, effet **Portail** (`portalOut` / `portalIn`, hexagones en demi-tour, dossier qui glisse), vol FLIP depuis la tuile (`[data-cardid]`), dossier à 5 onglets (Infos, Ma collection, Prix, Impressions, Rulings).
+- « ＋ Ma collection » : `AddCopiesPanel` → `handleAddCopies({ cardId, quantity, language, foil, condition, boxId, deckId, source })` (`useAppController.js`) : N exemplaires, une notification, **Annuler** (`UndoBar`, z-90 au-dessus de la fiche).
+- Toutes les animations passent par `src/lib/motion.js` (`motionOk()` : coupées si `rf-calm` ou `prefers-reduced-motion`) ; classes CSS dans `src/index.css` (section « Refonte PC »).
+- Briques : `EnergyBadge` (rond blanc), `useTilt`, `HexPortal` (or liquide), classe `.hexagon` existante.
+
+**Collection « Salle du trésor »** — `src/desktop/pages/CollectionPage.jsx` (aiguillage `{ kind: 'treasure' | 'set' | 'journal' }`)
+- `CollectionTreasure.jsx` (pièce maîtresse, médaillons, 6 portails, courbe 30 j, étagères), `CollectionSetPage.jsx` (page d'extension : booster, palier, barres, ruban, alvéoles vides), `CollectionJournal.jsx` (Chronique). Pièces communes : `CollectionParts.jsx`. Plus d'onglets « Mes cartes » / « Progression » / « Souhaits ». Le Trésor reste monté derrière les autres vues (le défilement est conservé).
+- `requestOpen({ kind: 'set', code })` (`navRequest.js`) ouvre directement une page d'extension.
+- Logique pure et testée : `src/lib/collectionStats.js` (`setProgress`, `nextMilestone`, `masterpiece`, `collectionSummary`, `recentAdds`, `activity`, `setArt`) → `tests/collectionStats.test.mjs`.
+- Boosters : `public/sets/<code>.webp` (sonde au démarrage, `src/lib/setImages.js`) ; sans fichier (OGS, promos, version publique) : emblème hexagonal avec le code. `public/sets/` et `maquettes/` sont exclus des versions publiques (`scripts/lib/content.mjs`).
+- Champ `source` (`scan` | `manual` | `trade` | `import`) dans `makeCopy` (`collectionDB.js`) : renseigné par le scanner, l'ajout manuel et les échanges ; affiché dans la Chronique seulement s'il existe.
+
+**Souhaits** : entrée de la barre latérale (♥ + badge) sous Collection, page `src/desktop/pages/WishlistPage.jsx` (enveloppe `WishlistPanel`).
+
+**Retiré côté PC** : vue « Mes cartes » (`CollectionCards.jsx` supprimé), import / export CSV, actions groupées, « Noms en français » dans les pages PC. Les briques partagées (`ImportCsvDialog`, `EXPORT_FORMATS`, `useDisplayFrench`, `ProgressView`, `CardsView`) restent car **Android les utilise encore**.
+
+**Aide** (`src/lib/help.js`) : nouvelles ancres `collection.hero/portals/shelves`, `set.*`, `journal.timeline`, `card.forge/nav`, `cards.facets/size` ; les anciennes ancres restent (Android).
 
 ---
 

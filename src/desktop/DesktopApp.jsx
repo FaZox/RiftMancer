@@ -19,6 +19,7 @@ import { keyToAction, isTyping } from '../lib/shortcuts.js';
 import { onRequest } from '../lib/navRequest.js';
 import { tx } from '../lib/i18n.js';
 // The other pages are loaded when first opened (smaller startup code).
+const WishlistPage = lazy(() => import('./pages/WishlistPage.jsx'));
 const ScanPage = lazy(() => import('./pages/ScanPage.jsx'));
 const DecksPage = lazy(() => import('./pages/DecksPage.jsx'));
 const CardsPage = lazy(() => import('./pages/CardsPage.jsx'));
@@ -78,7 +79,7 @@ export default function DesktopApp() {
         navigate={(p, opts = {}) => { if (p === 'settings') setSettingsSection({ section: opts.setting, n: Date.now() }); setPage(p); }} />
       {shortcutsOpen && <ShortcutsDialog onClose={() => setShortcutsOpen(false)} />}
       <Sidebar page={page} onChange={setPage} onSearch={() => setSearchMode('search')} onSettings={(section) => { setSettingsSection({ section, n: Date.now() }); setPage('settings'); }}
-        counts={{ collection: c.collection.totalCopies, scan: c.pendingCards.length }} />
+        counts={{ collection: c.collection.totalCopies, scan: c.pendingCards.length, wishlist: c.wishlist.items.length }} />
 
       <main className="flex-1 min-w-0 flex flex-col relative">
         <NoCards />
@@ -87,26 +88,27 @@ export default function DesktopApp() {
         {page === 'collection' && (
           <CollectionPage
             scannedCards={c.scannedCards}
+            copies={c.collection.copies}
             wishlist={c.wishlist}
             org={c.org}
-            onMoveStack={c.collection.moveStack}
             onAddCopy={c.handleAddCopy}
+            onAddCopies={c.handleAddCopies}
             onUpdateCard={c.handleUpdateCard}
-            onRemoveCard={c.handleRemoveCard}
             onRemoveCopy={c.handleRemoveCopy}
-            onDeleteStacks={c.handleDeleteStacks}
-            onExport={c.handleExport}
             defaultLanguage={c.batchDefaults.language}
-            onImportEntries={(entries) => {
-              c.collection.addEntries(entries);
-              c.showNotification(tx('{reduce} exemplaire(s) importé(s)', { reduce: entries.reduce((n, e) => n + e.quantity, 0) }), 'success');
-            }}
+            onSearch={() => setSearchMode('search')}
           />
         )}
 
+        {page === 'wishlist' && (
+          <WishlistPage scannedCards={c.scannedCards} wishlist={c.wishlist} org={c.org} onAddCopy={c.handleAddCopy} onAddCopies={c.handleAddCopies}
+            onRemoveCopy={c.handleRemoveCopy} onUpdateCard={c.handleUpdateCard} defaultLanguage={c.batchDefaults.language} />
+        )}
+
         {page === 'cards' && (
-          <CardsPage scannedCards={c.scannedCards} wishlist={c.wishlist} org={c.org} onAddCopy={c.handleAddCopy}
-            onRemoveCopy={c.handleRemoveCopy} onUpdateCard={c.handleUpdateCard} onQuickAdd={c.handleQuickAdd} notify={c.showNotification} />
+          <CardsPage scannedCards={c.scannedCards} wishlist={c.wishlist} org={c.org} onAddCopy={c.handleAddCopy} onAddCopies={c.handleAddCopies}
+            onRemoveCopy={c.handleRemoveCopy} onUpdateCard={c.handleUpdateCard} onQuickAdd={c.handleQuickAdd} notify={c.showNotification}
+            defaultLanguage={c.batchDefaults.language} />
         )}
 
         {page === 'scan' && (

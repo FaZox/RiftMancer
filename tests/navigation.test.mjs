@@ -1,4 +1,4 @@
-// Lot 6 c and B.3: navigation — Decks | Matchs with the counter in one gesture, PC groups and status zone.
+﻿// Lot 6 c and B.3: navigation — Decks | Matchs with the counter in one gesture, PC groups and status zone.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -35,7 +35,7 @@ test('PC: « Explorer » (Cartes) first, then the groups of B.3, status zone at 
   const titles = [...s.matchAll(/title: '([^']+)'/g)].map(m => m[1]);
   assert.deepEqual(titles, ['Explorer', 'Ma collection', 'Jouer', 'Ajouter', 'Organiser']);
   const ids = [...s.matchAll(/\{ id: '(\w+)'/g)].map(m => m[1]);
-  assert.deepEqual(ids, ['cards', 'collection', 'value', 'decks', 'matches', 'scan', 'boxes', 'loans', 'trades']);
+  assert.deepEqual(ids, ['cards', 'collection', 'wishlist', 'value', 'decks', 'matches', 'scan', 'boxes', 'loans', 'trades']);
   assert.match(s, /<StatusZone onSettings=\{onSettings\} \/>/);
   assert.match(s, /onSettings\('content'\)/);
 });

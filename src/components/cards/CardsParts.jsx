@@ -1,16 +1,15 @@
-// « Cartes » tab (ONGLET-CARTES, design A « Bibliothèque »): the parts shared by the PC page and the phone tab.
+﻿// « Cartes » tab (ONGLET-CARTES, design A « Bibliothèque »): the parts shared by the PC page and the phone tab.
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Plus, Heart, X, Layers, Swords, ChevronDown, Check } from 'lucide-react';
+import { Plus, Heart, X, Layers, Swords } from 'lucide-react';
 import CardTile from '../collection/CardTile.jsx';
 import Sheet from '../common/Sheet.jsx';
 import { useDialog } from '../common/Dialog.jsx';
 import { DOMAIN_COLORS } from '../../data/sampleCards.js';
 
-import { domainIcon, rarityIcon, typeIcon } from '../../lib/symbols.js';
+import { domainIcon } from '../../lib/symbols.js';
 
-import { useBackHandler } from '../../lib/backButton.js';
-import { OPTIONS, VALUE_LABEL, selectionFor, setSelection, toggleOption, toggleFlag, flagOn, removeToken, tokenLabel, numTerm, setNumQuery, SYNTAX_HELP } from '../../lib/cardQuery.js';
+import { OPTIONS, VALUE_LABEL, selectionFor, toggleOption, toggleFlag, flagOn, removeToken, tokenLabel, SYNTAX_HELP } from '../../lib/cardQuery.js';
 import { gridRows, deckWithCards } from '../../lib/cardsBrowser.js';
 import { rememberScroll } from '../../hooks/useCardsBrowser.js';
 import { euro } from '../../lib/prices.js';
@@ -137,145 +136,7 @@ export function CardsFilters({ b, withDomains = true }) {
   );
 }
 
-// ─── PC filter column ──────────────────────────────────────────────────────
-
-/**
- * Multi-select drop-down of a filter (`t` type, `r` rarity, `is` other): each
- * option keeps its icon when the app has it — a coloured picture (`icon`) or a
- * white glyph tinted by the text colour (`mask`). Writes the same search line as
- * the chips (t:unité,champion / is:promo).
- */
-
-function FilterDropdown({ b, k, label, options }) {
-
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-  useBackHandler(open, () => setOpen(false));
-  useEffect(() => {
-    if (!open) return undefined;
-    const close = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
-    document.addEventListener('pointerdown', close);
-    return () => document.removeEventListener('pointerdown', close);
-  }, [open]);
-
-  const sel = selectionFor(b.parsed, k);
-  const toggle = (v) => b.setQuery(q => (k === 'is' ? toggleFlag(q, v) : toggleOption(q, k, v)));
-  const clear = () => b.setQuery(q => (k === 'is' ? [...sel].reduce((s, v) => toggleFlag(s, v), q) : setSelection(q, k, [])));
-
-  return (
-    <div>
-      <Fh>{label}</Fh>
-      <div ref={ref} className="relative">
-        <button type="button" aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen(o => !o)}
-          className={`w-full h-10 px-3 flex items-center gap-2 bg-rift-800 border text-[14px] font-semibold transition-colors ${open || sel.size ? 'border-gold-400 text-gold-400' : 'border-rift-600 text-rift-200 hover:border-gold-500/50'}`}>
-          <span className="flex-1 min-w-0 truncate text-left">{label}</span>
-          {sel.size > 0 && <span className="min-w-[18px] h-4 px-1 bg-gold-500 text-rift-900 text-[11px] font-bold flex items-center justify-center">{sel.size}</span>}
-          <ChevronDown className={`w-4 h-4 flex-shrink-0 text-gold-400 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
-        </button>
-        {open && (
-          <div role="listbox" aria-label={label} aria-multiselectable="true"
-            className="scan-pop absolute left-0 right-0 top-full mt-1 z-50 max-h-72 overflow-y-auto bg-rift-800 border border-gold-500/50 shadow-2xl">
-            {sel.size > 0 && (
-              <button type="button" onClick={clear}
-                className="w-full min-h-[36px] px-3 flex items-center gap-2 text-left text-[13px] font-semibold text-rift-400 hover:text-rift-100 border-b border-rift-700">
-                <X className="w-3.5 h-3.5" aria-hidden="true" /> {tx('Tout effacer')}
-              </button>
-            )}
-            {options.map(o => {
-              const on = sel.has(o.value);
-              return (
-                <button key={o.value} type="button" role="option" aria-selected={on} onClick={() => toggle(o.value)}
-                  className={`w-full min-h-[40px] px-3 flex items-center gap-2.5 text-left text-sm border-l-2 ${on ? 'bg-gold-500/15 text-gold-400 border-gold-400' : 'text-rift-100 border-transparent hover:bg-rift-700'}`}>
-                  {o.mask
-                    ? <span aria-hidden="true" className="w-5 h-5 flex-shrink-0 bg-current"
-                        style={{ WebkitMask: `url(${o.mask}) center / contain no-repeat`, mask: `url(${o.mask}) center / contain no-repeat` }} />
-                    : o.icon
-                      ? <img src={o.icon} alt="" className="w-5 h-5 object-contain flex-shrink-0" />
-                      : <span className="w-5 flex-shrink-0" aria-hidden="true" />}
-                  <span className="flex-1 truncate">{o.label}</span>
-                  {on && <Check className="w-4 h-4 flex-shrink-0" aria-hidden="true" />}
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/**
- * Slider of a numeric filter (energy `e`, might `p`): a cursor 0…7 (« 7+ » at
- * the end) with the mode « = » exact, « ≥ » at least, « ≤ » at most — it writes
- * e:3, e>=3, e<=3 in the search line.
- */
-
-function NumSlider({ b, k, label }) {
-
-  const term = numTerm(b.parsed, k);
-  const [mode, setMode] = useState('eq'); // mode chosen while no filter is set yet
-  const active = !!term;
-  const cur = !term ? 'eq'
-    : (term.op === '>=' || term.op === '>') ? 'min'
-    : (term.op === '<=' || term.op === '<') ? 'max' : 'eq';
-  const nums = term ? term.values.map(v => parseInt(v, 10)).filter(Number.isFinite) : [];
-  const value = nums.length ? Math.min(7, Math.max(...nums)) : 0;
-
-  const apply = (m, v) => {
-    if ((m === 'min' && v <= 0) || (m === 'max' && v >= 7)) { b.setQuery(q => setNumQuery(q, k, ':', [])); return; } // everything: no filter
-    const op = m === 'min' ? '>=' : m === 'max' ? '<=' : ':';
-    const word = m === 'eq' && v >= 7 ? '7+' : String(v);
-    b.setQuery(q => setNumQuery(q, k, op, [word]));
-  };
-  const shown = active ? (value >= 7 ? '7+' : String(value)) : tx('Toutes');
-  const MODES = [['eq', '=', tx('Égal à')], ['min', '≥', tx('Au moins')], ['max', '≤', tx('Au plus')]];
-
-  return (
-    <div>
-      <Fh>{label}</Fh>
-      <div className="flex items-center gap-2">
-        <div className="seg !h-9" role="group" aria-label={label}>
-          {MODES.map(([m, g, t]) => (
-            <button key={m} type="button" aria-pressed={active ? cur === m : mode === m} title={t} aria-label={t}
-              onClick={() => { if (active) apply(m, value); else setMode(m); }}
-              className="!h-9 !px-2 !text-[13px]">{g}</button>
-          ))}
-        </div>
-        <input type="range" min="0" max="7" step="1" value={value} aria-label={label}
-          onChange={(e) => apply(active ? cur : mode, Math.min(7, parseInt(e.target.value, 10) || 0))}
-          className="rm-range flex-1 min-w-0" />
-        <span className={`w-10 text-center text-[13px] font-bold tabular-nums ${active ? 'text-gold-400' : 'text-rift-500'}`}>{shown}</span>
-        {active && (
-          <button type="button" onClick={() => b.setQuery(q => setNumQuery(q, k, ':', []))} aria-label={tx('Tout effacer')} title={tx('Tout effacer')}
-            className="w-7 h-7 flex-shrink-0 flex items-center justify-center text-rift-400 hover:text-rift-100">
-            <X className="w-4 h-4" aria-hidden="true" />
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/** Every filter of the PC column: domains with their runes, drop-downs, sliders. */
-
-export function CardsFiltersDesktop({ b }) {
-
-  return (
-    <div className="flex flex-col gap-5">
-
-      <div><Fh>{tx('Domaines')}</Fh><DomainHexes b={b} /></div>
-      <SetsFilter b={b} />
-      <FilterDropdown b={b} k="t" label={tx('Type')}
-        options={OPTIONS.t.map(v => ({ value: v, label: VALUE_LABEL.t[v], mask: typeIcon(v) }))} />
-      <NumSlider b={b} k="e" label={tx('Énergie')} />
-      <NumSlider b={b} k="p" label={tx('Puissance')} />
-      <FilterDropdown b={b} k="r" label={tx('Rareté')}
-        options={OPTIONS.r.map(v => ({ value: v, label: VALUE_LABEL.r[v], icon: rarityIcon(v) }))} />
-      <FilterDropdown b={b} k="is" label={tx('Autres')}
-        options={OPTIONS.is.map(v => ({ value: v, label: VALUE_LABEL.is[v] }))} />
-    </div>
-  );
-}
+// (The PC filter column is now src/components/cards/AtelierFilters.jsx.)
 
 /** Ownership: Toutes · Possédées · Manquantes, with their counts. */
 export function OwnershipSeg({ b, className = '' }) {

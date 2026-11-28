@@ -290,3 +290,72 @@
   border: 1px solid #ffa94d;
   pointer-events: none;
 }
+
+/* ───────────── Refonte PC : Cartes / Collection / Zoom « Reliquaire » ───────────── */
+@property --dc { syntax: '<color>'; inherits: true; initial-value: #c8aa6e; }
+
+/* Relief 3D + reflet holo (src/components/common/useTilt.js) */
+[data-tilt] { transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .18s ease-out; transform-style: preserve-3d; position: relative; }
+[data-tilt].anim { transform: none; transition: none; }
+.rf-holo::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .25s; mix-blend-mode: color-dodge;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.55), transparent 45%),
+    linear-gradient(115deg, rgba(255,0,128,.35), rgba(255,200,0,.3), rgba(0,255,200,.3), rgba(80,120,255,.35));
+}
+.rf-holo.rf-holo-on::after, .rf-holo:hover::after { opacity: .55; }
+.rf-calm .rf-holo::after, .rf-calm [data-tilt] { transform: none !important; }
+
+/* Or liquide des portails */
+@keyframes rfWave { to { background-position: 44px 0; } }
+@keyframes rfGlow { 0%, 100% { filter: drop-shadow(0 0 4px rgba(240,200,80,.5)); } 50% { filter: drop-shadow(0 0 12px rgba(240,200,80,.95)); } }
+.rf-glow { animation: rfGlow 2.4s ease-in-out infinite; }
+@keyframes rfBoosterFloat { 0%, 100% { transform: rotate(-7deg) translateY(0); } 50% { transform: rotate(-7deg) translateY(-6px); } }
+.rf-booster { animation: rfBoosterFloat 4s ease-in-out infinite; transition: scale .25s; }
+.rf-booster:hover { animation-play-state: paused; transform: rotate(0deg); scale: 1.06; }
+@keyframes rfShine { 0%, 70% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+.rf-shine { animation: rfShine 4.5s ease-in-out infinite; }
+@keyframes rfDust { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: .9; } 100% { transform: translateY(-260px); opacity: 0; } }
+.rf-dust { animation: rfDust 5s linear infinite; box-shadow: 0 0 6px #e8c973; }
+@keyframes rfRays { to { transform: rotate(360deg); } }
+.rf-rays { animation: rfRays 60s linear infinite; }
+@keyframes rfBreathe { 0%, 100% { opacity: .65; transform: scaleX(1); } 50% { opacity: 1; transform: scaleX(1.06); } }
+.rf-breathe { animation: rfBreathe 3.6s ease-in-out infinite; }
+@keyframes rfHexPop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.rf-hexpop { animation: rfHexPop .45s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes rfDossier { from { transform: translateX(60px); opacity: 0; } to { transform: none; opacity: 1; } }
+.rf-dossier { animation: rfDossier .4s ease-out both; }
+@keyframes rfBump { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.35); } }
+.rf-bump { animation: rfBump .5s ease-out; }
+@keyframes rfFlash2 { 0%, 100% { box-shadow: 0 0 0 0 rgba(240,200,80,0); } 30% { box-shadow: 0 0 0 4px rgba(240,200,80,.9), 0 0 24px rgba(240,200,80,.8); } }
+.rf-flashcard { animation: rfFlash2 1.4s ease-out; }
+.rf-calm .rf-wave, .rf-calm .rf-glow, .rf-calm .rf-booster, .rf-calm .rf-shine, .rf-calm .rf-dust, .rf-calm .rf-rays, .rf-calm .rf-breathe,
+.rf-calm .rf-hexpop, .rf-calm .rf-dossier, .rf-calm .rf-bump { animation: none !important; }
+.rf-calm .rf-dust { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .rf-wave, .rf-glow, .rf-booster, .rf-shine, .rf-dust, .rf-rays, .rf-breathe, .rf-hexpop, .rf-dossier, .rf-bump, .rf-flashcard { animation: none !important; }
+  .rf-dust { display: none; }
+  [data-tilt] { transform: none !important; }
+}
+
+/* Étiquette de mot-clé (texte de règles du Reliquaire) */
+.rf-kw { display: inline-block; padding: 0 .45em; margin: 0 .1em; border: 1px solid rgba(200,170,110,.33); background: rgba(200,170,110,.15); color: #e8c973; font-weight: 700; font-size: .85em; line-height: 1.5; text-transform: uppercase; letter-spacing: .02em; }
+
+/* Boutons « Voir tout » / retour de la salle du trésor */
+.rf-bigbtn { display: inline-flex; align-items: center; gap: .5rem; height: 40px; padding: 0 18px; border: 1px solid rgba(200,170,110,.7); background: rgba(200,170,110,.1); color: #e8c973; font-weight: 700; font-size: 15px;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); transition: background .15s, color .15s; }
+.rf-bigbtn:hover, .rf-bigbtn:focus-visible { background: #c8aa6e; color: #0a1220; }
+
+/* Portail hexagonal à or liquide (fidèle à la maquette : .mp / .bigportal) */
+.hp { position: relative; flex-shrink: 0; transition: transform .18s; }
+.hp:hover { transform: translateY(-3px) scale(1.06); }
+.hp-shell { position: absolute; inset: 0; clip-path: polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); background: linear-gradient(160deg, #e8c973, #a8893a 55%, #5a4520); }
+.hp-inner { position: absolute; inset: 2px; clip-path: polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); background: #0b1322; overflow: hidden; }
+.hp-big .hp-inner { inset: 3px; }
+.hp-fill { position: absolute; left: -30%; right: -30%; bottom: 0; background: linear-gradient(180deg, #e8c973d9, #a8893aa6); transition: height .7s; }
+.hp-fill::before { content: ""; position: absolute; left: 0; right: 0; top: -7px; height: 14px; background: radial-gradient(ellipse 14px 7px at 14px 7px, #e8c973d9 98%, transparent) repeat-x; background-size: 28px 14px; animation: rfWave 2.4s linear infinite; }
+.hp-big .hp-fill::before { top: -9px; height: 18px; background: radial-gradient(ellipse 20px 9px at 20px 9px, #e8c973d9 98%, transparent) repeat-x; background-size: 40px 18px; animation-duration: 2.6s; }
+.hp-art { position: absolute; inset: 2px; clip-path: polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); background-size: cover; background-position: center 28%; opacity: .28; mix-blend-mode: luminosity; }
+.hp-pct { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-shadow: 0 1px 4px #000, 0 0 8px #000; }
+.hp-done .hp-shell { animation: rfGlow 2s ease-in-out infinite; }
+.rf-calm .hp-fill::before, .rf-calm .hp-done .hp-shell { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .hp-fill::before, .hp-done .hp-shell { animation: none !important; } .hp:hover { transform: none; } }
