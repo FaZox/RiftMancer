@@ -1,181 +1,88 @@
-﻿// « Cartes » tab (ONGLET-CARTES, design A « Bibliothèque »): the parts shared by the PC page and the phone tab.
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+// Parts of the « Cartes » tab, shared by the PC « Atelier » page and the phone tab:
+// ActiveChips (active filters with their icon), SyntaxHelp, MobileFilters (the phone's
+// bottom sheet: possession, boosters, domains, energy discs, might hexagons, rarity gems,
+// types, sort), CardsGrid (virtual grid, optional custom tile) and useCardsActions.
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Plus, Heart, X, Layers, Swords } from 'lucide-react';
-import CardTile from '../collection/CardTile.jsx';
+
 import Sheet from '../common/Sheet.jsx';
+
+import CardTileLegacy from '../collection/CardTile.jsx';
+
 import { useDialog } from '../common/Dialog.jsx';
+
 import { DOMAIN_COLORS } from '../../data/sampleCards.js';
 
-import { domainIcon } from '../../lib/symbols.js';
+import { domainIcon, rarityIcon, typeIcon, MASK_ICON } from '../../lib/symbols.js';
 
-import { OPTIONS, VALUE_LABEL, selectionFor, toggleOption, toggleFlag, flagOn, removeToken, tokenLabel, SYNTAX_HELP } from '../../lib/cardQuery.js';
-import { gridRows, deckWithCards } from '../../lib/cardsBrowser.js';
+import { OPTIONS, VALUE_LABEL, selectionFor, toggleOption, removeToken, tokenLabel, canonValue, SYNTAX_HELP } from '../../lib/cardQuery.js';
+
+import { gridRows, CARD_SORTS } from '../../lib/cardsBrowser.js';
+
 import { rememberScroll } from '../../hooks/useCardsBrowser.js';
+
+import { setImage } from '../../lib/setImages.js';
+
 import { euro } from '../../lib/prices.js';
+
 import { locale, tx, tp } from '../../lib/i18n.js';
 
 const n = (v) => v.toLocaleString(locale());
 
-/** Section title of the filters (11 px capitals). */
-const Fh = ({ children }) => <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.15em] text-rift-500">{children}</p>;
+const OP_SHORT = { ':': '', '!=': '≠', '<': '<', '<=': '≤', '>': '>', '>=': '≥' };
 
-/** Square buttons 0…6, 7+ (energy, might). */
-function Squares({ b, k, label }) {
-  const sel = selectionFor(b.parsed, k);
-  return (
-    <div>
-      <Fh>{label}</Fh>
-      <div className="flex flex-wrap gap-1" role="group" aria-label={label}>
-        {OPTIONS[k].map(v => (
-          <button key={v} type="button" aria-pressed={sel.has(v)} onClick={() => b.setQuery(q => toggleOption(q, k, v))}
-            className={`min-w-[44px] h-11 lg:min-w-[30px] lg:h-[30px] flex items-center justify-center border text-[13px] font-bold ${sel.has(v) ? 'bg-gold-500/20 border-gold-400 text-gold-400' : 'bg-rift-800 border-rift-600 text-rift-300 hover:border-gold-500/50'}`}>
-            {v}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
+const maskUrl = (src) => ({ '--mmi': `url(${src})` });
+
+/** Icon of a filter token for its chip (domain rune, energy disc, might, gem, type, set). */
+function tokenIcon(t) {
+  if (t.type !== 'term' || !t.values.length) return null;
+  const v0 = t.values[0];
+  switch (t.key) {
+    case 'd': {
+      if (t.values.length !== 1) return null;
+      const d = canonValue('d', v0);
+      const ic = d && domainIcon(d);
+      return ic ? <img src={ic} alt="" aria-hidden="true" /> : null;
+    }
+    case 'e': return <span className="men" aria-hidden="true">{(OP_SHORT[t.op] || '') + v0}</span>;
+    case 'p': return <span className="mmask" style={maskUrl(MASK_ICON.might)} aria-hidden="true" />;
+    case 'r': {
+      if (t.values.length !== 1) return null;
+      const r = canonValue('r', v0);
+      const ic = r && rarityIcon(r);
+      return ic ? <img src={ic} alt="" aria-hidden="true" /> : null;
+    }
+    case 't': {
+      if (t.values.length !== 1) return null;
+      const ic = typeIcon(v0);
+      return ic ? <span className="mmask" style={maskUrl(ic)} aria-hidden="true" /> : null;
+    }
+    case 's': {
+      const img = setImage(v0);
+      return img ? <img src={img} alt="" aria-hidden="true" style={{ height: 12, width: 'auto' }} /> : null;
+    }
+    default: return null;
+  }
 }
 
-/** Chips of a key (type, rarity). */
-function Chips({ b, k, label }) {
-  const sel = selectionFor(b.parsed, k);
-  return (
-    <div>
-      <Fh>{label}</Fh>
-      <div className="flex flex-wrap gap-1.5" role="group" aria-label={label}>
-        {OPTIONS[k].map(v => (
-          <button key={v} type="button" className="chip max-lg:h-11 max-lg:px-3 max-lg:text-[13px]" aria-pressed={sel.has(v)}
-            onClick={() => b.setQuery(q => toggleOption(q, k, v))}>{VALUE_LABEL[k][v]}</button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/** Six domains: full hexagon when chosen, outline of its colour otherwise; the name under it. */
-export function DomainHexes({ b, row = false }) {
-  const sel = selectionFor(b.parsed, 'd');
-  return (
-    <div className={row ? 'flex gap-1.5 overflow-x-auto -mr-4 pr-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden' : 'grid grid-cols-3 gap-1.5'} role="group" aria-label={tx('Domaines')}>
-      {OPTIONS.d.map(d => {
-        const on = sel.has(d);
-        const hex = DOMAIN_COLORS[d].hex;
-        const icon = domainIcon(d);
-        const click = () => b.setQuery(q => toggleOption(q, 'd', d));
-        return row ? (
-          <button key={d} type="button" aria-pressed={on} onClick={click}
-            className={`flex-shrink-0 h-11 pl-2 pr-3 inline-flex items-center gap-2 border text-[13px] font-semibold ${on ? 'bg-gold-500/20 border-gold-400 text-gold-400 shadow-[inset_0_-2px_0_theme(colors.gold.400)]' : 'bg-rift-800 border-rift-600 text-rift-300'}`}>
-            {icon
-              ? <img src={icon} alt="" className={`w-4 h-4 object-contain ${on ? '' : 'opacity-60'}`} />
-              : <span className="hexagon w-3.5 h-4" style={{ background: hex }} aria-hidden="true" />}
-            {VALUE_LABEL.d[d]}
-          </button>
-        ) : (
-          <button key={d} type="button" aria-pressed={on} onClick={click}
-            className={`flex flex-col items-center gap-1 py-1 text-[11px] font-semibold ${on ? 'text-rift-100' : 'text-rift-300 hover:text-rift-100'}`}>
-            {icon
-              ? <img src={icon} alt="" className={`w-[34px] h-[38px] object-contain ${on ? '' : 'opacity-40'}`} />
-              : <span className="hexagon w-[34px] h-[38px]" style={on ? { background: hex } : { background: '#18263c', boxShadow: `inset 0 0 0 2px ${hex}` }} aria-hidden="true" />}
-            {VALUE_LABEL.d[d]}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-/** Sets with their owned / total progress bar (PC column and phone sheet). */
-export function SetsFilter({ b }) {
-  const setOptions = useMemo(() => [...b.sets.keys()].map(s => s.toLowerCase()), [b.sets]);
-  const selSets = selectionFor(b.parsed, 's', setOptions);
-  return (
-    <div>
-      <Fh>{tx('Sets')}</Fh>
-      <div className="flex flex-col gap-2.5" role="group" aria-label={tx('Sets')}>
-          {[...b.sets.values()].map(s => {
-            const on = selSets.has(s.set.toLowerCase());
-            return (
-              <button key={s.set} type="button" aria-pressed={on} onClick={() => b.setQuery(q => toggleOption(q, 's', s.set.toLowerCase(), setOptions))}
-                className={`text-left min-h-[44px] lg:min-h-0 px-1.5 -mx-1.5 py-1 border-l-2 ${on ? 'border-gold-400 bg-gold-500/10' : 'border-transparent hover:bg-rift-800/60'}`}>
-                <span className="flex justify-between gap-2 text-[14px] font-semibold text-rift-100">
-                  <span className="truncate">{s.setName}</span>
-                  <span className="font-mono text-[11px] text-rift-400 self-center">{n(s.own)}/{n(s.total)}</span>
-                </span>
-                <span className="block mt-1.5 h-1 bg-[#18263c]"><span className="block h-1 bg-gold-500" style={{ width: `${s.total ? Math.round((100 * s.own) / s.total) : 0}%` }} /></span>
-              </button>
-            );
-          })}
-      </div>
-    </div>
-  );
-}
-
-/** Every filter of the phone sheet. */
-export function CardsFilters({ b, withDomains = true }) {
-  return (
-    <div className="flex flex-col gap-5">
-
-      {withDomains && <div><Fh>{tx('Domaines')}</Fh><DomainHexes b={b} /></div>}
-      <SetsFilter b={b} />
-      <Chips b={b} k="t" label={tx('Type')} />
-      <Squares b={b} k="e" label={tx('Énergie')} />
-      <Squares b={b} k="p" label={tx('Puissance')} />
-      <Chips b={b} k="r" label={tx('Rareté')} />
-      <div>
-        <Fh>{tx('Autres')}</Fh>
-        <div className="flex flex-wrap gap-1.5" role="group" aria-label={tx('Autres')}>
-          {OPTIONS.is.map(f => (
-            <button key={f} type="button" className="chip max-lg:h-11 max-lg:px-3 max-lg:text-[13px]" aria-pressed={flagOn(b.parsed, f)}
-              onClick={() => b.setQuery(q => toggleFlag(q, f))}>{VALUE_LABEL.is[f]}</button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// (The PC filter column is now src/components/cards/AtelierFilters.jsx.)
-
-/** Ownership: Toutes · Possédées · Manquantes, with their counts. */
-export function OwnershipSeg({ b, className = '' }) {
-  const items = [['all', tx('Toutes'), b.counts.all], ['owned', tx('Possédées'), b.counts.owned], ['missing', tx('Manquantes'), b.counts.missing]];
-  return (
-    <div className={`seg ${className}`} role="tablist" aria-label={tx('Possession')}>
-      {items.map(([v, l, c]) => (
-        <button key={v} type="button" role="tab" aria-selected={b.view.ownership === v} onClick={() => b.setView({ ownership: v, scroll: 0 })} className="whitespace-nowrap lg:px-4">
-          {l} <span className="font-mono text-[11px] font-normal text-rift-500">{n(c)}</span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-/** Chips of the active filters (each with ✕) and « Tout effacer ». */
-/** Rune icon of a domain chip (hexagon of its colour when the symbols are missing). */
-function domainChipIcon(t) {
-  if (t.type !== 'term' || t.key !== 'd' || t.values.length !== 1) return null;
-  const d = selectionFor({ tokens: [t] }, 'd').values().next().value;
-  const ic = domainIcon(d);
-  if (ic) return <img src={ic} alt="" className="w-3 h-3 object-contain" aria-hidden="true" />;
-  return DOMAIN_COLORS[d] ? <span className="hexagon w-2.5 h-[11px]" style={{ background: DOMAIN_COLORS[d].hex }} aria-hidden="true" /> : null;
-}
-
-export function ActiveChips({ b, className = '' }) {
+/** Chips of the active filters (each with its icon and ✕). */
+export function ActiveChips({ b, className = '', withClear = true }) {
   const tokens = b.parsed.tokens;
-  if (!tokens.length) return null;
+  if (!tokens.length && !withClear) return null;
   return (
     <div className={`flex flex-wrap items-center gap-1.5 ${className}`}>
       {tokens.map((t, i) => (
-        <button key={`${i}-${t.raw}`} type="button" className="chip max-lg:h-9" aria-pressed="true"
+        <button key={`${i}-${t.raw}`} type="button" className="tk" aria-pressed="true"
           aria-label={tx('Retirer le filtre {label}', { label: tokenLabel(t) })}
           onClick={() => b.setQuery(q => removeToken(q, i))}>
-          {domainChipIcon(t)}
-          {tokenLabel(t)} <X className="w-3 h-3" aria-hidden="true" />
+          {tokenIcon(t)}
+          {tokenLabel(t)} <b aria-hidden="true">×</b>
         </button>
       ))}
-      <button type="button" onClick={() => b.setQuery('')} className="h-8 px-2 text-xs font-semibold text-rift-400 hover:text-rift-100">{tx('Tout effacer')}</button>
+      {withClear && tokens.length > 0 && (
+        <button type="button" onClick={() => b.setQuery('')} className="h-8 px-2 text-xs font-semibold text-rift-400 hover:text-rift-100">{tx('Tout effacer')}</button>
+      )}
     </div>
   );
 }
@@ -201,14 +108,114 @@ export function SyntaxHelp({ onClose }) {
   );
 }
 
+/**
+ * The phone's filter sheet (maquette écran 5), top to bottom: possession, extensions
+ * (boosters scrolling), domains (6 named runes), energy (8 discs 0 → 7+), might
+ * (8 hexagons), rarity (5 gems), type (2 columns with counts), sort. Every filter
+ * writes into the search line, so the grid behind updates live.
+ */
+export function MobileFilters({ b }) {
+  const setOptions = useMemo(() => [...b.sets.keys()].map(s => s.toLowerCase()), [b.sets]);
+  const sel = (key, options) => selectionFor(b.parsed, key, options);
+  const selSets = sel('s', setOptions); const selD = sel('d'); const selE = sel('e'); const selP = sel('p'); const selR = sel('r'); const selT = sel('t');
+  const tog = (key, v, options) => () => b.setQuery(q => toggleOption(q, key, v, options));
+  const typeCounts = useMemo(() => {
+    const m = {};
+    for (const c of b.cards) { m[c.type] = (m[c.type] || 0) + 1; if ((c.superTypes || []).includes('champion')) m.champion = (m.champion || 0) + 1; }
+    return m;
+  }, [b.cards]);
+  return (
+    <div>
+      <h6>{tx('Possession')}</h6>
+      <div className="segm" style={{ height: 36 }} role="group" aria-label={tx('Possession')}>
+        {[['all', tx('Toutes')], ['owned', tx('Possédées')], ['missing', tx('Manquantes')]].map(([v, l]) => (
+          <button key={v} type="button" className={b.view.ownership === v ? 'on' : ''} aria-pressed={b.view.ownership === v}
+            onClick={() => b.setView({ ownership: v, scroll: 0 })}>{l}</button>
+        ))}
+      </div>
+
+      <h6>{tx('Extensions')}</h6>
+      <div className="setsm" role="group" aria-label={tx('Extensions')}>
+        {[...b.sets.values()].map(s => {
+          const on = selSets.has(s.set.toLowerCase());
+          const img = setImage(s.set);
+          return (
+            <button key={s.set} type="button" className={on ? 'on' : ''} aria-pressed={on} aria-label={s.setName} title={`${s.setName} ${s.own}/${s.total}`}
+              onClick={tog('s', s.set.toLowerCase(), setOptions)}>
+              {img ? <img src={img} alt="" /> : <span className="emb">{s.set}</span>}
+              {s.set}
+            </button>
+          );
+        })}
+      </div>
+
+      <h6>{tx('Domaines')}</h6>
+      <div className="domm" role="group" aria-label={tx('Domaines')}>
+        {OPTIONS.d.map(d => {
+          const on = selD.has(d); const ic = domainIcon(d);
+          return (
+            <button key={d} type="button" className={on ? 'on' : ''} aria-pressed={on} aria-label={VALUE_LABEL.d[d]} onClick={tog('d', d)}>
+              {ic ? <img src={ic} alt="" /> : <span className="hexagon w-[26px] h-[30px]" style={{ background: DOMAIN_COLORS[d].hex }} aria-hidden="true" />}
+              {VALUE_LABEL.d[d]}
+            </button>
+          );
+        })}
+      </div>
+
+      <h6><span className="men" aria-hidden="true">⚡</span>{tx('Énergie')}</h6>
+      <div className="nums" role="group" aria-label={tx('Énergie')}>
+        {OPTIONS.e.map(v => (
+          <button key={v} type="button" className={`ec ${selE.has(v) ? 'on' : ''}`} aria-pressed={selE.has(v)} aria-label={`${tx('Énergie')} ${v}`} onClick={tog('e', v)}>{v}</button>
+        ))}
+      </div>
+
+      <h6><span className="mmask" style={maskUrl(MASK_ICON.might)} aria-hidden="true" />{tx('Puissance')}</h6>
+      <div className="nums" role="group" aria-label={tx('Puissance')}>
+        {OPTIONS.p.map(v => (
+          <button key={v} type="button" className={`mh2 ${selP.has(v) ? 'on' : ''}`} aria-pressed={selP.has(v)} aria-label={`${tx('Puissance')} ${v}`} onClick={tog('p', v)}>{v}</button>
+        ))}
+      </div>
+
+      <h6>{tx('Rareté')}</h6>
+      <div className="gemm" role="group" aria-label={tx('Rareté')}>
+        {OPTIONS.r.map(v => (
+          <button key={v} type="button" className={selR.has(v) ? 'on' : ''} aria-pressed={selR.has(v)} aria-label={VALUE_LABEL.r[v]} title={VALUE_LABEL.r[v]} onClick={tog('r', v)}>
+            {rarityIcon(v) ? <img src={rarityIcon(v)} alt="" /> : VALUE_LABEL.r[v]}
+          </button>
+        ))}
+      </div>
+
+      <h6>{tx('Type')}</h6>
+      <div className="typm" role="group" aria-label={tx('Type')}>
+        {OPTIONS.t.map(v => {
+          const ic = typeIcon(v);
+          return (
+            <button key={v} type="button" className={selT.has(v) ? 'on' : ''} aria-pressed={selT.has(v)} onClick={tog('t', v)}>
+              {ic && <span className="mmask" style={maskUrl(ic)} aria-hidden="true" />}
+              {VALUE_LABEL.t[v]}
+              <small>{n(typeCounts[v] || 0)}</small>
+            </button>
+          );
+        })}
+      </div>
+
+      <h6>{tx('Tri')}</h6>
+      <select className="placem" style={{ appearance: 'none' }} value={b.view.sort} onChange={(e) => b.setView({ sort: e.target.value })} aria-label={tx('Trier')}>
+        {CARD_SORTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+      </select>
+    </div>
+  );
+}
+
 // ─── Grid ──────────────────────────────────────────────────────────────────
 /**
- * Virtual grid by rows (set titles when sorted by set and number). `cols`
- * from the width: (width + gap) / (min + gap). Restores the scroll position.
+ * Virtual grid by rows. `cols` from `fixedCols` or the width. `renderTile(g)`:
+ * custom tile (phone: CardTileMobile); otherwise the default Tile below.
  */
-export function CardsGrid({ b, scrollRef, minWidth, fixedCols, fewer = 0, gap, hd, selection, onTilePress, onTileZoom, onQuickAdd, showPrice }) {
+export function CardsGrid({ b, scrollRef, minWidth, fixedCols, fewer = 0, gap, hd, selection, onTilePress, onTileZoom, onQuickAdd, showPrice, renderTile = null, withSets = undefined }) {
   const boxRef = useRef(null);
   const [width, setWidth] = useState(0);
+
   useLayoutEffect(() => {
     const el = boxRef.current;
     if (!el) return undefined;
@@ -219,18 +226,17 @@ export function CardsGrid({ b, scrollRef, minWidth, fixedCols, fewer = 0, gap, h
   }, []);
   const cols = fixedCols || Math.max(2, Math.floor((width + gap) / (minWidth + gap)) - fewer);
   const tileW = width ? (width - gap * (cols - 1)) / cols : minWidth;
-  const withSets = b.view.sort === 'collector';
-  const rows = useMemo(() => gridRows(b.items, cols, withSets), [b.items, cols, withSets]);
+  const sets = withSets ?? (b.view.sort === 'collector');
+  const rows = useMemo(() => gridRows(b.items, cols, sets), [b.items, cols, sets]);
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: (i) => (rows[i]?.type === 'set' ? 48 : Math.round(tileW * 1.4) + (showPrice ? 76 : 58) + gap),
+    estimateSize: (i) => (rows[i]?.type === 'set' ? 48 : Math.round(tileW * 1.4) + (showPrice ? 76 : 30) + gap),
     overscan: 4,
     getItemKey: (i) => (rows[i]?.type === 'set' ? `set-${rows[i].set}` : `row-${i}`),
   });
   useEffect(() => { virtualizer.measure(); }, [tileW, virtualizer]);
 
-  // Back to the place you left (tab change, restart), once the rows are there
   const restored = useRef(false);
   useEffect(() => {
     if (restored.current || !rows.length || !scrollRef.current) return;
@@ -244,7 +250,6 @@ export function CardsGrid({ b, scrollRef, minWidth, fixedCols, fewer = 0, gap, h
     el.addEventListener('scroll', on, { passive: true });
     return () => el.removeEventListener('scroll', on);
   }, [scrollRef]);
-  // New results: back to the top
   const first = useRef(true);
   useEffect(() => {
     if (first.current) { first.current = false; return; }
@@ -266,10 +271,10 @@ export function CardsGrid({ b, scrollRef, minWidth, fixedCols, fewer = 0, gap, h
               </div>
             ) : (
               <div className="grid" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap, paddingBottom: gap }}>
-                {row.items.map(g => (
+                {row.items.map(g => (renderTile ? renderTile(g) : (
                   <Tile key={g.card.id} g={g} b={b} dim={dim} hd={hd} showPrice={showPrice} selected={selection?.has(g.card.id)}
                     onPress={onTilePress} onZoom={onTileZoom} onQuickAdd={onQuickAdd} />
-                ))}
+                )))}
               </div>
             )}
           </div>
@@ -279,67 +284,39 @@ export function CardsGrid({ b, scrollRef, minWidth, fixedCols, fewer = 0, gap, h
   );
 }
 
+// Default tile (kept for callers without renderTile).
 const Tile = React.memo(function Tile({ g, b, dim, hd, showPrice, selected, onPress, onZoom, onQuickAdd }) {
   const c = g.card;
   const missing = g.owned === 0;
   const price = showPrice ? b.priceOf(c) : null;
   const extra = g.prints.length - 1;
   const name = b.nameOf(c);
-  // Check if this card is in the wishlist (using c.id which is the specific card/printing id)
   const wishlistBadge = b.wishlist?.byCard?.has(c.id) ? '♥' : undefined;
   const ownedBadge = g.owned > 0 ? `×${g.owned}` : undefined;
-  
   return (
     <div className="relative group">
-      <CardTile cardData={c} name={name} hd={hd} dim={dim && missing} tag={dim && missing ? tx('Manquante') : null}
-        badge={ownedBadge || wishlistBadge} 
+      <CardTileLegacy cardData={c} name={name} hd={hd} dim={dim && missing} tag={dim && missing ? tx('Manquante') : null}
+        badge={ownedBadge || wishlistBadge}
         badgeClass={ownedBadge ? undefined : wishlistBadge ? 'bg-pink-500/80 text-white' : undefined}
         selected={selected}
         onPress={onPress} onZoom={onZoom}
         meta={(
           <p className="mt-0.5 flex justify-between gap-1 text-[11px] text-rift-500">
-            <span className="font-mono truncate">#{c.collectorNumber}{extra > 0 && <span className="ml-1 font-sans text-rift-400">{tp(extra, '+{n} impression', '+{n} impressions', { n: extra })}</span>}</span>
+            <span className="font-mono truncate">#{c.collectorNumber}{extra > 0 && <span className="ml-1 font-sans text-rift-400">+{extra}</span>}</span>
             {showPrice && <span className="text-rift-300">{price != null ? euro(price) : ''}</span>}
           </p>
         )} />
-      {onQuickAdd && (
-        <button type="button" onClick={() => onQuickAdd(c)} aria-label={tx('Ajouter un exemplaire de {name}', { name })} title={tx('Ajouter un exemplaire')}
-          className="absolute right-1 top-7 w-8 h-8 flex items-center justify-center bg-gold-500 text-rift-900 shadow-lg opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity">
-          <Plus className="w-4 h-4" strokeWidth={2.6} />
-        </button>
-      )}
     </div>
   );
 });
 
 // ─── Actions ───────────────────────────────────────────────────────────────
 /**
- * Selection and actions of the tab: quick add with « Annuler », wish list,
- * add to a deck, « Manquantes → souhaits », CSV of the view.
+ * « Manquantes → souhaits » of the tab (menu ⋯ phone, menu ⋯ PC): every missing
+ * card of the current view is added to the wish list (with a confirmation).
  */
-export function useCardsActions({ b, wishlist, decks, onQuickAdd, notify }) {
+export function useCardsActions({ b, wishlist, notify }) {
   const { ask } = useDialog();
-  const [selected, setSelected] = useState(() => new Set());
-  const [selecting, setSelecting] = useState(false);
-  const [deckFor, setDeckFor] = useState(null); // cards waiting for a deck
-  const last = useRef(null);
-  const ids = useMemo(() => b.items.map(g => g.card.id), [b.items]);
-
-  const clear = useCallback(() => { setSelected(new Set()); setSelecting(false); last.current = null; }, []);
-  const toggle = useCallback((id, range = false) => setSelected(prev => {
-    const next = new Set(prev);
-    if (range && last.current) {
-      const a = ids.indexOf(last.current); const z = ids.indexOf(id);
-      if (a >= 0 && z >= 0) { for (let i = Math.min(a, z); i <= Math.max(a, z); i++) next.add(ids[i]); return next; }
-    }
-    if (next.has(id)) next.delete(id); else next.add(id);
-    last.current = id;
-    return next;
-  }), [ids]);
-  useEffect(() => { if (selecting && selected.size === 0) setSelecting(false); }, [selecting, selected.size]);
-
-  const cardsOf = (set) => b.items.filter(g => set.has(g.card.id)).map(g => g.card);
-
   const wishCards = async (cards, confirm) => {
     const toAdd = cards.filter(c => !wishlist.byCard.has(c.id));
     if (!toAdd.length) { notify?.(tx('Ces cartes sont déjà dans vos souhaits'), 'info'); return; }
@@ -347,53 +324,5 @@ export function useCardsActions({ b, wishlist, decks, onQuickAdd, notify }) {
     toAdd.forEach(c => wishlist.setWanted(c.id, 1));
     notify?.(tp(toAdd.length, '{n} carte ajoutée aux souhaits', '{n} cartes ajoutées aux souhaits', { n: toAdd.length }), 'success');
   };
-
-  return {
-    selected, selecting, setSelecting, toggle, clear, deckFor, setDeckFor,
-    missingToWish: () => wishCards(b.items.filter(g => g.owned === 0).map(g => g.card), true),
-    wishSelected: () => { wishCards(cardsOf(selected), false); clear(); },
-    addSelected: () => { cardsOf(selected).forEach(c => onQuickAdd(c, { quiet: true })); notify?.(tp(selected.size, '{n} exemplaire ajouté à la collection', '{n} exemplaires ajoutés à la collection', { n: selected.size }), 'success'); clear(); },
-    deckSelected: () => setDeckFor(cardsOf(selected)),
-    addToDeck: (deck) => {
-      decks.save(deckWithCards(deck, deckFor));
-      notify?.(tp(deckFor.length, '{n} carte ajoutée au deck {deck}', '{n} cartes ajoutées au deck {deck}', { n: deckFor.length, deck: deck.name }), 'success');
-      setDeckFor(null); clear();
-    },
-  };
-}
-
-/** Bar of the selection: what to do with the chosen cards. */
-export function SelectionBar({ a, className = '' }) {
-  return (
-    <div className={`flex flex-wrap items-center gap-2 ${className}`} role="toolbar" aria-label={tx('Sélection')}>
-      <button type="button" onClick={a.clear} className="btn-ghost min-h-[40px] text-sm"><X className="w-4 h-4" /> {tx('Annuler')}</button>
-      <span className="text-sm font-semibold text-rift-100">{tp(a.selected.size, '{n} sélectionnée', '{n} sélectionnées', { n: a.selected.size })}</span>
-      <span className="flex-1" />
-      <button type="button" onClick={a.wishSelected} className="chip h-10 max-lg:h-11"><Heart className="w-4 h-4" /> {tx('Ajouter aux souhaits')}</button>
-      <button type="button" onClick={a.deckSelected} className="chip h-10 max-lg:h-11"><Swords className="w-4 h-4" /> {tx('Ajouter à un deck…')}</button>
-      <button type="button" onClick={a.addSelected} className="chip h-10 max-lg:h-11"><Layers className="w-4 h-4" /> {tx('Ajouter un exemplaire')}</button>
-    </div>
-  );
-}
-
-/** Choice of the deck (« Ajouter à un deck… »). */
-export function DeckChooser({ a, decks }) {
-  if (!a.deckFor) return null;
-  return (
-    <Sheet open title={tx('Ajouter à un deck')} onClose={() => a.setDeckFor(null)}>
-      {decks.items.length === 0 ? (
-        <p className="text-sm text-rift-400 py-4">{tx('Aucun deck pour l’instant : créez-en un dans l’onglet Decks.')}</p>
-      ) : (
-        <div className="flex flex-col">
-          {decks.items.map(d => (
-            <button key={d.id} type="button" onClick={() => a.addToDeck(d)}
-              className="min-h-[52px] px-2 flex items-center gap-3 border-b border-rift-700 text-left hover:bg-rift-700/60">
-              <Swords className="w-4 h-4 text-gold-400" aria-hidden="true" />
-              <span className="flex-1 text-[15px] text-rift-100">{d.name}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </Sheet>
-  );
+  return { missingToWish: () => wishCards(b.items.filter(g => g.owned === 0).map(g => g.card), true) };
 }
