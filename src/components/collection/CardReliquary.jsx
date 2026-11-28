@@ -267,6 +267,11 @@ export default function CardReliquary({
     else if (dy > 40) setDosFull(false);
   };
   const onGrabClick = () => { if (Date.now() - grabMoved.current > 250) setDosFull(v => !v); };
+  // Tap anywhere in the dossier sheet (except its buttons/links) toggles expanded <-> base.
+  const onDosClick = (e) => {
+    if (e.target.closest('button, a, summary, select, input, textarea')) return;
+    onGrabClick();
+  };
 
   const rarityLbl = rarityLabel(cardData.rarity);
   const ztab = (t) => (
@@ -503,9 +508,9 @@ export default function CardReliquary({
           )}
         </div>
 
-        <div ref={dossierRef} className={`dos ${dosFull ? 'full' : ''}`}>
+        <div ref={dossierRef} className={`dos ${dosFull ? 'full' : ''}`} onClick={onDosClick}>
           <div className="grab" data-help="card.sheet" title={tx('Tirer pour agrandir')}
-            onPointerDown={onGrabDown} onPointerMove={onGrabMove} onPointerUp={onGrabUp} onClick={onGrabClick} />
+            onPointerDown={onGrabDown} onPointerMove={onGrabMove} onPointerUp={onGrabUp} />
           <h3 className="truncate px-[18px]">{name}</h3>
           <div className="idl">
             <span>{typeIcon(cardData.type) && <span className="mmask" style={maskStyle(typeIcon(cardData.type))} aria-hidden="true" />}{typeLabel(cardData.type)}{(cardData.superTypes || []).includes('champion') ? ` · ${tx('Champion')}` : ''}</span>
