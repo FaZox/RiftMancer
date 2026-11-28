@@ -32,6 +32,9 @@ import { tx, locale, tp } from '../../lib/i18n.js';
 
 const nf = (n) => Math.round(n).toLocaleString(locale());
 
+// Poussière dorée du héros (10 particules sur téléphone, 26 sur PC)
+const DUST = Array.from({ length: 10 }, (_, i) => ({ left: 4 + ((i * 53) % 22), top: 55 + ((i * 37) % 45), dur: 4 + ((i * 29) % 50) / 10, delay: -((i * 31) % 80) / 10 }));
+
 /**
  * « Salle du trésor » téléphone (maquette mobile-reference.html écran 1) : en-tête
  * Collection + ♥ souhaits + recherche, héros (pièce maîtresse 128 px + total),
@@ -84,6 +87,9 @@ export default function TreasureMobile({ scannedCards, ownedByCard, copies, wish
 
       {/* Héros : pièce maîtresse + total */}
       <div className="mhero" data-help="collection.hero">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+          {DUST.map((d, i) => <i key={i} className="rf-dust absolute rounded-full bg-gold-400" style={{ left: `${d.left}%`, top: `${d.top}%`, width: 3, height: 3, animationDuration: `${d.dur}s`, animationDelay: `${d.delay}s` }} />)}
+        </div>
         <div className="spot" data-cardid={master?.id}>
           {master && (
             <>

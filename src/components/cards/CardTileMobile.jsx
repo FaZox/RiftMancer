@@ -19,8 +19,10 @@ const num = (c) => String(c.collectorNumber || c.code || '').replace(/\/.*/, '')
 export default function CardTileMobile({ card, name, owned = 0, wished = false, missing = false, width, label = true, onOpen, onAdd, flash = false, className = '', style }) {
   const holo = SPECIAL.has(card.rarity);
   const landscape = card.type === 'battlefield';
+  const w = width || 96;
   return (
-    <div data-cardid={card.id} className={`ctm sockm ${missing ? 'miss' : ''} ${className}`} style={{ width, ...style }}>
+    <div data-cardid={card.id} className={`ctm sockm ${missing ? 'miss' : ''} [content-visibility:auto] ${className}`}
+      style={{ width, containIntrinsicSize: `${w}px ${Math.round(w * 1.55)}px`, ...style }}>
       <div className={`${holo && !missing ? 'rf-holo rf-holo-on' : ''} relative ${flash ? 'rf-flashcard' : ''}`}>
         <button type="button" onClick={() => onOpen?.(card.id)} aria-label={name} title={name} className="block w-full text-left">
           <span className="mcard block w-full" style={landscape ? { aspectRatio: '7 / 5' } : undefined}>
