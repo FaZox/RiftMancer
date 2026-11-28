@@ -20,6 +20,25 @@ import {
 import { conditionShort } from '../../lib/conditions.js';
 import { tx, locale } from '../../lib/i18n.js';
 
+import { usePcInterface } from '../../lib/pcInterface.js';
+
+import CardReliquary from './CardReliquary.jsx';
+
+import { PurchaseEditor } from './PurchaseEditor.jsx';
+
+export { PurchaseEditor } from './PurchaseEditor.jsx';
+
+/**
+ * Card sheet. On the phone it IS the « Reliquaire » mobile (full screen, 4 hexagons at
+ * the edge of the card, swipe = Portail, dossier as a bottom sheet, « ＋ Ma collection »):
+ * same props as below + list / forge / onAddCopies / org / defaultLanguage.
+ * On a PC window it keeps the classic zoom (used by the deck / value / organize pages).
+ */
+export default function CardZoom(props) {
+  if (!usePcInterface) return <CardReliquary {...props} />;
+  return <CardZoomPc {...props} />;
+}
+
 const TABS = [
   { id: 'infos', label: tx('Infos') },
   { id: 'price', label: tx('Prix') },
@@ -31,7 +50,7 @@ const TABS = [
  * Infos / Prix / Ma collection, and « Ajouter » always at hand.
  */
 // onRemoveCopy (collection): one copy of a stack less; onUpdateCard: change a stack (promo)
-export default function CardZoom({ cardId: openedId, language: initialLanguage, stacks, wanted, byCard, onSetWanted, onAddCopy, onRemoveCopy = null, onUpdateCard = null, onClose, onPrev = null, onNext = null, position = null, deckControls = null }) {
+function CardZoomPc({ cardId: openedId, language: initialLanguage, stacks, wanted, byCard, onSetWanted, onAddCopy, onRemoveCopy = null, onUpdateCard = null, onClose, onPrev = null, onNext = null, position = null, deckControls = null }) {
   useBackHandler(true, onClose);
   useHelpPage('card'); // its tour the first time a card is opened
   const [prefs] = usePrefs();
@@ -409,40 +428,6 @@ export default function CardZoom({ cardId: openedId, language: initialLanguage, 
         </div>
       </div>
       </div>
-    </div>
-  );
-}
-
-/** « Mon achat » (Prix tab): the price paid for one copy and the purchase date, for every copy of the card. */
-export function PurchaseEditor({ owned, paid, paidAt, onSave }) {
-  const fmt = (v) => (v ? String(Math.round(v * 100) / 100).replace('.', ',') : '');
-  const [price, setPrice] = useState(fmt(paid));
-  const [date, setDate] = useState(paidAt || '');
-  const n = owned.reduce((k, s) => k + s.quantity, 0);
-  const save = () => {
-    const v = parseFloat(price.replace(',', '.'));
-    onSave(Number.isFinite(v) && v > 0 ? Math.round(v * 100) / 100 : null, /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : null);
-  };
-  return (
-    <div className="panel p-3 space-y-2">
-      <p className="text-sm font-semibold text-rift-100">{tx('Mon achat')}</p>
-      <div className="flex flex-wrap items-end gap-2">
-        <label className="flex flex-col gap-1 text-[12px] text-rift-400">
-          {tx('Prix payé (un exemplaire)')}
-          <span className="inline-flex items-center gap-1 h-11 px-2 bg-rift-900 border border-rift-600 focus-within:border-gold-500/60">
-            <input type="text" inputMode="decimal" value={price} onChange={e => setPrice(e.target.value)} placeholder="—"
-              className="w-20 bg-transparent text-right text-[15px] text-rift-100 focus:outline-none" />
-            <span className="text-rift-500">€</span>
-          </span>
-        </label>
-        <label className="flex flex-col gap-1 text-[12px] text-rift-400">
-          {tx('Date d’achat')}
-          <input type="date" value={date} onChange={e => setDate(e.target.value)}
-            className="h-11 px-2 bg-rift-900 border border-rift-600 text-[15px] text-rift-100 focus:outline-none focus:border-gold-500/60 [color-scheme:dark]" />
-        </label>
-        <button type="button" onClick={save} className="btn-primary min-h-[44px] text-sm">{tx('Enregistrer')}</button>
-      </div>
-      <p className="text-[12px] text-rift-500">{n > 1 ? tx('Pour vos {n} exemplaires de cette carte.', { n }) : tx('Pour votre exemplaire de cette carte.')}</p>
     </div>
   );
 }

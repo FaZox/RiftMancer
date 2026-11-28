@@ -1,5 +1,5 @@
 ﻿import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Heart, Plus, Minus, Trash2 } from 'lucide-react';
+import { Heart, Plus, Minus, Trash2, Swords } from 'lucide-react';
 import { getMatcher } from '../../lib/cardMatcher.js';
 import { usePrices, unitPrice, euro, priceRef } from '../../lib/prices.js';
 import EnergyBadge from '../common/EnergyBadge.jsx';
@@ -8,7 +8,10 @@ import ErrataNote from '../common/ErrataNote.jsx';
 import ReliquaryRulings from './ReliquaryRulings.jsx';
 import ReliquaryPrice from './ReliquaryPrice.jsx';
 import AddCopiesPanel from './AddCopiesPanel.jsx';
-import { PurchaseEditor } from './CardZoom.jsx';
+import { PurchaseEditor } from './PurchaseEditor.jsx';
+import Sheet from '../common/Sheet.jsx';
+import { usePcInterface } from '../../lib/pcInterface.js';
+import { deckWithCards } from '../../lib/cardsBrowser.js';
 import { fullImageSrc, downloadedImageSrc, thumbSrc, isNative, handleImageError } from '../../lib/nativeAssets.js';
 import { getLocalizedText, rulesTextHtml, displayLanguage, displayName } from '../../lib/cardLocale.js';
 import { MASK_ICON, rarityIcon, symbolsReady, domainIcon, typeIcon } from '../../lib/symbols.js';
@@ -47,7 +50,7 @@ export default function CardReliquary({
   onRemoveCopy = null, onUpdateCard = null, onClose, onPrev = null, onNext = null, position = null, deckControls = null,
   list = null, forge = false, org = null, defaultLanguage = 'English',
 }) {
-  useBackHandler(true, onClose);
+  const mobile = !usePcInterface;
   useHelpPage('card');
   const [cardId, setCardId] = useState(openedId);
   useEffect(() => { setCardId(openedId); }, [openedId]);
@@ -55,6 +58,18 @@ export default function CardReliquary({
   const [language, setLanguage] = useState(displayLanguage(initialLanguage) === 'English' ? 'English' : 'French');
   const [tab, setTab] = useState('infos');
   const [forgeOpen, setForgeOpen] = useState(!!forge && !!onAddCopies);
+  const [dosFull, setDosFull] = useState(false); // mobile: dossier sheet expanded
+  const [deckFor, setDeckFor] = useState(false); // mobile: « + Deck » sheet
+  useBackHandler(true, () => {
+    // Phone: back closes the add sheet first, then folds the dossier, then the zoom.
+    if (mobile) {
+      if (forgeOpen) { setForgeOpen(false); return true; }
+      if (deckFor) { setDeckFor(false); return true; }
+      if (dosFull) { setDosFull(false); return true; }
+    }
+    onClose();
+    return true;
+  });
   const [bump, setBump] = useState(false);
   const [showPaid, setShowPaid] = useState(false);
   const { prices } = usePrices();
@@ -73,6 +88,9 @@ export default function CardReliquary({
   const pendingEnter = useRef(null); // { dir } while the new card must spring out of the portal
   const tilt = useTilt(8);
   const drag = useRef(null);
+  const stageRef = useRef(null);
+  const grabRef = useRef(null);
+  const grabMoved = useRef(0);
 
   // ─── Neighbours (carousel) ─────────────────────────────────────────────────
   const idx = list ? list.indexOf(cardId) : -1;
@@ -236,8 +254,19 @@ export default function CardReliquary({
     const d = drag.current; drag.current = null;
     if (!d) return;
     const dx = e.clientX - d.x;
-    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(e.clientY - d.y) * 1.5) goRel(dx < 0 ? 1 : -1);
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(e.clientY - d.y) * 1.5) goRel(dx < 0 ? 1 : -1);
   };
+
+  const onGrabDown = (e) => { grabRef.current = { y: e.clientY, moved: false }; };
+  const onGrabMove = (e) => { const g = grabRef.current; if (g && Math.abs(e.clientY - g.y) > 10) { g.moved = true; grabMoved.current = Date.now(); } };
+  const onGrabUp = (e) => {
+    const g = grabRef.current; grabRef.current = null;
+    if (!g || !g.moved) return;
+    const dy = e.clientY - g.y;
+    if (dy < -40) setDosFull(true);
+    else if (dy > 40) setDosFull(false);
+  };
+  const onGrabClick = () => { if (Date.now() - grabMoved.current > 250) setDosFull(v => !v); };
 
   const rarityLbl = rarityLabel(cardData.rarity);
   const ztab = (t) => (
@@ -257,6 +286,261 @@ export default function CardReliquary({
     </div>
   );
   const idSpan = 'h-[30px] inline-flex items-center gap-[7px] px-[11px] border border-rift-600 bg-[#0a1220aa] text-[12.5px] font-semibold text-rift-300';
+
+  const tabPanels = (
+    <>
+{tab === 'infos' && (
+  <>
+    <div className="relative border border-gold-500/25 px-5 py-[18px] text-[15px] leading-[1.7] text-rift-100" style={{ background: 'linear-gradient(180deg,#111c2ef0,#0d1626f0)' }}>
+      <span className="absolute -left-px -top-px w-[18px] h-[18px] border-l-2 border-t-2 border-gold-400" aria-hidden="true" />
+      <span className="absolute -right-px -bottom-px w-[18px] h-[18px] border-r-2 border-b-2 border-gold-400" aria-hidden="true" />
+      {text ? (
+        <ErrataNote cardData={cardData} text={text} language={language}>
+          <div dangerouslySetInnerHTML={{ __html: rulesTextHtml(text, { gold: true }) }} />
+        </ErrataNote>
+      ) : <i className="text-rift-500">{tx('Cette carte n’a pas de texte de règles.')}</i>}
+    </div>
+    <div className="flex justify-between items-center mt-2 mb-[18px] text-[11.5px] text-rift-500">
+      <span>{!text ? '' : text.unofficial ? tx('Traduction française non officielle · terminologie officielle Riftbound') : !text.translated ? tx('Traduction indisponible — texte anglais') : language === 'French' ? tx('Texte officiel (français)') : tx('Texte officiel (anglais)')}</span>
+      <div className="flex border border-rift-600" role="group" aria-label={tx('Langue')} data-help="card.lang">
+        {['French', 'English'].map(l => (
+          <button key={l} type="button" onClick={() => setLanguage(l)} aria-pressed={language === l}
+            className={`px-2.5 py-[3px] text-[11.5px] font-bold ${language === l ? 'bg-gold-500/20 text-gold-400' : 'text-rift-400'}`}>{l === 'French' ? tx('FR') : tx('EN')}</button>
+        ))}
+      </div>
+    </div>
+    <div className="grid grid-cols-3 gap-2.5 mb-4">
+      <Fact k={tx('Type')}>{typeIcon(cardData.type) && <span className="block w-4 h-4" style={maskStyle(typeIcon(cardData.type))} aria-hidden="true" />}{typeLabel(cardData.type)}</Fact>
+      <Fact k={tx('Domaine')}>{domains.length ? domains.map(d => <span key={d} className="inline-flex items-center gap-1.5">{domainIcon(d) && <img src={domainIcon(d)} alt="" className="w-4 h-4" />}{domainLabel(d)}</span>) : '—'}</Fact>
+      <Fact k={tx('Rareté')}>{rarityIcon(cardData.rarity) && <img src={rarityIcon(cardData.rarity)} alt="" className="w-4 h-4 object-contain" />}{rarityLbl}</Fact>
+      <Fact k={tx('Extension')}>{cardData.setName}</Fact>
+      <Fact k={tx('Numéro')}>{cardData.code || cardData.collectorNumber}</Fact>
+      <Fact k={tx('Illustration')}><span className="text-[12.5px]">{cardData.illustrator || '—'}</span></Fact>
+    </div>
+    {cardData.power > 0 && (
+      <p className="flex items-center gap-2 text-[13px] text-rift-300 mb-3" title={tx('Coût de recyclage : {n} rune(s) {domain}', { n: cardData.power, domain: domainLabel(mainDomain) })}>
+        {tx('Coût de recyclage :')}
+        <span className="flex">{Array.from({ length: cardData.power }, (_, i) => (domainIcon(mainDomain) ? <img key={i} src={domainIcon(mainDomain)} alt="" className="w-6 h-6" /> : <span key={i} className="w-5 h-5 rounded-full" style={{ background: dc }} />))}</span>
+        {tx('{n} rune(s)', { n: cardData.power })}
+      </p>
+    )}
+    {cardData.tags?.length > 0 && (
+      <div className="flex gap-1.5 flex-wrap">{cardData.tags.map(t => <span key={t} className="text-[12px] border border-rift-600 px-[9px] py-0.5 text-rift-400">{t}</span>)}</div>
+    )}
+  </>
+)}
+
+{tab === 'mine' && (ownedTotal > 0 ? (
+  <>
+    <div className="flex items-center gap-4 mb-3.5">
+      <div className="hexagon w-[72px] h-[82px] grid place-items-center font-display text-[30px] font-bold text-rift-900" style={{ background: 'linear-gradient(160deg,#e8c973,#a8893a)' }}>{ownedTotal}</div>
+      <p className="text-[13px] text-rift-400"><b className="block text-[16px] text-rift-100">{tx('{n} exemplaire(s) dans ta collection', { n: ownedTotal })}</b>
+        {tx('{n} version(s)', { n: owned.length })}{ownedValue > 0 && <> · {tx('valeur ≈')} {euro(ownedValue)}</>}</p>
+    </div>
+    {owned.map(s => {
+      const lg = LANGUAGES.find(l => l.value === s.language);
+      const place = s.boxId ? tx('Boîte : {name}', { name: org?.boxes?.byId?.get(s.boxId)?.name || '…' }) : s.deckId ? tx('Deck : {name}', { name: org?.decks?.byId?.get(s.deckId)?.name || '…' }) : s.loanId ? tx('Prêtée') : tx('Sans emplacement');
+      return (
+        <div key={s.key} className="grid grid-cols-[auto_1fr_auto_auto] gap-3.5 items-center px-3 py-2.5 border border-rift-600 bg-[#0a1220aa] mb-1.5">
+          <div className="hexagon w-9 h-10 grid place-items-center font-bold text-[12px] text-rift-100 bg-rift-700" style={s.foil ? { background: 'linear-gradient(135deg,#ff5fa2,#ffd86b,#6bffb8,#6bc7ff,#b06bff)', color: '#0a1220' } : undefined}>{s.foil ? '★' : lg?.short || s.language}</div>
+          <div>
+            <b className="text-rift-100 text-[13.5px]">{lg?.label || s.language}{s.foil ? ' · Foil' : ''} · {conditionShort(s.condition)}{s.promo ? ` · ${tx('Promo')}` : ''}</b>
+            <small className="block text-rift-500 text-[12px]">📦 {place}</small>
+          </div>
+          <div className="text-rift-400 text-[12px] text-right">{s.paid > 0 ? `${tx('Payé')} ${euro(s.paid)}` : <span className="opacity-60">{tx('prix payé ?')}</span>}</div>
+          <div className="flex items-center gap-1">
+            {onRemoveCopy && <button type="button" onClick={() => onRemoveCopy(s)} aria-label={s.quantity === 1 ? tx('Supprimer cet exemplaire') : tx('Un exemplaire de moins')} className={`w-7 h-[30px] border border-rift-600 font-bold ${s.quantity === 1 ? 'text-state-bad' : 'text-gold-400'}`}>{s.quantity === 1 ? <Trash2 className="w-3.5 h-3.5 mx-auto" /> : '−'}</button>}
+            <span className="min-w-[26px] text-center font-bold text-gold-400">{s.quantity}</span>
+            {onRemoveCopy && <button type="button" onClick={() => (onAddCopies ? onAddCopies({ cardId, quantity: 1, language: s.language, foil: s.foil, condition: s.condition, boxId: s.boxId, deckId: s.deckId }) : onAddCopy(cardId, s.language || language))} aria-label={tx('Ajouter un exemplaire')} className="w-7 h-[30px] border border-rift-600 text-gold-400 font-bold">+</button>}
+          </div>
+        </div>
+      );
+    })}
+    <div className="flex gap-2 mt-3 flex-wrap">
+      <button type="button" className={zbtnP} onClick={() => (onAddCopies ? setForgeOpen(true) : onAddCopy(cardId, language))}>+ {tx('Ajouter un exemplaire')}</button>
+      {onUpdateCard && <button type="button" className={zbtn} onClick={() => { const s = owned[0]; onUpdateCard(s, { ...s, promo: !s.promo }); }}>{owned[0]?.promo ? tx('Ce ne sont pas des promos') : tx('Marquer comme promo')}</button>}
+      {onUpdateCard && <button type="button" className={zbtn} onClick={() => { setTab('price'); setShowPaid(true); }}>{tx('Modifier mon prix payé')}</button>}
+    </div>
+  </>
+) : (
+  <div className="text-rift-500 py-[30px] text-center">{tx('Tu n’as pas encore cette carte.')}
+    <div className="flex gap-2 mt-3 justify-center flex-wrap">
+      <button type="button" className={zbtnP} onClick={() => (onAddCopies ? setForgeOpen(true) : onAddCopy(cardId, language))}>+ {tx('Ajouter un exemplaire')}</button>
+      <button type="button" className={zbtn} onClick={() => onSetWanted(cardId, currentWanted > 0 ? currentWanted : 1)}>♥ {tx('Ajouter aux souhaits')}</button>
+    </div>
+  </div>
+))}
+
+{tab === 'price' && (
+  <>
+    {showPaid && owned.length > 0 && onUpdateCard && (
+      <div className="mb-4"><PurchaseEditor key={cardId} owned={owned} paid={paidAvg} paidAt={paidDate} onSave={(paid, paidAt) => { owned.forEach(s => onUpdateCard(s, { ...s, paid, paidAt })); setShowPaid(false); }} /></div>
+    )}
+    <ReliquaryPrice prices={prices} cardId={cardId} cardData={cardData} paidAvg={paidAvg} hasOwned={owned.length > 0 && !!onUpdateCard} onEditPaid={() => setShowPaid(s => !s)} />
+  </>
+)}
+
+{tab === 'prints' && (
+  <div className="grid gap-3.5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(118px, 1fr))' }} data-help="card.prints">
+    {(prints.length ? prints : [cardData]).map(p => {
+      const n = stacks.filter(s => s.cardData.id === p.id).reduce((a, s) => a + s.quantity, 0);
+      const cur = p.id === cardId;
+      return (
+        <button key={p.id} type="button" onClick={() => pickPrint(p.id)} aria-current={cur || undefined} className="text-center text-[11.5px] text-rift-400">
+          <span className={`block mb-1.5 rounded-md ${cur ? 'ring-2 ring-gold-400' : ''} ${p.rarity === 'showcase' || p.rarity === 'epic' ? 'rf-holo rf-holo-on relative' : ''}`}>
+            <img src={thumbSrc(p.id)} onError={e => handleImageError(e, p.id)} alt="" loading="lazy" className="w-full h-auto rounded-md" />
+          </span>
+          <b className="flex justify-center items-center gap-[5px] text-rift-100 text-[12px]">{rarityIcon(p.rarity) && <img src={rarityIcon(p.rarity)} alt="" className="w-3.5 h-3.5 object-contain" />}{p.setName || p.set}</b>
+          {String(p.code || '').split('/')[0]} · {n ? <span className="text-state-ok">{tx('possédée')}</span> : tx('manquante')}
+          {printKindLabel(p) && <span className="block text-rift-500">{printKindLabel(p)}</span>}
+        </button>
+      );
+    })}
+  </div>
+)}
+
+{tab === 'rulings' && <ReliquaryRulings cardData={cardData} />}
+    </>
+  );
+
+  // ── Phone: full-screen « Reliquaire » (mobile maquette, screen 6): top bar with
+  // ✕ / set · number / ♥, the card between its two neighbours, the 4 hexagons at the
+  // edge of the stage, « ＋ Ma collection » + « + Deck », and the file as a bottom sheet.
+  if (mobile) {
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+    const androidMajor = /Android (\d+)/.exec(ua)?.[1];
+    // Rays off on old Android (< 10) or small machines (<= 4 cores)
+    const lowEnd = isNative && ((androidMajor != null && Number(androidMajor) < 10) || ((navigator.hardwareConcurrency || 8) <= 4));
+    const raysOn = !lowEnd;
+    const ztabM = (t) => (
+      <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => setTab(t.id)} className={tab === t.id ? 'on' : ''}>
+        {t.label}
+        {t.n ? <i ref={t.id === 'mine' ? badgeRef : undefined} className={t.id === 'mine' && bump ? 'rf-bump' : ''}>{t.n}</i> : null}
+      </button>
+    );
+    return (
+      <div ref={rootRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={name}
+        className={`zm ${forgeOpen ? 'forge' : ''}`} style={{ '--dc': dc }}
+        onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+        {raysOn && <div className="rays" aria-hidden="true" />}
+        <div className="ztop">
+          <button type="button" className="x" onClick={onClose} aria-label={tx('Fermer')}>✕</button>
+          <div className="eb">
+            {rarityIcon(cardData.rarity) && <img src={rarityIcon(cardData.rarity)} alt="" />}
+            <span className="truncate">{cardData.setName} · {cardData.code?.split('/')[0] || cardData.collectorNumber}</span>
+          </div>
+          <button type="button" className={`hrt ${currentWanted > 0 ? 'on' : ''}`} onClick={() => onSetWanted(cardId, currentWanted > 0 ? 0 : 1)}
+            aria-pressed={currentWanted > 0} aria-label={currentWanted > 0 ? tx('Retirer des souhaits') : tx('Ajouter aux souhaits')} data-help="card.wish">♥</button>
+        </div>
+
+        <div ref={stageRef} className="stage" onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
+          {[-1, 1].map(off => {
+            const id = neighbour(off);
+            if (!id) return null;
+            return (
+              <button key={off} type="button" tabIndex={-1} className={`ghost ${off < 0 ? 'l' : 'r'}`} onClick={() => go(id, off)}
+                aria-label={off > 0 ? tx('Carte suivante') : tx('Carte précédente')}>
+                <img src={thumbSrc(id)} alt="" onError={(e) => handleImageError(e, id)} draggable={false} />
+              </button>
+            );
+          })}
+          <div ref={cardRef} {...tilt} className="card rf-holo rf-holo-on select-none">
+            {isLandscape ? (
+              <span className="mcard block w-full overflow-hidden" style={{ aspectRatio: '7 / 5' }} role="img" aria-label={name}>
+                <img src={imgSrc} alt="" draggable={false} onError={(e) => { if (imgSrc !== thumbSrc(cardId)) setImgSrc(thumbSrc(cardId)); else handleImageError(e, cardId); }}
+                  className="absolute top-1/2 left-1/2 max-w-none object-cover" style={{ width: '71.43%', height: '140%', transform: 'translate(-50%, -50%) rotate(90deg)' }} />
+              </span>
+            ) : (
+              <span className="mcard block w-full"><img src={imgSrc} alt={name} draggable={false}
+                onError={(e) => { if (imgSrc !== thumbSrc(cardId)) setImgSrc(thumbSrc(cardId)); else handleImageError(e, cardId); }}
+                className="block w-full h-auto" /></span>
+            )}
+          </div>
+          <Hex ref={setHex(0)} className="sat s1" style={{ width: 54, height: 62 }} label={tx('Énergie')} aria={cardData.energy != null ? tx('Énergie {n}', { n: cardData.energy }) : tx('Énergie : aucune')}>
+            {cardData.energy != null ? <span className="men">{cardData.energy}</span> : <span className="text-rift-500 text-lg">—</span>}
+          </Hex>
+          <Hex ref={setHex(1)} className="sat s2" style={{ width: 54, height: 62 }} label={tx('Puiss.')} aria={cardData.might != null ? tx('Puissance {n}', { n: cardData.might }) : tx('Puissance : aucune')}>
+            {cardData.might != null ? (
+              <b>{mightIcon ? <span className="mmask" style={maskStyle(MASK_ICON.might)} aria-hidden="true" /> : '⚔'} {cardData.might}</b>
+            ) : <span className="text-rift-500 text-lg">—</span>}
+          </Hex>
+          <Hex ref={setHex(2)} className="sat s3" style={{ width: 54, height: 62 }} label={rarityLbl} aria={`${tx('Rareté')} : ${rarityLbl}`}>
+            {rarityIcon(cardData.rarity) ? <img src={rarityIcon(cardData.rarity)} alt="" className="big" /> : <span className="text-gold-400 text-lg">◆</span>}
+          </Hex>
+          <Hex ref={setHex(3)} className="sat s4" style={{ width: 54, height: 62 }} label={domainLabel(domains[0] || 'colorless')} aria={`${tx('Domaine')} : ${domains.map(domainLabel).join(', ') || '—'}`}>
+            {domains.length && domainIcon(domains[0]) ? <img src={domainIcon(domains[0])} alt="" className="big" /> : <span className="text-rift-500 text-lg">—</span>}
+          </Hex>
+        </div>
+
+        {((hasList && list.length > 1) || (!hasList && position)) && (
+          <div className="pager">
+            <button type="button" onClick={() => goRel(-1)} disabled={hasList ? idx <= 0 : !onPrev} aria-label={tx('Carte précédente')}>‹</button>
+            <span className="tabular-nums">{hasList ? <><b>{idx + 1}</b> / {list.length}</> : position}</span>
+            <button type="button" onClick={() => goRel(1)} disabled={hasList ? idx >= list.length - 1 : !onNext} aria-label={tx('Carte suivante')}>›</button>
+            <span className="sw" data-help="card.swipe">{tx('← balaie →')}</span>
+          </div>
+        )}
+
+        <div className="ctas">
+          {deckControls ? (
+            <div className="add !flex !items-center !justify-start gap-3 !bg-rift-800 !text-rift-100 border border-gold-500/50" style={{ clipPath: 'none', borderRadius: 2 }}>
+              <span className="text-[13px] text-rift-300">{deckControls.label || tx('Dans le deck')}</span>
+              <button type="button" onClick={deckControls.onMinus} disabled={!deckControls.count} aria-label={tx('Un exemplaire de moins dans le deck')} className="w-9 h-9 border border-rift-600 flex items-center justify-center disabled:opacity-30">{deckControls.count === 1 ? <Trash2 className="w-4 h-4 text-state-bad" /> : <Minus className="w-4 h-4" />}</button>
+              <b className="font-display text-xl text-gold-400 min-w-6 text-center">{deckControls.count}</b>
+              <button type="button" onClick={deckControls.onPlus} aria-label={tx('Un exemplaire de plus dans le deck')} className="w-9 h-9 bg-gold-500 text-rift-900 flex items-center justify-center"><Plus className="w-4 h-4" /></button>
+            </div>
+          ) : (
+            <>
+              <button type="button" className="add" data-help="card.forge" onClick={() => (onAddCopies ? setForgeOpen(true) : onAddCopy(cardId, language))}>
+                ＋ {onAddCopies ? tx('Ma collection') : tx('Ajouter un exemplaire')}
+              </button>
+              {org?.decks && (
+                <button type="button" className="dk" onClick={() => setDeckFor(true)}>+ {tx('Deck')}</button>
+              )}
+            </>
+          )}
+        </div>
+
+        <div ref={dossierRef} className={`dos ${dosFull ? 'full' : ''}`}>
+          <div className="grab" data-help="card.sheet" title={tx('Tirer pour agrandir')}
+            onPointerDown={onGrabDown} onPointerMove={onGrabMove} onPointerUp={onGrabUp} onClick={onGrabClick} />
+          <h3 className="truncate px-[18px]">{name}</h3>
+          <div className="idl">
+            <span>{typeIcon(cardData.type) && <span className="mmask" style={maskStyle(typeIcon(cardData.type))} aria-hidden="true" />}{typeLabel(cardData.type)}{(cardData.superTypes || []).includes('champion') ? ` · ${tx('Champion')}` : ''}</span>
+            <span>{domains.map(d => domainIcon(d) && <img key={d} src={domainIcon(d)} alt="" />)}{domains.map(domainLabel).join(' / ') || '—'}</span>
+            {cardData.energy != null && <span><span className="men">{cardData.energy}</span> {tx('Énergie')}</span>}
+            {cardData.might != null && <span>{mightIcon ? <span className="mmask" style={maskStyle(MASK_ICON.might)} aria-hidden="true" /> : '⚔'} {cardData.might} {tx('Puissance')}</span>}
+          </div>
+          <div className="tabsm" role="tablist" aria-label={tx('Sections')} data-help="card.tabs">{TABS.map(ztabM)}</div>
+          <div className="db" role="tabpanel">{tabPanels}</div>
+        </div>
+
+        {forgeOpen && onAddCopies && (
+          <Sheet open title={`＋ ${tx('Ajouter à ma collection')}`} onClose={() => setForgeOpen(false)}>
+            <AddCopiesPanel key={cardId} cardData={cardData} defaultLanguage={initialLanguage || defaultLanguage} org={org} onAdd={submitForge} onCancel={() => setForgeOpen(false)} />
+          </Sheet>
+        )}
+        {deckFor && org?.decks && (
+          <Sheet open title={tx('Ajouter à un deck')} onClose={() => setDeckFor(false)}>
+            {org.decks.items.length === 0 ? (
+              <p className="text-sm text-rift-400 py-4">{tx('Aucun deck pour l’instant : créez-en un dans l’onglet Decks.')}</p>
+            ) : (
+              <div className="flex flex-col">
+                {org.decks.items.map(d => (
+                  <button key={d.id} type="button" onClick={() => { org.decks.save(deckWithCards(d, [cardData])); setDeckFor(false); }}
+                    className="min-h-[52px] px-2 flex items-center gap-3 border-b border-rift-700 text-left hover:bg-rift-700/60">
+                    <Swords className="w-4 h-4 text-gold-400" aria-hidden="true" />
+                    <span className="flex-1 text-[15px] text-rift-100">{d.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </Sheet>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div ref={rootRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={name}
       className="fixed inset-0 z-[70] text-rift-100 outline-none overflow-hidden"
@@ -369,117 +653,7 @@ export default function CardReliquary({
               <>
                 <div className="flex gap-1 border-b border-rift-600 mb-4" role="tablist" aria-label={tx('Sections')} data-help="card.tabs">{TABS.map(ztab)}</div>
                 <section className="flex-1 min-h-0 overflow-auto pr-2.5 [scrollbar-width:thin]" role="tabpanel">
-                  {tab === 'infos' && (
-                    <>
-                      <div className="relative border border-gold-500/25 px-5 py-[18px] text-[15px] leading-[1.7] text-rift-100" style={{ background: 'linear-gradient(180deg,#111c2ef0,#0d1626f0)' }}>
-                        <span className="absolute -left-px -top-px w-[18px] h-[18px] border-l-2 border-t-2 border-gold-400" aria-hidden="true" />
-                        <span className="absolute -right-px -bottom-px w-[18px] h-[18px] border-r-2 border-b-2 border-gold-400" aria-hidden="true" />
-                        {text ? (
-                          <ErrataNote cardData={cardData} text={text} language={language}>
-                            <div dangerouslySetInnerHTML={{ __html: rulesTextHtml(text, { gold: true }) }} />
-                          </ErrataNote>
-                        ) : <i className="text-rift-500">{tx('Cette carte n’a pas de texte de règles.')}</i>}
-                      </div>
-                      <div className="flex justify-between items-center mt-2 mb-[18px] text-[11.5px] text-rift-500">
-                        <span>{!text ? '' : text.unofficial ? tx('Traduction française non officielle · terminologie officielle Riftbound') : !text.translated ? tx('Traduction indisponible — texte anglais') : language === 'French' ? tx('Texte officiel (français)') : tx('Texte officiel (anglais)')}</span>
-                        <div className="flex border border-rift-600" role="group" aria-label={tx('Langue')} data-help="card.lang">
-                          {['French', 'English'].map(l => (
-                            <button key={l} type="button" onClick={() => setLanguage(l)} aria-pressed={language === l}
-                              className={`px-2.5 py-[3px] text-[11.5px] font-bold ${language === l ? 'bg-gold-500/20 text-gold-400' : 'text-rift-400'}`}>{l === 'French' ? tx('FR') : tx('EN')}</button>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2.5 mb-4">
-                        <Fact k={tx('Type')}>{typeIcon(cardData.type) && <span className="block w-4 h-4" style={maskStyle(typeIcon(cardData.type))} aria-hidden="true" />}{typeLabel(cardData.type)}</Fact>
-                        <Fact k={tx('Domaine')}>{domains.length ? domains.map(d => <span key={d} className="inline-flex items-center gap-1.5">{domainIcon(d) && <img src={domainIcon(d)} alt="" className="w-4 h-4" />}{domainLabel(d)}</span>) : '—'}</Fact>
-                        <Fact k={tx('Rareté')}>{rarityIcon(cardData.rarity) && <img src={rarityIcon(cardData.rarity)} alt="" className="w-4 h-4 object-contain" />}{rarityLbl}</Fact>
-                        <Fact k={tx('Extension')}>{cardData.setName}</Fact>
-                        <Fact k={tx('Numéro')}>{cardData.code || cardData.collectorNumber}</Fact>
-                        <Fact k={tx('Illustration')}><span className="text-[12.5px]">{cardData.illustrator || '—'}</span></Fact>
-                      </div>
-                      {cardData.power > 0 && (
-                        <p className="flex items-center gap-2 text-[13px] text-rift-300 mb-3" title={tx('Coût de recyclage : {n} rune(s) {domain}', { n: cardData.power, domain: domainLabel(mainDomain) })}>
-                          {tx('Coût de recyclage :')}
-                          <span className="flex">{Array.from({ length: cardData.power }, (_, i) => (domainIcon(mainDomain) ? <img key={i} src={domainIcon(mainDomain)} alt="" className="w-6 h-6" /> : <span key={i} className="w-5 h-5 rounded-full" style={{ background: dc }} />))}</span>
-                          {tx('{n} rune(s)', { n: cardData.power })}
-                        </p>
-                      )}
-                      {cardData.tags?.length > 0 && (
-                        <div className="flex gap-1.5 flex-wrap">{cardData.tags.map(t => <span key={t} className="text-[12px] border border-rift-600 px-[9px] py-0.5 text-rift-400">{t}</span>)}</div>
-                      )}
-                    </>
-                  )}
-
-                  {tab === 'mine' && (ownedTotal > 0 ? (
-                    <>
-                      <div className="flex items-center gap-4 mb-3.5">
-                        <div className="hexagon w-[72px] h-[82px] grid place-items-center font-display text-[30px] font-bold text-rift-900" style={{ background: 'linear-gradient(160deg,#e8c973,#a8893a)' }}>{ownedTotal}</div>
-                        <p className="text-[13px] text-rift-400"><b className="block text-[16px] text-rift-100">{tx('{n} exemplaire(s) dans ta collection', { n: ownedTotal })}</b>
-                          {tx('{n} version(s)', { n: owned.length })}{ownedValue > 0 && <> · {tx('valeur ≈')} {euro(ownedValue)}</>}</p>
-                      </div>
-                      {owned.map(s => {
-                        const lg = LANGUAGES.find(l => l.value === s.language);
-                        const place = s.boxId ? tx('Boîte : {name}', { name: org?.boxes?.byId?.get(s.boxId)?.name || '…' }) : s.deckId ? tx('Deck : {name}', { name: org?.decks?.byId?.get(s.deckId)?.name || '…' }) : s.loanId ? tx('Prêtée') : tx('Sans emplacement');
-                        return (
-                          <div key={s.key} className="grid grid-cols-[auto_1fr_auto_auto] gap-3.5 items-center px-3 py-2.5 border border-rift-600 bg-[#0a1220aa] mb-1.5">
-                            <div className="hexagon w-9 h-10 grid place-items-center font-bold text-[12px] text-rift-100 bg-rift-700" style={s.foil ? { background: 'linear-gradient(135deg,#ff5fa2,#ffd86b,#6bffb8,#6bc7ff,#b06bff)', color: '#0a1220' } : undefined}>{s.foil ? '★' : lg?.short || s.language}</div>
-                            <div>
-                              <b className="text-rift-100 text-[13.5px]">{lg?.label || s.language}{s.foil ? ' · Foil' : ''} · {conditionShort(s.condition)}{s.promo ? ` · ${tx('Promo')}` : ''}</b>
-                              <small className="block text-rift-500 text-[12px]">📦 {place}</small>
-                            </div>
-                            <div className="text-rift-400 text-[12px] text-right">{s.paid > 0 ? `${tx('Payé')} ${euro(s.paid)}` : <span className="opacity-60">{tx('prix payé ?')}</span>}</div>
-                            <div className="flex items-center gap-1">
-                              {onRemoveCopy && <button type="button" onClick={() => onRemoveCopy(s)} aria-label={s.quantity === 1 ? tx('Supprimer cet exemplaire') : tx('Un exemplaire de moins')} className={`w-7 h-[30px] border border-rift-600 font-bold ${s.quantity === 1 ? 'text-state-bad' : 'text-gold-400'}`}>{s.quantity === 1 ? <Trash2 className="w-3.5 h-3.5 mx-auto" /> : '−'}</button>}
-                              <span className="min-w-[26px] text-center font-bold text-gold-400">{s.quantity}</span>
-                              {onRemoveCopy && <button type="button" onClick={() => (onAddCopies ? onAddCopies({ cardId, quantity: 1, language: s.language, foil: s.foil, condition: s.condition, boxId: s.boxId, deckId: s.deckId }) : onAddCopy(cardId, s.language || language))} aria-label={tx('Ajouter un exemplaire')} className="w-7 h-[30px] border border-rift-600 text-gold-400 font-bold">+</button>}
-                            </div>
-                          </div>
-                        );
-                      })}
-                      <div className="flex gap-2 mt-3 flex-wrap">
-                        <button type="button" className={zbtnP} onClick={() => (onAddCopies ? setForgeOpen(true) : onAddCopy(cardId, language))}>+ {tx('Ajouter un exemplaire')}</button>
-                        {onUpdateCard && <button type="button" className={zbtn} onClick={() => { const s = owned[0]; onUpdateCard(s, { ...s, promo: !s.promo }); }}>{owned[0]?.promo ? tx('Ce ne sont pas des promos') : tx('Marquer comme promo')}</button>}
-                        {onUpdateCard && <button type="button" className={zbtn} onClick={() => { setTab('price'); setShowPaid(true); }}>{tx('Modifier mon prix payé')}</button>}
-                      </div>
-                    </>
-                  ) : (
-                    <div className="text-rift-500 py-[30px] text-center">{tx('Tu n’as pas encore cette carte.')}
-                      <div className="flex gap-2 mt-3 justify-center flex-wrap">
-                        <button type="button" className={zbtnP} onClick={() => (onAddCopies ? setForgeOpen(true) : onAddCopy(cardId, language))}>+ {tx('Ajouter un exemplaire')}</button>
-                        <button type="button" className={zbtn} onClick={() => onSetWanted(cardId, currentWanted > 0 ? currentWanted : 1)}>♥ {tx('Ajouter aux souhaits')}</button>
-                      </div>
-                    </div>
-                  ))}
-
-                  {tab === 'price' && (
-                    <>
-                      {showPaid && owned.length > 0 && onUpdateCard && (
-                        <div className="mb-4"><PurchaseEditor key={cardId} owned={owned} paid={paidAvg} paidAt={paidDate} onSave={(paid, paidAt) => { owned.forEach(s => onUpdateCard(s, { ...s, paid, paidAt })); setShowPaid(false); }} /></div>
-                      )}
-                      <ReliquaryPrice prices={prices} cardId={cardId} cardData={cardData} paidAvg={paidAvg} hasOwned={owned.length > 0 && !!onUpdateCard} onEditPaid={() => setShowPaid(s => !s)} />
-                    </>
-                  )}
-
-                  {tab === 'prints' && (
-                    <div className="grid gap-3.5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(118px, 1fr))' }} data-help="card.prints">
-                      {(prints.length ? prints : [cardData]).map(p => {
-                        const n = stacks.filter(s => s.cardData.id === p.id).reduce((a, s) => a + s.quantity, 0);
-                        const cur = p.id === cardId;
-                        return (
-                          <button key={p.id} type="button" onClick={() => pickPrint(p.id)} aria-current={cur || undefined} className="text-center text-[11.5px] text-rift-400">
-                            <span className={`block mb-1.5 rounded-md ${cur ? 'ring-2 ring-gold-400' : ''} ${p.rarity === 'showcase' || p.rarity === 'epic' ? 'rf-holo rf-holo-on relative' : ''}`}>
-                              <img src={thumbSrc(p.id)} onError={e => handleImageError(e, p.id)} alt="" loading="lazy" className="w-full h-auto rounded-md" />
-                            </span>
-                            <b className="flex justify-center items-center gap-[5px] text-rift-100 text-[12px]">{rarityIcon(p.rarity) && <img src={rarityIcon(p.rarity)} alt="" className="w-3.5 h-3.5 object-contain" />}{p.setName || p.set}</b>
-                            {String(p.code || '').split('/')[0]} · {n ? <span className="text-state-ok">{tx('possédée')}</span> : tx('manquante')}
-                            {printKindLabel(p) && <span className="block text-rift-500">{printKindLabel(p)}</span>}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {tab === 'rulings' && <ReliquaryRulings cardData={cardData} />}
+                  {tabPanels}
                 </section>
               </>
             )}

@@ -3,6 +3,7 @@ import { Minus, Plus, Sparkles } from 'lucide-react';
 import { LANGUAGES, isFoilOnly } from '../../data/sampleCards.js';
 import { CONDITIONS } from '../../lib/conditions.js';
 import { displayName } from '../../lib/cardLocale.js';
+import { usePcInterface } from '../../lib/pcInterface.js';
 import { tx } from '../../lib/i18n.js';
 
 const Row = ({ label, children }) => (
@@ -37,6 +38,57 @@ export default function AddCopiesPanel({ cardData, defaultLanguage = 'English', 
     label: `${qty} × ${lang?.label || language}${isFoil ? ' · foil' : ''}`,
   });
   const hexBtn = (on) => `hexagon h-[46px] w-[52px] flex flex-col items-center justify-center text-[11px] font-bold ${on ? 'bg-gold-500 text-rift-900' : 'bg-rift-700 text-rift-300 hover:bg-rift-600'}`;
+
+  // Phone (maquette écran 7): bottom sheet — 3 language hexagons, big round − / +
+  // with a gold quantity hexagon and ×1 ×2 ×3 shortcuts, full-width finish buttons,
+  // condition chips, place select, and a sticky footer (Annuler + big gold « Ajouter »).
+  if (!usePcInterface) {
+    return (
+      <section aria-label={tx('Ajouter à ma collection')} data-help="card.forge">
+        <div className="text-[12.5px] text-rift-400 -mt-1 mb-1 truncate">{displayName(cardData)} · {cardData.code?.split('/')[0]}</div>
+        <h6>{tx('Langue')}</h6>
+        <div className="lngm" role="group" aria-label={tx('Langue')}>
+          {LANGUAGES.map(l => (
+            <button key={l.value} type="button" className={`l ${language === l.value ? 'on' : ''}`} aria-pressed={language === l.value} title={l.label} onClick={() => setLanguage(l.value)}>
+              <div><b>{l.short}</b><small>{l.label}</small></div>
+            </button>
+          ))}
+        </div>
+        <h6>{tx('Quantité')}</h6>
+        <div className="qtym">
+          <button type="button" className="qb" onClick={() => setQty(q => Math.max(1, q - 1))} aria-label={tx('Un de moins')}>−</button>
+          <span className="qn" aria-live="polite">{qty}</span>
+          <button type="button" className="qb" onClick={() => setQty(q => Math.min(12, q + 1))} aria-label={tx('Un de plus')}>+</button>
+          <span className="qk">
+            {[1, 2, 3].map(k => (
+              <button key={k} type="button" className={qty === k ? 'on' : ''} aria-pressed={qty === k} onClick={() => setQty(k)}>×{k}</button>
+            ))}
+          </span>
+        </div>
+        <h6>{tx('Finition')}</h6>
+        <div className="finm" role="group" aria-label={tx('Finition')}>
+          <button type="button" className={!isFoil ? 'on' : ''} aria-pressed={!isFoil} disabled={foilOnly} onClick={() => setFoil(false)}>{tx('Normale')}</button>
+          <button type="button" className={`foil ${isFoil ? 'on' : ''}`} aria-pressed={isFoil} onClick={() => setFoil(true)}><Sparkles className="inline w-3.5 h-3.5 mr-1" aria-hidden="true" />{tx('Foil')}</button>
+        </div>
+        <h6>{tx('État')}</h6>
+        <div className="condm" role="group" aria-label={tx('État')}>
+          {CONDITIONS.map(c => (
+            <button key={c.value} type="button" className={condition === c.value ? 'on' : ''} aria-pressed={condition === c.value} title={c.label} onClick={() => setCondition(c.value)}>{c.short}</button>
+          ))}
+        </div>
+        <h6>{tx('Ranger dans')}</h6>
+        <select className="placem" style={{ appearance: 'none' }} value={place} onChange={e => setPlace(e.target.value)} aria-label={tx('Ranger dans')}>
+          {places.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+        </select>
+        <div className="m-sf">
+          <button type="button" className="cancel" onClick={onCancel}>{tx('Annuler')}</button>
+          <button type="button" className="go" onClick={submit}>
+            {tx('Ajouter')} <span className="men">{qty}</span> × {lang?.label}{isFoil ? ' · foil' : ''}
+          </button>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section aria-label={tx('Ajouter à ma collection')} data-help="card.forge" className="rf-dossier">
