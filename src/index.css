@@ -574,7 +574,7 @@
 .mapp .placem { height:40px; width:100%; border:1px solid var(--r6); display:flex; align-items:center; justify-content:space-between; padding:0 12px; color:var(--r3); font-size:13.5px; background:#0a1220; }
 
 /* 6 · Zoom Reliquaire mobile (plein écran, 4 hexagones au bord, dossier = feuille du bas) */
-.mapp .zm { position:fixed; inset:0; z-index:45; display:flex; flex-direction:column; overflow:hidden; color:var(--r1); padding-bottom:calc(268px + 28px);
+.mapp .zm { position:fixed; inset:0; z-index:45; display:flex; flex-direction:column; overflow:hidden; color:var(--r1);
   background:radial-gradient(330px 380px at 50% 34%, color-mix(in srgb, var(--dc) 32%, transparent), transparent 70%), #05080f; }
 .mapp .zm .rays { position:absolute; left:50%; top:32%; width:620px; height:620px; transform:translate(-50%,-50%); pointer-events:none;
   background:repeating-conic-gradient(color-mix(in srgb, var(--dc) 14%, transparent) 0 4deg, transparent 4deg 18deg);
@@ -589,7 +589,7 @@
 .mapp .zm .cardwrap { position:relative; width:218px; flex-shrink:0; z-index:3; } .mapp .zm .card { width:100%; position:relative; }
 .mapp .zm .card .mcard { box-shadow:0 26px 44px #000e, 0 0 40px color-mix(in srgb, var(--dc) 50%, transparent); border-radius:10px; }
 .mapp .zm .card .mcard img { border-radius:10px; }
-.mapp .zm.forge .stage { flex:0 0 auto; height:300px; min-height:0; margin-top:0; }
+.mapp .zm.forge .stage { flex:0 0 auto; height:300px; min-height:0; margin-top:0; } .mapp .zm.forge .dos { margin-top:auto; margin-bottom:0; }
 .mapp .zm.forge .cardwrap { width:170px; }
 .mapp .zm.forge .sat, .mapp .zm.forge .ghost { display:none; }
 .mapp .zm .ghost { position:absolute; top:50%; width:170px; opacity:.35; filter:brightness(.55); z-index:1; padding:0; }
@@ -609,11 +609,11 @@
 .mapp .zm .pager b { color:var(--g4); font-size:14px; }
 .mapp .zm .pager button { font-size:18px; color:var(--r3); width:32px; height:32px; }
 .mapp .zm .pager .sw { font:500 10.5px "Source Sans 3"; color:var(--r5); }
-.mapp .zm .ctas { position:relative; z-index:3; display:flex; gap:8px; padding:12px 16px 0; }
+.mapp .zm .ctas { position:relative; z-index:3; display:flex; gap:8px; padding:12px 16px 0; margin-bottom:16px; }
 .mapp .zm .ctas .add { flex:1; height:46px; background:linear-gradient(160deg,var(--g4),var(--g6)); color:var(--r9); font:800 14.5px "Source Sans 3"; clip-path:var(--mcut); }
 .mapp .zm .ctas .dk { height:46px; padding:0 14px; border:1px solid var(--r6); color:var(--r3); font-weight:700; font-size:13px; clip-path:var(--mcut); background:#0a1220aa; }
-.mapp .zm .dos { position:absolute; left:0; right:0; bottom:0; z-index:6; background:linear-gradient(180deg,#141f33,#0d1626); border-top:1px solid #c8a84e88; border-radius:22px 22px 0 0; box-shadow:0 -14px 40px #000c; height:268px; display:flex; flex-direction:column; transition:height .3s; padding-bottom:env(safe-area-inset-bottom, 0px); }
-.mapp .zm .dos.full { height:78%; }
+.mapp .zm .dos { position:relative; z-index:6; flex:0 0 auto; margin-bottom:auto; background:linear-gradient(180deg,#141f33,#0d1626); border-top:1px solid #c8a84e88; border-radius:22px 22px 0 0; box-shadow:0 -14px 40px #000c; height:268px; display:flex; flex-direction:column; transition:height .3s; padding-bottom:env(safe-area-inset-bottom, 0px); }
+.mapp .zm .dos.full { position:absolute; left:0; right:0; bottom:0; margin:0; height:78%; }
 .mapp .zm .dos .grab { width:44px; height:5px; border-radius:3px; background:#c8a84e88; margin:8px auto 2px; cursor:pointer; flex-shrink:0; touch-action:none; }
 .mapp .zm .dos h3 { font:700 20px Cinzel,Georgia,serif; color:var(--r1); padding:4px 18px 0; }
 .mapp .zm .dos .idl { display:flex; gap:5px; flex-wrap:wrap; padding:6px 18px 8px; }
