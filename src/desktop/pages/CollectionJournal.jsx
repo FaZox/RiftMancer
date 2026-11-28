@@ -1,6 +1,6 @@
 ﻿import React, { useMemo, useRef, useState } from 'react';
 import CardTile from '../../components/cards/CardTile.jsx';
-import { BackButton, BigButton } from './CollectionParts.jsx';
+import { BackButton, BigButton } from '../../components/collection/CollectionParts.jsx';
 import { allCards } from '../../lib/catalog.js';
 import { recentAdds, activity, localDay } from '../../lib/collectionStats.js';
 import { unitPrice, priceRef } from '../../lib/prices.js';

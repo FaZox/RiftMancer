@@ -3,7 +3,7 @@ import { Heart, Search } from 'lucide-react';
 import CardTile from '../../components/cards/CardTile.jsx';
 import HexPortal from '../../components/common/HexPortal.jsx';
 import { useDialog } from '../../components/common/Dialog.jsx';
-import { BackButton, BoosterImage, BigButton } from './CollectionParts.jsx';
+import { BackButton, BoosterImage, BigButton } from '../../components/collection/CollectionParts.jsx';
 import { allCards } from '../../lib/catalog.js';
 import { compareCollector } from '../../lib/catalogOrder.js';
 import { setProgress, nextMilestone, setArt } from '../../lib/collectionStats.js';

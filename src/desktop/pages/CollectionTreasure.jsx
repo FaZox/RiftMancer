@@ -4,7 +4,7 @@ import CardTile from '../../components/cards/CardTile.jsx';
 import HexPortal from '../../components/common/HexPortal.jsx';
 import useTilt from '../../components/common/useTilt.js';
 import { useDialog } from '../../components/common/Dialog.jsx';
-import { ShelfPack, ProgressRing, Sparkline, Shelf } from './CollectionParts.jsx';
+import { ShelfPack, ProgressRing, Sparkline, Shelf } from '../../components/collection/CollectionParts.jsx';
 import { allCards, isBaseCard } from '../../lib/catalog.js';
 import { compareCollector } from '../../lib/catalogOrder.js';
 import { setProgress, masterpiece, collectionSummary, recentAdds, setArt, localDay } from '../../lib/collectionStats.js';

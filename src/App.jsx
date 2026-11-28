@@ -64,21 +64,21 @@ export default function App() {
     handleUpdateCard,
     undo,
     setUndo,
-    handleRemoveCard,
-    handleDeleteStacks,
-    handleClearAll,
     handleAddCardToExport,
     handleAddCopy,
+    handleAddCopies,
     handleQuickAdd,
     findMode,
     setFindMode,
     handleRemoveCopy,
     handleAddCardsToExport,
-    handleExport,
   } = useAppController();
   const [searchMode, setSearchMode] = useState(null); // lot 6 e: 'search' | 'add' | null
   // « Voir dans Cartes » (global search, Progression): the tab takes the request when it shows
-  useEffect(() => onRequest((r) => { if (r.kind === 'cards') setActiveTab('cards'); }), [setActiveTab]);
+  useEffect(() => onRequest((r) => {
+    if (r.kind === 'cards') setActiveTab('cards');
+    if (r.kind === 'more') setActiveTab('more'); // ♥ Souhaits de la Collection, etc.
+  }), [setActiveTab]);
   // « Trouver une carte » ends when you leave the scanner
   useEffect(() => { if (activeTab !== 'scan' && findMode) setFindMode(false); }, [activeTab, findMode, setFindMode]);
 
@@ -151,22 +151,14 @@ export default function App() {
         {activeTab === 'collection' && (
           <CollectionTab
             scannedCards={scannedCards}
+            copies={collection.copies}
             wishlist={wishlist}
             org={org}
-            onMoveStack={collection.moveStack}
             onAddCopy={handleAddCopy}
-            onUpdateCard={handleUpdateCard}
-            onRemoveCard={handleRemoveCard}
+            onAddCopies={handleAddCopies}
             onRemoveCopy={handleRemoveCopy}
-            onDeleteStacks={handleDeleteStacks}
-            onClearAll={handleClearAll}
-            onExport={handleExport}
-            collection={collection}
+            onUpdateCard={handleUpdateCard}
             defaultLanguage={batchDefaults.language}
-            onImportEntries={(entries) => {
-              collection.addEntries(entries);
-              showNotification(tx('{reduce} exemplaire(s) importé(s)', { reduce: entries.reduce((n, e) => n + e.quantity, 0) }), 'success');
-            }}
           />
         )}
 
@@ -187,7 +179,8 @@ export default function App() {
 
         {activeTab === 'cards' && (
           <CardsTab scannedCards={scannedCards} wishlist={wishlist} org={org} onAddCopy={handleAddCopy}
-            onRemoveCopy={handleRemoveCopy} onUpdateCard={handleUpdateCard} onQuickAdd={handleQuickAdd} notify={showNotification}
+            onAddCopies={handleAddCopies} onRemoveCopy={handleRemoveCopy} onUpdateCard={handleUpdateCard} onQuickAdd={handleQuickAdd} notify={showNotification}
+            defaultLanguage={batchDefaults.language}
             onFind={() => { setFindMode(true); setActiveTab('scan'); }} />
         )}
 
@@ -198,6 +191,7 @@ export default function App() {
             org={org}
             wishlist={wishlist}
             onAddCopy={handleAddCopy}
+            onAddCopies={handleAddCopies}
             defaultLanguage={batchDefaults.language}
             showNotification={showNotification}
             settingsProps={{
