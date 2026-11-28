@@ -138,8 +138,13 @@ npm run android:apk        # APK Android → release/
 ### Test
 ```bash
 npm run desktop:exe:test   # Installeur PC **test** (dossier séparé)
-npm run android:apk:test   # APK Android **test**
+npm run android:apk:test   # APK Android **test** (installe sur le téléphone branché)
 ```
+
+> L'APK **test** embarque le catalogue actif fusionné du PC de test
+> (`%APPDATA%/riftmancer-test/catalogue/actif/card-hashes.json`, rulings inclus —
+> copié par `scripts/build-mobile.mjs --test` sur `dist-mobile/card-hashes.json`) :
+> rulings + traductions FR (public/) présents sans synchro, comme l'app PC de test.
 
 ### Release
 ```bash
