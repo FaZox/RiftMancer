@@ -586,16 +586,16 @@
 .mapp .zm .ztop .eb img { width:14px; height:14px; object-fit:contain; }
 .mapp .zm .ztop .hrt { margin-left:auto; width:38px; height:44px; clip-path:var(--mhex); background:#ff8a8033; color:#ff8a80; font-size:16px; flex-shrink:0; }
 .mapp .zm .ztop .hrt.on { background:#ff8a80; color:#2a0b08; }
-.mapp .zm .stage { position:relative; height:388px; flex:0 1 auto; min-height:260px; margin-top:0; display:flex; align-items:flex-end; justify-content:center; padding-bottom:16px; perspective:1000px; touch-action:pan-y; }
+.mapp .zm .stage { position:relative; height:388px; flex:0 1 auto; min-height:340px; margin-top:0; display:flex; align-items:center; justify-content:center; perspective:1000px; touch-action:pan-y; }
 .mapp .zm .cardwrap { position:relative; width:218px; flex-shrink:0; z-index:3; } .mapp .zm .card { width:100%; position:relative; }
 .mapp .zm .card .mcard { box-shadow:0 26px 44px #000e, 0 0 40px color-mix(in srgb, var(--dc) 50%, transparent); border-radius:10px; }
 .mapp .zm .card .mcard img { border-radius:10px; }
 .mapp .zm.forge .stage { flex:0 0 auto; height:300px; min-height:0; margin-top:0; } .mapp .zm.forge .dos { margin-top:auto; margin-bottom:0; }
 .mapp .zm.forge .cardwrap { width:170px; }
 .mapp .zm.forge .sat, .mapp .zm.forge .ghost { display:none; }
-.mapp .zm .ghost { position:absolute; bottom:16px; width:170px; opacity:.35; filter:brightness(.55); z-index:1; padding:0; }
-.mapp .zm .ghost.l { left:-128px; transform:rotateY(32deg); }
-.mapp .zm .ghost.r { right:-128px; transform:rotateY(-32deg); }
+.mapp .zm .ghost { position:absolute; top:50%; width:170px; opacity:.35; filter:brightness(.55); z-index:1; padding:0; }
+.mapp .zm .ghost.l { left:-128px; transform:translateY(-50%) rotateY(32deg); }
+.mapp .zm .ghost.r { right:-128px; transform:translateY(-50%) rotateY(-32deg); }
 .mapp .zm .ghost img { width:100%; border-radius:8px; display:block; }
 .mapp .sat { position:absolute; width:54px; height:62px; clip-path:var(--mhex); background:linear-gradient(160deg,var(--g4),var(--g6)); display:grid; place-items:center; z-index:4; filter:drop-shadow(0 6px 10px #000); }
 .mapp .sat > div { position:absolute; inset:2px; clip-path:var(--mhex); background:radial-gradient(circle at 50% 35%, #1e2e48, #0a1220); display:flex; flex-direction:column; align-items:center; justify-content:center; }
