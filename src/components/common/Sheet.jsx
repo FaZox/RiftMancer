@@ -1,14 +1,21 @@
 import React, { useEffect } from 'react';
+
 import { X } from 'lucide-react';
+
 import { useBackHandler } from '../../lib/backButton.js';
+
 import { usePcInterface } from '../../lib/pcInterface.js';
+
 import { tx } from '../../lib/i18n.js';
 
 /**
- * Action panel (B.2). Phone: slides up from the bottom, handle, height from its
- * content, 85 % at most. PC: right-hand side panel, 420 px wide.
+ * Action panel. Phone (maquette .sheet): slides up from the bottom — rounded 22 px,
+ * gold top edge, gold handle, opaque gradient background (no backdrop-filter on
+ * Android), footer with a big gold button, safe-area at the bottom. `action`:
+ * optional link in the header (e.g. « Tout effacer »).
+ * PC: right-hand side panel, 420 px wide.
  */
-export default function Sheet({ open, title, onClose, children, footer }) {
+export default function Sheet({ open, title, onClose, action, children, footer }) {
   useBackHandler(open, () => { onClose?.(); return true; });
   useEffect(() => {
     if (!open) return undefined;
@@ -24,24 +31,30 @@ export default function Sheet({ open, title, onClose, children, footer }) {
     </div>
   );
   return (
-    <div className="fixed inset-0 z-[60] bg-rift-900/70 fade-in" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose?.(); }}>
+    <>
       {usePcInterface ? (
-        <aside role="dialog" aria-modal="true" aria-label={title}
-          className="absolute right-0 top-0 bottom-0 w-[420px] max-w-full bg-rift-800 border-l border-gold-500/30 flex flex-col">
-          {head}
-          <div className="flex-1 overflow-y-auto px-4 pb-4">{children}</div>
-          {footer && <div className="px-4 py-3 border-t border-rift-700 flex justify-end gap-2">{footer}</div>}
-        </aside>
-      ) : (
-        <div role="dialog" aria-modal="true" aria-label={title}
-          className="absolute left-0 right-0 bottom-0 max-h-[85vh] bg-rift-800 border-t border-gold-500/30 flex flex-col slide-up"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-          <div className="mx-auto mt-2 h-1 w-10 bg-rift-600" aria-hidden="true" />
-          {head}
-          <div className="flex-1 overflow-y-auto px-4 pb-4">{children}</div>
-          {footer && <div className="px-4 py-3 border-t border-rift-700 flex justify-end gap-2">{footer}</div>}
+        <div className="fixed inset-0 z-[60] bg-rift-900/70 fade-in" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose?.(); }}>
+          <aside role="dialog" aria-modal="true" aria-label={typeof title === 'string' ? title : undefined}
+            className="absolute right-0 top-0 bottom-0 w-[420px] max-w-full bg-rift-800 border-l border-gold-500/30 flex flex-col">
+            {head}
+            <div className="flex-1 overflow-y-auto px-4 pb-4">{children}</div>
+            {footer && <div className="px-4 py-3 border-t border-rift-700 flex justify-end gap-2">{footer}</div>}
+          </aside>
         </div>
+      ) : (
+        <>
+          <div className="mdim" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose?.(); }} />
+          <div role="dialog" aria-modal="true" aria-label={typeof title === 'string' ? title : undefined} className="sheet">
+            <div className="grab" aria-hidden="true" />
+            <h5>
+              {title}
+              {action && <span className="act">{action}</span>}
+            </h5>
+            <div className="sb">{children}</div>
+            {footer && <div className="sf">{footer}</div>}
+          </div>
+        </>
       )}
-    </div>
+    </>
   );
 }

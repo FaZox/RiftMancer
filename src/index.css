@@ -359,3 +359,309 @@
 .hp-done .hp-shell { animation: rfGlow 2s ease-in-out infinite; }
 .rf-calm .hp-fill::before, .rf-calm .hp-done .hp-shell { animation: none !important; }
 @media (prefers-reduced-motion: reduce) { .hp-fill::before, .hp-done .hp-shell { animation: none !important; } .hp:hover { transform: none; } }
+
+/* ───────────── Refonte mobile (Android) — maquette maquettes/mobile-reference.html ─────────────
+   Toutes les classes de la maquette sont scopées sous .mapp (coquille de src/App.jsx, téléphone uniquement) :
+   la version PC (src/desktop/) n'est pas concernée. */
+:root {
+  --r9:#0a1220; --r8:#111c2e; --r7:#18263c; --r6:#2a3a55; --r5:#8a93a6; --r4:#a9b1c2; --r3:#c3c8d2; --r1:#ece6d6;
+  --g6:#a8893a; --g5:#c8a84e; --g4:#e8c973; --g3:#f3dc9a; --ok:#7fd6a4;
+  --mhex: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  --mcut: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+@keyframes mPulse { 0%,100% { filter: drop-shadow(0 0 0 rgba(232,201,115,0)); } 50% { filter: drop-shadow(0 0 10px rgba(232,201,115,.75)); } }
+@keyframes mSpin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+@keyframes mWave24 { to { background-position: 24px 0; } }
+@keyframes mWave28 { to { background-position: 28px 0; } }
+
+/* Barre d'onglets du bas (7 onglets, Scanner = gros hexagone doré qui pulse et dépasse) */
+.mapp .tabbar { flex-shrink:0; height:84px; padding:6px 6px calc(22px + env(safe-area-inset-bottom, 0px)); display:grid; grid-template-columns:repeat(7,1fr); align-items:end; background:#070a12f2; border-top:1px solid #c8a84e33; position:relative; z-index:40; }
+.mapp .tabbar button { display:flex; flex-direction:column; align-items:center; gap:3px; font-size:9.5px; color:var(--r5); font-weight:600; position:relative; min-w:0; }
+.mapp .tabbar button svg { width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.8; }
+.mapp .tabbar .hx { width:34px; height:30px; display:grid; place-items:center; clip-path:var(--mhex); }
+.mapp .tabbar button.on { color:var(--g4); }
+.mapp .tabbar button.on .hx { background:linear-gradient(160deg,#e8c97340,#a8893a22); box-shadow:inset 0 0 0 1px var(--g4); }
+.mapp .tabbar button.on:before { content:""; position:absolute; top:-8px; width:18px; height:3px; background:var(--g4); box-shadow:0 0 8px var(--g4); border-radius:2px; }
+.mapp .tabbar .scanb { width:58px; height:64px; clip-path:var(--mhex); background:linear-gradient(160deg,var(--g4),var(--g6)); display:grid; place-items:center; color:var(--r9); margin-top:-26px; animation:mPulse 2.6s ease-in-out infinite; }
+.mapp .tabbar .scanb svg { width:24px; height:24px; stroke-width:2.2; }
+.mapp .tabbar .cnt { position:absolute; top:-7px; right:4px; min-width:17px; height:19px; padding:0 4px; background:var(--g5); color:var(--r9); font-size:10.5px; font-weight:800; font-style:normal; display:grid; place-items:center; clip-path:var(--mhex); }
+.mapp .tabbar .dot { position:absolute; top:0; right:8px; width:8px; height:8px; transform:rotate(45deg); background:var(--g4); font-style:normal; }
+
+/* Sur-titres / petites capitales des écrans mobiles */
+.mapp .m-eb { font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--g4); }
+.mapp .m-eb.ok { color:var(--ok); }
+.mapp .m-cap { font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--r5); }
+
+/* En-tête d'écran + bouton retour doré */
+.mapp .mh { display:flex; align-items:center; gap:10px; padding:6px 18px 10px; }
+.mapp .mh h2 { font:700 24px Cinzel,Georgia,serif; color:var(--g4); letter-spacing:.04em; }
+.mapp .mh .ib { margin-left:auto; width:38px; height:38px; border:1px solid var(--r6); display:grid; place-items:center; color:var(--r3); background:var(--r8); flex-shrink:0; }
+.mapp .mh .ib + .ib, .mapp .mh .ib + button, .mapp .mh button + .ib { margin-left:0; }
+.mapp .mh .ib svg { width:18px; height:18px; }
+.mapp .mh .ib.wish { width:auto; padding:0 10px; gap:5px; display:flex; color:#ff8a80; }
+.mapp .mh .ib.wish b { font-weight:800; font-size:12px; }
+.mapp .back { display:inline-flex; align-items:center; gap:6px; height:34px; padding:0 14px 0 10px; border:1px solid #c8a84e77; background:#0a1220d9; color:var(--g4); font:700 13px "Source Sans 3"; clip-path:var(--mcut); }
+
+/* Vignette de carte (grilles) : .mcard + badge quantité .mq hexagonal, ♥ .wm, ＋ .addm */
+.mapp .mcard { position:relative; aspect-ratio:744/1039; border-radius:6px; }
+.mapp .mcard img { width:100%; height:100%; object-fit:cover; border-radius:6px; display:block; background:var(--r8); }
+.mapp .mq { position:absolute; top:-6px; right:-6px; min-width:22px; height:24px; padding:0 4px; display:grid; place-items:center; background:var(--g5); color:var(--r9); font:700 10.5px "Source Sans 3"; clip-path:var(--mhex); z-index:3; }
+.mapp .wm { position:absolute; top:5px; left:5px; width:20px; height:22px; clip-path:var(--mhex); background:#ff8a80; color:#2a0b08; font-size:10px; display:grid; place-items:center; z-index:2; }
+.mapp .addm { position:absolute; right:-4px; bottom:16px; width:26px; height:30px; clip-path:var(--mhex); background:var(--g5); color:var(--r9); font-weight:800; font-size:14px; display:grid; place-items:center; z-index:3; }
+.mapp .nm { font-size:10px; color:var(--r3); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mapp .nm small { color:var(--r5); }
+.mapp .lb { display:flex; justify-content:space-between; gap:4px; font-size:10px; color:var(--r5); margin-top:4px; }
+.mapp .lb b { color:var(--r3); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* 1 · Salle du trésor mobile */
+.mapp .mhero { position:relative; padding:4px 18px 16px; display:grid; grid-template-columns:128px 1fr; gap:16px; align-items:center; }
+.mapp .mhero:before { content:""; position:absolute; inset:-40px 0 0; background:radial-gradient(260px 200px at 22% 40%, #e8c97326, transparent 70%); pointer-events:none; }
+.mapp .mhero .spot { position:relative; }
+.mapp .mhero .spot .mcard { box-shadow:0 18px 30px #000c, 0 0 30px #e8c97344; }
+.mapp .mhero .rib { position:absolute; bottom:-10px; left:50%; transform:translateX(-50%); background:var(--g5); color:var(--r9); font:800 9px "Source Sans 3"; letter-spacing:.1em; text-transform:uppercase; padding:2px 9px; clip-path:var(--mcut); white-space:nowrap; z-index:4; }
+.mapp .mhero .eb { font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--g4); }
+.mapp .mhero h3 { font:700 22px Cinzel,Georgia,serif; color:var(--r1); line-height:1.1; margin:3px 0 4px; }
+.mapp .mhero p { font-size:12px; color:var(--r4); }
+.mapp .mhero p b { color:var(--ok); }
+.mapp .medals4 { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; padding:0 14px 16px; }
+.mapp .medal4 { height:76px; clip-path:var(--mhex); background:linear-gradient(160deg,#e8c97366,#a8893a22 40%,#111c2e 41%); display:grid; place-items:center; position:relative; }
+.mapp .medal4:before { content:""; position:absolute; inset:2px; clip-path:var(--mhex); background:linear-gradient(180deg,#18263c,#0d1626); }
+.mapp .medal4 > div { position:relative; text-align:center; }
+.mapp .medal4 b { display:block; font:700 16px Cinzel,Georgia,serif; color:var(--g4); line-height:1.1; }
+.mapp .medal4.ok b { color:var(--ok); }
+.mapp .medal4 small { font-size:8.5px; color:var(--r4); letter-spacing:.06em; text-transform:uppercase; }
+.mapp .sect { display:flex; align-items:center; gap:10px; padding:6px 18px 8px; }
+.mapp .sect h4 { font:700 16px Cinzel,Georgia,serif; color:var(--r1); }
+.mapp .sect h4 small { display:block; font:400 11.5px "Source Sans 3"; color:var(--r5); }
+.mapp .sect .link { margin-left:auto; font-size:12px; color:var(--g4); font-weight:700; white-space:nowrap; }
+.mapp .vtall { margin-left:auto; height:34px; padding:0 14px; border:1px solid var(--g4); background:#c8a84e1a; color:var(--g4); font:800 13px "Source Sans 3"; clip-path:var(--mcut); white-space:nowrap; }
+.mapp .hscroll { display:flex; gap:12px; overflow-x:auto; padding:4px 18px 16px; scrollbar-width:none; scroll-snap-type:x mandatory; }
+.mapp .hscroll::-webkit-scrollbar { display:none; }
+.mapp .hscroll > * { scroll-snap-align:start; flex-shrink:0; }
+.mapp .mp { width:74px; display:flex; flex-direction:column; align-items:center; gap:3px; }
+.mapp .mp .hx { width:66px; height:76px; position:relative; }
+.mapp .mp .pct { font:700 16px Cinzel,Georgia,serif; }
+.mapp .mp b { font-size:10.5px; color:var(--r3); white-space:nowrap; }
+.mapp .mp small { font-size:9.5px; color:var(--r5); margin-top:-3px; }
+.mapp .spark { margin:0 18px 16px; border:1px solid #c8a84e33; background:#0a1220aa; padding:10px 12px; display:flex; align-items:center; gap:12px; }
+.mapp .spark small { font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--r5); display:block; }
+.mapp .spark b { font:700 16px Cinzel,Georgia,serif; color:var(--ok); }
+.mapp .spark svg { flex:1; height:36px; min-width:0; }
+.mapp .shelfrow .mcard { width:96px; }
+.mapp .ringm { width:44px; height:44px; position:relative; flex-shrink:0; }
+.mapp .ringm svg { width:100%; height:100%; transform:rotate(-90deg); }
+.mapp .ringm span { position:absolute; inset:0; display:grid; place-items:center; font:800 11.5px "Source Sans 3"; color:var(--g4); }
+.mapp .packm { height:42px; width:auto; transform:rotate(-8deg); filter:drop-shadow(0 3px 5px #000a); flex-shrink:0; }
+
+/* 2 · Page d'extension (Atlas) mobile */
+.mapp .ahm { position:relative; padding:8px 18px 16px; overflow:hidden; }
+.mapp .ahm:before { content:""; position:absolute; inset:0; background:var(--set-art) center 25%/cover; opacity:.18; filter:blur(2px); -webkit-mask:linear-gradient(180deg,#000,transparent); mask:linear-gradient(180deg,#000,transparent); }
+.mapp .ahm > * { position:relative; }
+.mapp .ahm .row { display:grid; grid-template-columns:92px 1fr 86px; gap:12px; align-items:center; margin-top:12px; }
+.mapp .ahm .pack { width:92px; transform:rotate(-7deg); filter:drop-shadow(0 12px 16px #000c); }
+.mapp .ahm .eb { font-size:9.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--g4); }
+.mapp .ahm h2 { font:700 26px Cinzel,Georgia,serif; color:var(--r1); line-height:1.05; }
+.mapp .ahm .facts { font-size:11.5px; color:var(--r4); margin-top:4px; line-height:1.5; }
+.mapp .ahm .facts b { color:var(--r1); }
+.mapp .ahm .facts .ok { color:var(--ok); }
+.mapp .bp { width:86px; height:98px; position:relative; }
+.mapp .bp .pct b { font:700 24px Cinzel,Georgia,serif; color:var(--r1); line-height:1; }
+.mapp .bp .pct small { font-size:8.5px; color:var(--r3); letter-spacing:.1em; text-transform:uppercase; }
+.mapp .nextm { margin-top:12px; display:flex; align-items:center; gap:8px; font-size:12px; color:var(--r3); border:1px solid #c8a84e44; padding:7px 10px; background:#0a1220aa; }
+.mapp .nextm b { color:var(--g4); }
+.mapp .ribm { padding:0 18px 12px; }
+.mapp .ribm p { font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--r5); margin-bottom:5px; }
+.mapp .ribbon { display:flex; height:22px; gap:1px; }
+.mapp .ribbon i { flex:1; background:#18263c; }
+.mapp .ribbon i.own { background:linear-gradient(180deg,#f3dc9a,#a8893a); }
+.mapp .stickm { position:sticky; top:0; z-index:5; background:#0a1220f2; padding:10px 14px; display:flex; gap:6px; align-items:center; border-bottom:1px solid #2a3a5588; border-top:1px solid #2a3a5588; }
+.mapp .segm { display:flex; border:1px solid var(--r6); height:34px; flex:1; }
+.mapp .segm button { flex:1; font-size:11.5px; font-weight:700; color:var(--r4); white-space:nowrap; }
+.mapp .segm button + button { border-left:1px solid var(--r6); }
+.mapp .segm button.on { background:#c8a84e22; color:var(--g4); }
+.mapp .segm small { color:var(--r5); font-weight:500; margin-left:3px; }
+.mapp .fbt { height:34px; padding:0 12px; border:1px solid var(--g4); color:var(--g4); font-weight:800; font-size:12px; display:flex; align-items:center; gap:6px; background:#c8a84e14; flex-shrink:0; }
+.mapp .fbt i { font-style:normal; min-width:18px; height:20px; clip-path:var(--mhex); background:var(--g4); color:var(--r9); display:grid; place-items:center; font-size:10px; }
+.mapp .g3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px 10px; padding:14px 14px 20px; }
+.mapp .sockm { position:relative; }
+.mapp .sockm.miss .mcard { outline:1.5px dashed #c8a84e55; outline-offset:-1px; }
+.mapp .sockm.miss .mcard img { filter:grayscale(1) brightness(.22); }
+.mapp .sockm.miss .gn { position:absolute; inset:0 0 18px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; pointer-events:none; padding:4px; }
+.mapp .sockm.miss .gn b { font:700 20px Cinzel,Georgia,serif; color:#c8a84e88; }
+.mapp .sockm.miss .gn small { font-size:9.5px; color:var(--r4); }
+
+/* 3 · Chronique mobile */
+.mapp .jstm { display:flex; gap:8px; padding:0 18px 12px; overflow-x:auto; scrollbar-width:none; }
+.mapp .jstm > div { border:1px solid #c8a84e44; background:#0a1220aa; padding:6px 12px; flex-shrink:0; }
+.mapp .jstm b { display:block; font:700 18px Cinzel,Georgia,serif; color:var(--r1); }
+.mapp .jstm b.ok { color:var(--ok); }
+.mapp .jstm small { font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--r5); }
+.mapp .perm { display:flex; gap:5px; padding:0 18px 12px; overflow-x:auto; scrollbar-width:none; }
+.mapp .perm button { height:28px; padding:0 11px; border:1px solid var(--r6); color:var(--r4); font-weight:700; font-size:11.5px; clip-path:var(--mcut); flex-shrink:0; }
+.mapp .perm button.on { background:var(--g4); color:var(--r9); border-color:var(--g4); }
+.mapp .actm { padding:0 18px 14px; }
+.mapp .actm .bars { display:flex; align-items:flex-end; gap:4px; height:60px; border-bottom:1px solid #c8a84e55; }
+.mapp .actm .bars i { flex:1; background:linear-gradient(180deg,var(--g4),#a8893a55); border-radius:2px 2px 0 0; min-height:2px; }
+.mapp .actm .bars i.z { background:#18263c; }
+.mapp .tlm { position:relative; padding:6px 14px 20px 50px; }
+.mapp .tlm:before { content:""; position:absolute; left:26px; top:0; bottom:0; width:2px; background:linear-gradient(180deg,var(--g4),#c8a84e33); }
+.mapp .daym { position:relative; margin-bottom:20px; }
+.mapp .daym .node { position:absolute; left:-36px; top:0; width:24px; height:28px; clip-path:var(--mhex); background:linear-gradient(160deg,var(--g4),var(--g6)); display:grid; place-items:center; font:800 10px "Source Sans 3"; color:var(--r9); }
+.mapp .daym h4 { font:700 15px Cinzel,Georgia,serif; color:var(--r1); }
+.mapp .daym h4 small { font:400 11.5px "Source Sans 3"; color:var(--r5); margin-left:6px; }
+.mapp .daym .ch { display:flex; gap:5px; flex-wrap:wrap; margin:5px 0 8px; }
+.mapp .daym .ch span { height:21px; display:inline-flex; align-items:center; padding:0 7px; border:1px solid var(--r6); font-size:11px; color:var(--r3); }
+.mapp .daym .ch .ok { color:var(--ok); border-color:#7fd6a455; }
+.mapp .daym .ch .src { color:var(--g4); border-color:#c8a84e55; }
+.mapp .daym .cards { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.mapp .daym .pep .mcard { outline:2px solid var(--g4); outline-offset:2px; }
+
+/* 4 · Cartes (Atelier) mobile */
+.mapp .qm { margin:0 14px 10px; height:46px; border:1px solid #c8a84e88; background:#0a1220; display:flex; align-items:center; gap:10px; padding:0 14px; clip-path:var(--mcut); flex-shrink:0; }
+.mapp .qm svg { width:18px; height:18px; stroke:var(--g4); fill:none; stroke-width:2; flex-shrink:0; }
+.mapp .qm input { flex:1; min-width:0; background:transparent; outline:none; color:var(--r1); font-size:14px; }
+.mapp .qm input::placeholder { color:var(--r5); }
+.mapp .qm .k { font:600 11.5px "Source Sans 3"; color:var(--g4); white-space:nowrap; }
+.mapp .crow { display:flex; gap:6px; padding:0 14px 10px; overflow-x:auto; scrollbar-width:none; align-items:center; flex-shrink:0; }
+.mapp .crow::-webkit-scrollbar { display:none; }
+.mapp .crow .tk, .mapp .tk { height:28px; flex-shrink:0; display:inline-flex; align-items:center; gap:5px; padding:0 4px 0 8px; font-size:11.5px; font-weight:600; border:1px solid #c8a84e77; color:var(--g4); background:#ffffff08; white-space:nowrap; }
+.mapp .tk b { opacity:.7; font-weight:400; font-size:14px; padding:0 3px; }
+.mapp .tk.dash { border-style:dashed; color:var(--r4); }
+.mapp .tk img { width:13px; height:13px; object-fit:contain; }
+.mapp .tk .mmask { width:13px; height:13px; background:currentColor; -webkit-mask:var(--mmi) center/contain no-repeat; mask:var(--mmi) center/contain no-repeat; }
+.mapp .tk .men { width:15px; height:15px; border-radius:50%; background:#f4f1ea; color:#0a1220; font:800 9px "Source Sans 3"; display:inline-grid; place-items:center; }
+
+/* Feuille du bas (Sheet mobile) + voile */
+.mapp .mdim { position:fixed; inset:0; background:#04070dbb; z-index:60; animation:fadeIn .2s ease-out; }
+.mapp .sheet { position:fixed; left:0; right:0; bottom:0; z-index:61; background:linear-gradient(180deg,#141f33,#0d1626); border-top:1px solid #c8a84e88; border-radius:22px 22px 0 0; box-shadow:0 -20px 50px #000c; max-height:86%; display:flex; flex-direction:column; animation:slideUp .3s ease-out; }
+.mapp .sheet .grab { width:44px; height:5px; border-radius:3px; background:#c8a84e88; margin:9px auto 4px; flex-shrink:0; }
+.mapp .sheet h5 { font:700 17px Cinzel,Georgia,serif; color:var(--g4); padding:4px 18px 8px; display:flex; align-items:center; gap:10px; }
+.mapp .sheet h5 .act { margin-left:auto; font:600 12px "Source Sans 3"; color:var(--r4); text-decoration:underline; }
+.mapp .sheet .sb { overflow-y:auto; padding:0 18px 12px; scrollbar-width:none; flex:1; min-height:0; }
+.mapp .sheet .sb::-webkit-scrollbar { display:none; }
+.mapp .sheet .sf { padding:12px 18px calc(26px + env(safe-area-inset-bottom, 0px)); border-top:1px solid #2a3a5588; display:flex; gap:10px; align-items:center; flex-shrink:0; }
+.mapp .sheet .sf .go { flex:1; height:48px; background:linear-gradient(160deg,var(--g4),var(--g6)); color:var(--r9); font:800 15px "Source Sans 3"; clip-path:var(--mcut); display:flex; align-items:center; justify-content:center; gap:8px; }
+.mapp .sheet .sf .cancel { color:var(--r4); text-decoration:underline; font-size:13px; padding:0 6px; }
+.mapp .sheet h6 { font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--r5); font-weight:600; margin:12px 0 7px; display:flex; align-items:center; gap:6px; }
+.mapp .sheet h6 .mmask { width:13px; height:13px; background:currentColor; -webkit-mask:var(--mmi) center/contain no-repeat; mask:var(--mmi) center/contain no-repeat; color:var(--r3); }
+.mapp .sheet h6 .men { width:14px; height:14px; border-radius:50%; background:#f4f1ea; color:#0a1220; font:800 8px "Source Sans 3"; display:inline-grid; place-items:center; }
+
+/* 5 · Feuille de filtres de l'Atelier */
+.mapp .setsm { display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; padding-bottom:4px; }
+.mapp .setsm button { flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:2px; font-size:9.5px; font-weight:700; color:var(--r4); opacity:.55; }
+.mapp .setsm button img { height:58px; width:auto; }
+.mapp .setsm button .emb { width:40px; height:46px; clip-path:var(--mhex); background:linear-gradient(160deg,var(--g4),var(--g6)); display:grid; place-items:center; font:700 10px Cinzel,serif; color:var(--r9); margin:6px 0; }
+.mapp .setsm button.on { opacity:1; color:var(--g4); }
+.mapp .domm { display:grid; grid-template-columns:repeat(6,1fr); gap:4px; }
+.mapp .domm button { display:flex; flex-direction:column; align-items:center; gap:2px; font-size:9.5px; color:var(--r4); padding:5px 0; border:1px solid transparent; }
+.mapp .domm button img { width:26px; height:26px; object-fit:contain; opacity:.4; }
+.mapp .domm button.on { border-color:#c8a84e66; background:#c8a84e12; color:var(--r1); }
+.mapp .domm button.on img { opacity:1; }
+.mapp .nums { display:grid; grid-template-columns:repeat(8,1fr); gap:5px; }
+.mapp .nums .ec { height:34px; width:34px; max-width:100%; border-radius:50%; background:#18263c; border:1px solid #f4f1ea44; color:var(--r3); font:800 13px "Source Sans 3"; aspect-ratio:1; justify-self:center; }
+.mapp .nums .ec.on { background:#f4f1ea; color:var(--r9); }
+.mapp .nums .mh2 { height:36px; width:32px; clip-path:var(--mhex); background:#18263c; color:var(--r3); font:800 13px "Source Sans 3"; justify-self:center; }
+.mapp .nums .mh2.on { background:linear-gradient(160deg,var(--g4),var(--g6)); color:var(--r9); }
+.mapp .gemm { display:flex; gap:14px; }
+.mapp .gemm button { opacity:.35; padding:4px; }
+.mapp .gemm button.on { opacity:1; transform:scale(1.15); }
+.mapp .gemm img { width:24px; height:24px; object-fit:contain; display:block; }
+.mapp .typm { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.mapp .typm button { display:flex; align-items:center; gap:8px; height:36px; padding:0 10px; border:1px solid var(--r6); font-size:12.5px; color:var(--r3); }
+.mapp .typm button .mmask { width:15px; height:15px; background:currentColor; -webkit-mask:var(--mmi) center/contain no-repeat; mask:var(--mmi) center/contain no-repeat; flex-shrink:0; }
+.mapp .typm button small { margin-left:auto; color:var(--r5); font-size:11px; }
+.mapp .typm button.on { border-color:var(--g4); color:var(--g4); background:#c8a84e14; }
+.mapp .placem { height:40px; width:100%; border:1px solid var(--r6); display:flex; align-items:center; justify-content:space-between; padding:0 12px; color:var(--r3); font-size:13.5px; background:#0a1220; }
+
+/* 6 · Zoom Reliquaire mobile (plein écran, 4 hexagones au bord, dossier = feuille du bas) */
+.mapp .zm { position:fixed; inset:0; z-index:45; display:flex; flex-direction:column; overflow:hidden; color:var(--r1);
+  background:radial-gradient(330px 380px at 50% 34%, color-mix(in srgb, var(--dc) 32%, transparent), transparent 70%), #05080f; }
+.mapp .zm .rays { position:absolute; left:50%; top:32%; width:620px; height:620px; transform:translate(-50%,-50%); pointer-events:none;
+  background:repeating-conic-gradient(color-mix(in srgb, var(--dc) 14%, transparent) 0 4deg, transparent 4deg 18deg);
+  -webkit-mask:radial-gradient(circle, #000 0, transparent 62%); mask:radial-gradient(circle, #000 0, transparent 62%); animation:mSpin 60s linear infinite; }
+.mapp .zm .ztop { position:relative; display:flex; align-items:center; gap:10px; padding:calc(4px + env(safe-area-inset-top, 0px)) 16px 0; z-index:3; }
+.mapp .zm .ztop .x { width:38px; height:44px; clip-path:var(--mhex); background:#ffffff14; color:var(--r1); font-size:15px; flex-shrink:0; }
+.mapp .zm .ztop .eb { font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--g4); display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden; white-space:nowrap; }
+.mapp .zm .ztop .eb img { width:14px; height:14px; object-fit:contain; }
+.mapp .zm .ztop .hrt { margin-left:auto; width:38px; height:44px; clip-path:var(--mhex); background:#ff8a8033; color:#ff8a80; font-size:16px; flex-shrink:0; }
+.mapp .zm .ztop .hrt.on { background:#ff8a80; color:#2a0b08; }
+.mapp .zm .stage { position:relative; height:388px; flex-shrink:0; display:flex; align-items:center; justify-content:center; perspective:1000px; touch-action:pan-y; }
+.mapp .zm .card { width:218px; position:relative; z-index:3; }
+.mapp .zm .card .mcard { box-shadow:0 26px 44px #000e, 0 0 40px color-mix(in srgb, var(--dc) 50%, transparent); border-radius:10px; }
+.mapp .zm .card .mcard img { border-radius:10px; }
+.mapp .zm.forge .stage { height:300px; }
+.mapp .zm.forge .card { width:170px; }
+.mapp .zm.forge .sat, .mapp .zm.forge .ghost { display:none; }
+.mapp .zm .ghost { position:absolute; top:50%; width:170px; opacity:.35; filter:brightness(.55); z-index:1; padding:0; }
+.mapp .zm .ghost.l { left:-128px; transform:translateY(-50%) rotateY(32deg); }
+.mapp .zm .ghost.r { right:-128px; transform:translateY(-50%) rotateY(-32deg); }
+.mapp .zm .ghost img { width:100%; border-radius:8px; display:block; }
+.mapp .sat { position:absolute; width:54px; height:62px; clip-path:var(--mhex); background:linear-gradient(160deg,var(--g4),var(--g6)); display:grid; place-items:center; z-index:4; filter:drop-shadow(0 6px 10px #000); }
+.mapp .sat > div { position:absolute; inset:2px; clip-path:var(--mhex); background:radial-gradient(circle at 50% 35%, #1e2e48, #0a1220); display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.mapp .sat b { font:700 18px Cinzel,Georgia,serif; color:var(--r1); display:flex; align-items:center; gap:2px; line-height:1; }
+.mapp .sat b .mmask { width:17px; height:17px; background:currentColor; -webkit-mask:var(--mmi) center/contain no-repeat; mask:var(--mmi) center/contain no-repeat; }
+.mapp .sat b img { width:17px; height:17px; object-fit:contain; }
+.mapp .sat small { font-size:7px; letter-spacing:.1em; text-transform:uppercase; color:var(--g4); margin-top:1px; }
+.mapp .sat .men { width:26px; height:26px; border-radius:50%; background:#f4f1ea; color:#0a1220; font:800 14px "Source Sans 3"; display:grid; place-items:center; }
+.mapp .sat img.big { width:24px; height:24px; object-fit:contain; }
+.mapp .sat.s1 { left:16px; top:58px; } .mapp .sat.s2 { right:16px; top:58px; } .mapp .sat.s3 { left:16px; bottom:58px; } .mapp .sat.s4 { right:16px; bottom:58px; }
+.mapp .zm .pager { position:relative; z-index:3; display:flex; justify-content:center; align-items:center; gap:14px; font:600 12px Cinzel,Georgia,serif; color:var(--r4); margin-top:-6px; }
+.mapp .zm .pager b { color:var(--g4); font-size:14px; }
+.mapp .zm .pager button { font-size:18px; color:var(--r3); width:32px; height:32px; }
+.mapp .zm .pager .sw { font:500 10.5px "Source Sans 3"; color:var(--r5); }
+.mapp .zm .ctas { position:relative; z-index:3; display:flex; gap:8px; padding:12px 16px 0; }
+.mapp .zm .ctas .add { flex:1; height:46px; background:linear-gradient(160deg,var(--g4),var(--g6)); color:var(--r9); font:800 14.5px "Source Sans 3"; clip-path:var(--mcut); }
+.mapp .zm .ctas .dk { height:46px; padding:0 14px; border:1px solid var(--r6); color:var(--r3); font-weight:700; font-size:13px; clip-path:var(--mcut); background:#0a1220aa; }
+.mapp .zm .dos { position:absolute; left:0; right:0; bottom:0; z-index:6; background:linear-gradient(180deg,#141f33,#0d1626); border-top:1px solid #c8a84e88; border-radius:22px 22px 0 0; box-shadow:0 -14px 40px #000c; height:268px; display:flex; flex-direction:column; transition:height .3s; padding-bottom:env(safe-area-inset-bottom, 0px); }
+.mapp .zm .dos.full { height:78%; }
+.mapp .zm .dos .grab { width:44px; height:5px; border-radius:3px; background:#c8a84e88; margin:8px auto 2px; cursor:pointer; flex-shrink:0; touch-action:none; }
+.mapp .zm .dos h3 { font:700 20px Cinzel,Georgia,serif; color:var(--r1); padding:4px 18px 0; }
+.mapp .zm .dos .idl { display:flex; gap:5px; flex-wrap:wrap; padding:6px 18px 8px; }
+.mapp .zm .dos .idl span { height:24px; display:inline-flex; align-items:center; gap:5px; padding:0 8px; border:1px solid var(--r6); font-size:11px; font-weight:600; color:var(--r3); background:#0a1220aa; }
+.mapp .zm .dos .idl img { width:13px; height:13px; object-fit:contain; }
+.mapp .zm .dos .idl .mmask { width:13px; height:13px; background:currentColor; -webkit-mask:var(--mmi) center/contain no-repeat; mask:var(--mmi) center/contain no-repeat; }
+.mapp .zm .dos .idl .men { width:15px; height:15px; border-radius:50%; background:#f4f1ea; color:#0a1220; font:800 9px "Source Sans 3"; display:inline-grid; place-items:center; }
+.mapp .zm .dos .tabsm { display:flex; border-bottom:1px solid var(--r6); padding:0 8px; overflow-x:auto; scrollbar-width:none; flex-shrink:0; }
+.mapp .zm .dos .tabsm button { padding:8px 10px 9px; font-size:12px; font-weight:700; color:var(--r4); position:relative; white-space:nowrap; display:flex; gap:5px; align-items:center; }
+.mapp .zm .dos .tabsm button.on { color:var(--g4); }
+.mapp .zm .dos .tabsm button.on:after { content:""; position:absolute; left:8px; right:8px; bottom:-1px; height:2px; background:var(--g4); }
+.mapp .zm .dos .tabsm i { font-style:normal; min-width:16px; height:18px; clip-path:var(--mhex); background:#c8a84e33; color:var(--g4); font-size:9.5px; display:grid; place-items:center; }
+.mapp .zm .dos .db { flex:1; overflow-y:auto; padding:12px 18px 20px; font-size:13.5px; line-height:1.6; color:var(--r1); scrollbar-width:none; min-height:0; }
+.mapp .zm .dos .db .ot { border:1px solid #c8a84e44; background:#0a1220; padding:12px 14px; }
+.mapp .zm .dos .facts2 { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:10px; }
+.mapp .zm .dos .facts2 > div { border:1px solid var(--r6); padding:6px 9px; font-size:12px; }
+.mapp .zm .dos .facts2 small { display:block; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--r5); }
+
+/* 7 · Panneau « Ajouter à ma collection » mobile */
+.mapp .lngm { display:flex; gap:12px; }
+.mapp .lngm .l { width:66px; height:74px; clip-path:var(--mhex); background:#2a3a55; display:grid; place-items:center; }
+.mapp .lngm .l > div { width:62px; height:70px; clip-path:var(--mhex); background:#0d1626; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.mapp .lngm .l b { font:700 18px Cinzel,Georgia,serif; color:var(--r3); }
+.mapp .lngm .l small { font-size:9.5px; color:var(--r5); }
+.mapp .lngm .l.on { background:linear-gradient(160deg,var(--g4),var(--g6)); }
+.mapp .lngm .l.on b { color:var(--r9); }
+.mapp .lngm .l.on small { color:#0a1220cc; }
+.mapp .qtym { display:flex; align-items:center; gap:14px; }
+.mapp .qtym .qb { width:42px; height:42px; border-radius:50%; border:1px solid var(--g6); color:var(--g4); font-size:22px; font-weight:700; flex-shrink:0; }
+.mapp .qtym .qn { width:62px; height:70px; clip-path:var(--mhex); background:linear-gradient(160deg,var(--g4),var(--g6)); display:grid; place-items:center; font:700 28px Cinzel,Georgia,serif; color:var(--r9); }
+.mapp .qtym .qk { display:flex; gap:4px; margin-left:auto; }
+.mapp .qtym .qk button { height:30px; padding:0 9px; border:1px solid var(--r6); color:var(--r4); font-weight:700; font-size:12px; }
+.mapp .qtym .qk button.on { border-color:var(--g4); color:var(--g4); }
+.mapp .finm { display:flex; gap:8px; }
+.mapp .finm button { flex:1; height:38px; border:1px solid var(--r6); color:var(--r3); font-weight:700; font-size:13px; }
+.mapp .finm button.on { border-color:var(--g4); color:var(--g4); background:#c8a84e18; }
+.mapp .finm button.foil { background:linear-gradient(110deg,#ff5fa233,#ffd86b33,#6bffb833,#6bc7ff33,#b06bff33); }
+.mapp .condm { display:flex; gap:4px; flex-wrap:wrap; }
+.mapp .condm button { height:32px; min-width:42px; padding:0 6px; border:1px solid var(--r6); color:var(--r4); font:700 12px "JetBrains Mono",monospace; }
+.mapp .condm button.on { background:var(--g4); color:var(--r9); border-color:var(--g4); }
+.mapp .m-sf { position:sticky; bottom:calc(-12px - env(safe-area-inset-bottom, 0px)); margin:14px -18px -12px; padding:12px 18px calc(14px + env(safe-area-inset-bottom, 0px)); border-top:1px solid #2a3a5588; background:linear-gradient(180deg,#141f33,#0d1626); display:flex; gap:10px; align-items:center; }
+.mapp .m-sf .cancel { color:var(--r4); text-decoration:underline; font-size:13px; }
+.mapp .m-sf .go { flex:1; height:48px; background:linear-gradient(160deg,var(--g4),var(--g6)); color:var(--r9); font:800 15px "Source Sans 3"; clip-path:var(--mcut); display:flex; align-items:center; justify-content:center; gap:8px; }
+.mapp .m-sf .go .men { width:22px; height:22px; border-radius:50%; background:#f4f1ea; color:var(--r9); font:800 12px "Source Sans 3"; display:inline-grid; place-items:center; }
+
+/* Animations coupées (rf-calm / prefers-reduced-motion) */
+.rf-calm .mapp .tabbar .scanb, .rf-calm .mapp .zm .rays { animation:none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .mapp .tabbar .scanb, .mapp .zm .rays { animation:none !important; }
+  .mapp .zm .dos { transition:none; }
+}
