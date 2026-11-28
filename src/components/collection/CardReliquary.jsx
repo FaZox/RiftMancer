@@ -444,7 +444,8 @@ export default function CardReliquary({
               </button>
             );
           })}
-          <div ref={cardRef} {...tilt} className="card rf-holo rf-holo-on select-none">
+          <div className="cardwrap">
+            <div ref={cardRef} {...tilt} className="card rf-holo rf-holo-on select-none">
             {isLandscape ? (
               <span className="mcard block w-full overflow-hidden" style={{ aspectRatio: '7 / 5' }} role="img" aria-label={name}>
                 <img src={imgSrc} alt="" draggable={false} onError={(e) => { if (imgSrc !== thumbSrc(cardId)) setImgSrc(thumbSrc(cardId)); else handleImageError(e, cardId); }}
@@ -470,6 +471,7 @@ export default function CardReliquary({
           <Hex ref={setHex(3)} className="sat s4" style={{ width: 54, height: 62 }} label={domainLabel(domains[0] || 'colorless')} aria={`${tx('Domaine')} : ${domains.map(domainLabel).join(', ') || '—'}`}>
             {domains.length && domainIcon(domains[0]) ? <img src={domainIcon(domains[0])} alt="" className="big" /> : <span className="text-rift-500 text-lg">—</span>}
           </Hex>
+          </div>
         </div>
 
         {((hasList && list.length > 1) || (!hasList && position)) && (

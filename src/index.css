@@ -574,7 +574,7 @@
 .mapp .placem { height:40px; width:100%; border:1px solid var(--r6); display:flex; align-items:center; justify-content:space-between; padding:0 12px; color:var(--r3); font-size:13.5px; background:#0a1220; }
 
 /* 6 · Zoom Reliquaire mobile (plein écran, 4 hexagones au bord, dossier = feuille du bas) */
-.mapp .zm { position:fixed; inset:0; z-index:45; display:flex; flex-direction:column; overflow:hidden; color:var(--r1);
+.mapp .zm { position:fixed; inset:0; z-index:45; display:flex; flex-direction:column; overflow:hidden; color:var(--r1); padding-bottom:268px;
   background:radial-gradient(330px 380px at 50% 34%, color-mix(in srgb, var(--dc) 32%, transparent), transparent 70%), #05080f; }
 .mapp .zm .rays { position:absolute; left:50%; top:32%; width:620px; height:620px; transform:translate(-50%,-50%); pointer-events:none;
   background:repeating-conic-gradient(color-mix(in srgb, var(--dc) 14%, transparent) 0 4deg, transparent 4deg 18deg);
@@ -585,12 +585,12 @@
 .mapp .zm .ztop .eb img { width:14px; height:14px; object-fit:contain; }
 .mapp .zm .ztop .hrt { margin-left:auto; width:38px; height:44px; clip-path:var(--mhex); background:#ff8a8033; color:#ff8a80; font-size:16px; flex-shrink:0; }
 .mapp .zm .ztop .hrt.on { background:#ff8a80; color:#2a0b08; }
-.mapp .zm .stage { position:relative; height:388px; flex-shrink:0; display:flex; align-items:center; justify-content:center; perspective:1000px; touch-action:pan-y; }
-.mapp .zm .card { width:218px; position:relative; z-index:3; }
+.mapp .zm .stage { position:relative; flex:1 1 auto; min-height:388px; display:flex; align-items:center; justify-content:center; perspective:1000px; touch-action:pan-y; }
+.mapp .zm .cardwrap { position:relative; width:218px; flex-shrink:0; z-index:3; } .mapp .zm .card { width:100%; position:relative; }
 .mapp .zm .card .mcard { box-shadow:0 26px 44px #000e, 0 0 40px color-mix(in srgb, var(--dc) 50%, transparent); border-radius:10px; }
 .mapp .zm .card .mcard img { border-radius:10px; }
-.mapp .zm.forge .stage { height:300px; }
-.mapp .zm.forge .card { width:170px; }
+.mapp .zm.forge .stage { flex:0 0 auto; height:300px; min-height:0; }
+.mapp .zm.forge .cardwrap { width:170px; }
 .mapp .zm.forge .sat, .mapp .zm.forge .ghost { display:none; }
 .mapp .zm .ghost { position:absolute; top:50%; width:170px; opacity:.35; filter:brightness(.55); z-index:1; padding:0; }
 .mapp .zm .ghost.l { left:-128px; transform:translateY(-50%) rotateY(32deg); }
@@ -604,7 +604,7 @@
 .mapp .sat small { font-size:7px; letter-spacing:.1em; text-transform:uppercase; color:var(--g4); margin-top:1px; }
 .mapp .sat .men { width:26px; height:26px; border-radius:50%; background:#f4f1ea; color:#0a1220; font:800 14px "Source Sans 3"; display:grid; place-items:center; }
 .mapp .sat img.big { width:24px; height:24px; object-fit:contain; }
-.mapp .sat.s1 { left:16px; top:58px; } .mapp .sat.s2 { right:16px; top:58px; } .mapp .sat.s3 { left:16px; bottom:58px; } .mapp .sat.s4 { right:16px; bottom:58px; }
+.mapp .sat.s1 { left:-70px; top:16px; } .mapp .sat.s2 { right:-70px; top:16px; } .mapp .sat.s3 { left:-70px; bottom:16px; } .mapp .sat.s4 { right:-70px; bottom:16px; }
 .mapp .zm .pager { position:relative; z-index:3; display:flex; justify-content:center; align-items:center; gap:14px; font:600 12px Cinzel,Georgia,serif; color:var(--r4); margin-top:-6px; }
 .mapp .zm .pager b { color:var(--g4); font-size:14px; }
 .mapp .zm .pager button { font-size:18px; color:var(--r3); width:32px; height:32px; }

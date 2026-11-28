@@ -50,6 +50,33 @@ if (!process.argv.includes('--full-images') && existsSync(join(out, 'cards'))) {
   console.log(`[build-mobile] ${removed} grandes images retirées de l'APK (${Math.round(bytes / 1024 / 1024)} Mo)`);
 }
 
+// Test APK (npm run android:apk:test): embed the merged catalog of the PC test app
+// (%APPDATA%/riftmancer-test/catalogue/actif/card-hashes.json, content layers merged:
+// rulings included), so the phone shows rulings and the FR translations without a first
+// sync — same content as the PC test app. The FR texts (card-texts-fr.json,
+// rulings-fr.json) are already bundled from public/.
+if (process.argv.includes('--test')) {
+  const appdata = process.env.APPDATA;
+  const candidates = appdata ? [
+    join(appdata, 'riftmancer-test', 'catalogue', 'actif', 'card-hashes.json'),
+    join(appdata, 'riftmancer', 'catalogue', 'actif', 'card-hashes.json'),
+  ] : [];
+  const merged = candidates.find(f => existsSync(f));
+  if (merged) {
+    try {
+      const data = JSON.parse(readFileSync(merged, 'utf8'));
+      if (data.cards && data.rulings) {
+        writeFileSync(join(out, 'card-hashes.json'), JSON.stringify(data));
+        console.log(`[build-mobile] APK de test : catalogue fusionné de ${merged} embarqué (${data.cards.length} cartes, ${data.rulings.cards.length} rulings)`);
+      } else {
+        console.warn(`[build-mobile] ${merged} sans rulings : catalogue embarqué inchangé`);
+      }
+    } catch (err) {
+      console.warn(`[build-mobile] Catalogue fusionné illisible (${merged}) : ${err.message}`);
+    }
+  }
+}
+
 // No service worker in the native app.
 for (const f of readdirSync(out)) {
   if (f === 'sw.js' || f.startsWith('workbox-')) rmSync(join(out, f), { force: true });

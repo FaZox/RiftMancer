@@ -1,7 +1,7 @@
 // Parts of the « Cartes » tab, shared by the PC « Atelier » page and the phone tab:
 // ActiveChips (active filters with their icon), SyntaxHelp, MobileFilters (the phone's
-// bottom sheet: possession, boosters, domains, energy discs, might hexagons, rarity gems,
-// types, sort), CardsGrid (virtual grid, optional custom tile) and useCardsActions.
+// bottom sheet: sort, possession, boosters, domains, energy discs, might hexagons,
+// rarity gems, types), CardsGrid (virtual grid, optional custom tile) and useCardsActions.
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -109,10 +109,11 @@ export function SyntaxHelp({ onClose }) {
 }
 
 /**
- * The phone's filter sheet (maquette écran 5), top to bottom: possession, extensions
- * (boosters scrolling), domains (6 named runes), energy (8 discs 0 → 7+), might
- * (8 hexagons), rarity (5 gems), type (2 columns with counts), sort. Every filter
- * writes into the search line, so the grid behind updates live.
+ * The phone's filter sheet (maquette écran 5), top to bottom: sort first (visible
+ * without scrolling), then possession, extensions (boosters scrolling), domains
+ * (6 named runes), energy (8 discs 0 → 7+), might (8 hexagons), rarity (5 gems),
+ * type (2 columns with counts). Every filter writes into the search line, so the
+ * grid behind updates live.
  */
 export function MobileFilters({ b }) {
   const setOptions = useMemo(() => [...b.sets.keys()].map(s => s.toLowerCase()), [b.sets]);
@@ -126,6 +127,10 @@ export function MobileFilters({ b }) {
   }, [b.cards]);
   return (
     <div>
+      <h6>{tx('Tri')}</h6>
+      <select className="placem" style={{ appearance: 'none' }} value={b.view.sort} onChange={(e) => b.setView({ sort: e.target.value })} aria-label={tx('Trier')}>
+        {CARD_SORTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+      </select>
       <h6>{tx('Possession')}</h6>
       <div className="segm" style={{ height: 36 }} role="group" aria-label={tx('Possession')}>
         {[['all', tx('Toutes')], ['owned', tx('Possédées')], ['missing', tx('Manquantes')]].map(([v, l]) => (
@@ -199,10 +204,6 @@ export function MobileFilters({ b }) {
         })}
       </div>
 
-      <h6>{tx('Tri')}</h6>
-      <select className="placem" style={{ appearance: 'none' }} value={b.view.sort} onChange={(e) => b.setView({ sort: e.target.value })} aria-label={tx('Trier')}>
-        {CARD_SORTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-      </select>
     </div>
   );
 }
