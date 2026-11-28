@@ -384,6 +384,7 @@ export default function useAppController() {
     foil: card.foil,
     promo: card.promo,
     condition: card.condition,
+    source: 'scan',
     ...targetPlace(),
   }), [targetPlace]);
 
@@ -491,10 +492,31 @@ export default function useAppController() {
     const defaults = batchDefaultsRef.current;
     addEntries([{
       cardId, quantity: 1, language, condition: defaults.condition,
-      foil: isFoilOnly(cardData) || defaults.foil, promo: !!promo,
+      foil: isFoilOnly(cardData) || defaults.foil, promo: !!promo, source: 'manual',
     }]);
     showNotification(`+ ${getLocalizedName(cardData, language)}${promo ? ` (${tx('Promo')})` : ''}`, 'success');
   }, [showNotification, addEntries]);
+
+  // « ＋ Ma collection » panel of the PC card sheet: N copies with language, finish, condition and place,
+  // one message and « Annuler » for a few seconds. → the copies added
+  const handleAddCopies = useCallback(({ cardId, quantity = 1, language, foil, condition, boxId = null, deckId = null, source = 'manual' }) => {
+    const cardData = getMatcher().getCardData(cardId);
+    if (!cardData) return [];
+    const defaults = batchDefaultsRef.current;
+    const lang = language || defaults.language;
+    const qty = Math.max(1, Math.min(99, quantity | 0));
+    const added = addEntries([{
+      cardId, quantity: qty, language: lang, condition: condition || defaults.condition,
+      foil: isFoilOnly(cardData) || !!foil, promo: false, boxId, deckId, source,
+    }]) || [];
+    if (!added.length) return [];
+    setUndo({
+      message: tx('+ {name} ×{n} ajoutée(s)', { name: getLocalizedName(cardData, displayLanguage(lang)), n: added.length }),
+      run: () => deleteCopies(added.map(c => c.id)),
+      at: Date.now(),
+    });
+    return added;
+  }, [addEntries, deleteCopies]);
 
   // « Cartes » tab: one copy in the default language, « Annuler » for a few seconds.
   // quiet: several at once (the tab shows one message for all of them).
@@ -631,6 +653,7 @@ export default function useAppController() {
     handleClearAll,
     handleAddCardToExport,
     handleAddCopy,
+    handleAddCopies,
     handleQuickAdd,
     handleRemoveCopy,
     handleAddCardsToExport,

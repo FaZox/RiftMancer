@@ -49,6 +49,17 @@ export const HELP = {
   'card.wish': { label: tx('Souhaits'), title: tx('Liste de souhaits'), text: tx('Ajoutez la carte à vos souhaits ; vous pouvez y fixer un prix d’alerte.') },
   'card.prints': { label: tx('Autres impressions'), title: tx('Impressions et variantes'), text: tx('Toutes les versions de la carte (alternative, signature, promo…) avec leur prix ; touchez-en une pour l’ouvrir.') },
   'card.rulings': { label: tx('Rulings'), title: tx('Rulings'), text: tx('Les questions fréquentes sur la carte : touchez une question pour lire la réponse.') },
+  // PC: Salle du trésor, set page, Chronique, card sheet « Reliquaire », Atelier
+  'collection.hero': { label: tx('Ta collection'), title: tx('La salle du trésor'), text: tx('Ta pièce maîtresse, les chiffres de ta collection et ta valeur : un clic sur la carte l’ouvre en grand.') },
+  'collection.portals': { label: tx('Extensions'), title: tx('Les portails'), text: tx('Chaque portail se remplit d’or selon les cartes que tu possèdes. Un clic ouvre la page de l’extension.') },
+  'collection.shelves': { label: tx('Étagères'), title: tx('Les étagères'), text: tx('Tes derniers ajouts, puis une étagère par extension. « Voir tout » ouvre la page de l’extension ou la chronique.') },
+  'set.ribbon': { label: tx('Ruban de complétion'), title: tx('Le ruban'), text: tx('Un trait par carte : or si tu l’as, sombre sinon. Clique un trait pour aller à la carte.') },
+  'set.grid': { label: tx('Les cartes'), title: tx('Toute l’extension'), text: tx('Les cartes manquantes sont des alvéoles vides : ＋ l’ajoute à ta collection, ♥ à tes souhaits.') },
+  'journal.timeline': { label: tx('Frise'), title: tx('La chronique'), text: tx('Tes ajouts jour après jour, avec leur valeur ; clique une barre de l’histogramme pour aller à ce jour.') },
+  'card.forge': { label: tx('Ajouter à ma collection'), title: tx('Ajouter à ma collection'), text: tx('Choisis langue, quantité, finition, état et rangement, puis ajoute les exemplaires d’un coup.') },
+  'card.nav': { label: tx('Cartes voisines'), title: tx('Changer de carte'), text: tx('Flèches ← →, un clic sur une carte voisine ou un glissé de la carte : la suivante jaillit du portail.') },
+  'cards.facets': { label: tx('Filtres'), title: tx('Le panneau de filtres'), text: tx('Extensions, domaines, énergie, puissance, rareté et types en icônes : chaque filtre écrit sa clé dans la recherche.') },
+  'cards.size': { label: tx('Taille des cartes'), title: tx('Taille des cartes'), text: tx('Agrandis ou réduis les cartes de la grille ; ton choix est retenu.') },
   // Decks, value, settings
   'decks.new': { label: tx('Nouveau deck'), title: tx('Créer un deck'), text: tx('Commencez un deck : choisissez la Légende, puis ajoutez des cartes de votre collection ou non.') },
   'value.total': { label: tx('Valeur'), title: tx('Valeur de la collection'), text: tx('La valeur de vos cartes au prix Cardmarket, et son évolution jour après jour.') },
@@ -58,12 +69,14 @@ export const HELP = {
 
 /** Page → the order of its tour (ids missing on screen are skipped). */
 export const TOURS = {
-  collection: ['collection.views', 'collection.add', 'collection.search', 'collection.sort', 'collection.filters', 'collection.card', 'collection.layout', 'collection.io', 'collection.select'],
-  cards: ['cards.search', 'cards.filters', 'cards.grid', 'cards.actions'],
+  collection: ['collection.hero', 'collection.portals', 'collection.shelves', 'collection.views', 'collection.add', 'collection.search', 'collection.sort', 'collection.filters', 'collection.card', 'collection.layout', 'collection.io', 'collection.select'],
+  cards: ['cards.search', 'cards.facets', 'cards.size', 'cards.filters', 'cards.grid', 'cards.actions'],
+  set: ['set.ribbon', 'set.grid'],
+  journal: ['journal.timeline'],
   progress: ['progress.set', 'progress.show', 'progress.wishAll'],
   wishlist: ['wish.summary', 'wish.wanted', 'wish.alert', 'wish.cardmarket', 'wish.empty'],
   scan: ['scan.modes', 'scan.place', 'scan.lang', 'scan.search', 'scan.pending'],
-  card: ['card.count', 'card.tabs', 'card.lang', 'card.prints', 'card.rulings', 'card.wish'],
+  card: ['card.forge', 'card.nav', 'card.count', 'card.tabs', 'card.lang', 'card.prints', 'card.rulings', 'card.wish'],
   decks: ['decks.new'],
   value: ['value.total'],
   content: ['content.cards', 'content.prices'],

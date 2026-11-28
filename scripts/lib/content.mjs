@@ -14,10 +14,12 @@ export const PUBLIC_EXCLUDED = [
   ['public/cards/', 'images des cartes (Riot Games)'],
   ['public/card-hashes.json', 'catalogue : noms et textes des cartes (Riot Games, riftboundfr.fr)'],
   ['public/sym/', 'symboles du jeu : gemmes de rareté, puissance (Riot Games)'],
+  ['public/sets/', 'visuels des boosters d’extension (Riot Games)'],
   ['model/textures/', 'textures DTD (licence de recherche seulement)'],
   ['model/distractors/', 'images d’arrière-plan de licence inconnue'],
   ['model/manual-cards/', 'image d’une carte (Riot Games)'],
   ['docs/maquettes/', 'maquettes avec des captures de cartes'],
+  ['maquettes/', 'maquettes de design avec des images de cartes et de boosters'],
   ['CLAUDE.md', 'notes de travail de Claude Code (privées)'],
 ];
 
@@ -64,12 +66,15 @@ export function stripCardContent(dir) {
   // the game's symbols (Riot Games, public/sym): out of the public build too; the app keeps its former signs
   const sym = join(dir, 'sym');
   if (existsSync(sym)) { removed += readdirSync(sym).length; rmSync(sym, { recursive: true, force: true }); }
+  // the boosters' pictures (Riot Games, public/sets): the app shows the set code instead
+  const sets = join(dir, 'sets');
+  if (existsSync(sets)) { removed += readdirSync(sets).length; rmSync(sets, { recursive: true, force: true }); }
   return removed;
 }
 
 /** Card content inside a built app: paths under `prefix` (« assets/public/ » in the APK, « dist/ » in the PC app). */
 export function cardContentIn(paths, prefix) {
-  return paths.filter(p => p.startsWith(prefix) && (p.startsWith(`${prefix}cards/`) || p.startsWith(`${prefix}sym/`) || p === `${prefix}card-hashes.json`));
+  return paths.filter(p => p.startsWith(prefix) && (p.startsWith(`${prefix}cards/`) || p.startsWith(`${prefix}sym/`) || p.startsWith(`${prefix}sets/`) || p === `${prefix}card-hashes.json`));
 }
 
 export function needsCardContent(src) {

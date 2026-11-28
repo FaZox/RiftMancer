@@ -205,7 +205,7 @@ function TradeEditor({ trade, scannedCards, collection, org, defaultLanguage, on
     if (!(await ask({ title: tx('Mettre la collection à jour ?'), message: msg, confirmLabel: tx('Mettre à jour') }))) return;
     collection.deleteCopies(toDelete);
     collection.addEntries((trade.received || []).map(i => ({
-      cardId: i.cardId, quantity: i.quantity, language: defaultLanguage || 'French', condition: 'Near Mint', foil: false,
+      cardId: i.cardId, quantity: i.quantity, language: defaultLanguage || 'French', condition: 'Near Mint', foil: false, source: 'trade',
     })));
     save({ applied: true, valueGiven: Math.round(g * 100) / 100, valueReceived: Math.round(r * 100) / 100 });
   };

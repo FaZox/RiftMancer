@@ -21,6 +21,7 @@ import { initAutoBackup } from '../../lib/localBackup.js';
 import { initNativeAssets, removeDownloadedModels } from '../../lib/nativeAssets.js';
 import { tx } from '../../lib/i18n.js';
 import { initSymbols } from '../../lib/symbols.js';
+import { initSetImages } from '../../lib/setImages.js';
 
 export function useStartup({ initDetector, loadCollection }) {
   const [isLoading, setIsLoading] = useState(true);
@@ -46,6 +47,7 @@ export function useStartup({ initDetector, loadCollection }) {
         setLoadStage('matcher');
         await initNativeAssets();
         await initSymbols(); // Riftbound's symbols (rarity gems, Might) when the app has them
+        await initSetImages(); // booster pictures of the sets (PC « Collection »), when present
         // Preferences v4: models downloaded from the PC by older versions
         removeDownloadedModels().then(gone => { if (gone) console.log('[App] Old downloaded detection models removed'); });
         const matcher = getMatcher();

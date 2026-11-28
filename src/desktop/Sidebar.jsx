@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useContentNotices } from '../lib/contentNotices.js';
 import { APP_VERSION } from '../lib/appVersion.js';
 import {
-  GalleryVerticalEnd, LayoutGrid, Swords, ScanLine, BarChart3, Package, UserCheck, ArrowLeftRight, Settings, Trophy, Search, HelpCircle,
+  GalleryVerticalEnd, LayoutGrid, Swords, ScanLine, BarChart3, Package, UserCheck, ArrowLeftRight, Settings, Trophy, Search, HelpCircle, Heart,
 } from 'lucide-react';
 import { tx } from '../lib/i18n.js';
 
@@ -14,6 +14,7 @@ const GROUPS = [
   ] },
   { title: tx('Ma collection'), items: [
     { id: 'collection', label: tx('Collection'), icon: LayoutGrid },
+    { id: 'wishlist', label: tx('Souhaits'), icon: Heart },
     { id: 'value', label: tx('Valeur'), icon: BarChart3 },
   ] },
   { title: tx('Jouer'), items: [

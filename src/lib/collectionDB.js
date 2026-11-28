@@ -164,7 +164,7 @@ export function newId() {
 }
 
 /** Build a new copy record. */
-export function makeCopy({ cardId, language, foil, promo, condition, boxId, deckId, loanId, paid, paidAt, binderPage, binderSlot, binderCols }, now = Date.now()) {
+export function makeCopy({ cardId, language, foil, promo, condition, boxId, deckId, loanId, paid, paidAt, binderPage, binderSlot, binderCols, source }, now = Date.now()) {
   return {
     id: newId(),
     cardId,
@@ -179,6 +179,8 @@ export function makeCopy({ cardId, language, foil, promo, condition, boxId, deck
     paidAt: /^\d{4}-\d{2}-\d{2}$/.test(paidAt || '') ? paidAt : null, // purchase date (YYYY-MM-DD), optional
     // page and pocket in a binder (binder.js), only in a box
     ...(boxId && binderPage > 0 ? { binderPage, binderSlot: binderSlot > 0 ? binderSlot : null, binderCols: binderCols > 0 ? binderCols : null } : {}),
+    // where the copy came from: 'scan' | 'manual' | 'trade' | 'import' (older copies: none) — shown in the Chronique
+    ...(['scan', 'manual', 'trade', 'import'].includes(source) ? { source } : {}),
     createdAt: now,
     updatedAt: now,
     deleted: false,

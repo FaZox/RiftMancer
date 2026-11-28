@@ -22,7 +22,7 @@ Jamais la version production automatiquement.
 
 ## ⚠️ Pièges connus (ne pas retomber dedans)
 
-- **`CardZoom` et le cœur des souhaits** : toujours passer `byCard={wishlist.byCard}` en plus de `wanted=...`, sinon le cœur d'une variante reflète la carte d'origine (bug corrigé dans CardsTab, CardsPage, CollectionPage, MoreTab, OrganizeTab, ValueTab).
+- **`CardZoom` et le cœur des souhaits** : toujours passer `byCard={wishlist.byCard}` en plus de `wanted=...`, sinon le cœur d'une variante reflète la carte d'origine (bug corrigé dans CardsTab, CardsPage, CollectionPage, MoreTab, OrganizeTab, ValueTab). Sur PC, la fiche `CardReliquary` est ouverte via le hook `useReliquary`, qui passe déjà `byCard`.
 - **Variantes** : regroupées par `oracle` (`src/lib/prints.js`, `groupKey` dans `src/lib/cardsBrowser.js`).
 - **Skills locaux** : format `.vibe/skills/<nom>/SKILL.md` (dossier + SKILL.md), sinon Vibe ne les découvre pas.
 

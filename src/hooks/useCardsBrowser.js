@@ -16,7 +16,7 @@ import { takeRequest, onRequest } from '../lib/navRequest.js';
  * with the scroll position.
  */
 export const VIEW_KEY = 'rm.cards.view.v1';
-export const DEFAULT_VIEW = { query: '', ownership: 'all', sort: 'collector', size: 'l', grouped: true, dimMissing: false, scroll: 0 };
+export const DEFAULT_VIEW = { query: '', ownership: 'all', sort: 'collector', size: 'l', tile: 170, grouped: true, dimMissing: false, scroll: 0 };
 
 let memory = null; // the view while the app runs (no storage read at each tab change)
 function loadView() {

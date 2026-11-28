@@ -1,92 +1,45 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import CardZoom from '../../components/collection/CardZoom.jsx';
-import { ProgressView } from '../../components/collection/CollectionTab.jsx';
-import { CardsPanel } from './CollectionCards.jsx';
-import { WishlistPanel } from './CollectionWishlist.jsx';
-import { tx } from '../../lib/i18n.js';
+import React, { useEffect, useMemo, useState } from 'react';
+import CollectionTreasure from './CollectionTreasure.jsx';
+import CollectionSetPage from './CollectionSetPage.jsx';
+import CollectionJournal from './CollectionJournal.jsx';
+import useReliquary from '../../components/collection/useReliquary.jsx';
+import useValueData from '../../hooks/useValueData.js';
+import { onRequest, takeRequest } from '../../lib/navRequest.js';
 import { useHelpPage } from '../../lib/help.js';
 
-
-const VIEWS = [
-  { id: 'cards', label: tx('Mes cartes') },
-  { id: 'progress', label: tx('Progression') },
-  { id: 'wishlist', label: tx('Souhaits') },
-];
 /**
- * PC collection: a toolbar with every filter in sight, a grid whose card size
- * you choose, or a table where each stack is edited in place (language,
- * condition, foil, quantity, location). Click a card to open it.
+ * PC collection: « Salle du trésor » (masterpiece, medallions, set portals, shelves), a set page (« Atlas ») and
+ * the « Chronique » of the latest additions. Adding cards happens from the card sheet (« ＋ Ma collection »);
+ * the wish list has its own page. The treasure stays mounted behind the other views (scroll position kept).
  */
-export default function CollectionPage({
-  scannedCards, wishlist, org, onMoveStack, onAddCopy, onRemoveCopy, onUpdateCard, onRemoveCard, onDeleteStacks,
-  onExport, onImportEntries, defaultLanguage,
-}) {
-  const [view, setView] = useState('cards');
-  const [zoom, setZoom] = useState(null); // { cardId, language, list, index }
-  useHelpPage(view === 'cards' ? null : view); // Progression, Souhaits: their own tour
+export default function CollectionPage({ scannedCards, copies, wishlist, org, onAddCopy, onAddCopies, onRemoveCopy, onUpdateCard, defaultLanguage, onSearch }) {
+  const [view, setView] = useState(() => { const r = takeRequest('set'); return r ? { kind: 'set', code: r.code } : { kind: 'treasure' }; });
+  const { prices, history } = useValueData(scannedCards);
+  useHelpPage(view.kind === 'treasure' ? 'collection' : view.kind === 'set' ? 'set' : 'journal');
   const ownedByCard = useMemo(() => {
     const m = new Map();
     for (const s of scannedCards) m.set(s.cardData.id, (m.get(s.cardData.id) || 0) + s.quantity);
     return m;
   }, [scannedCards]);
+  // « Open that set » from elsewhere (Valeur, global search)
+  useEffect(() => onRequest((r) => { if (r.kind === 'set') { takeRequest('set'); setView({ kind: 'set', code: r.code }); } }), []);
 
-  const openCard = useCallback((cardId, language = 'French', list = null) => {
-    const index = list ? list.findIndex(c => c.cardId === cardId) : -1;
-    setZoom({ cardId, language, list: index >= 0 ? list : null, index });
-  }, []);
-  const stepZoom = useCallback((d) => setZoom(z => {
-    const i = z.index + d;
-    if (!z.list || i < 0 || i >= z.list.length) return z;
-    return { ...z, ...z.list[i], index: i };
-  }), []);
-
-  const total = scannedCards.reduce((n, s) => n + s.quantity, 0);
-  const wishCount = wishlist.items.length;
+  const zoom = useReliquary({ stacks: scannedCards, wishlist, onAddCopy, onAddCopies, onRemoveCopy, onUpdateCard, org, defaultLanguage });
+  const onOpen = (id, o) => zoom.open(id, o);
+  const treasure = view.kind === 'treasure';
 
   return (
     <div className="flex-1 min-h-0 flex flex-col">
-      {/* Page header */}
-      <header className="flex-shrink-0 px-8 pt-7 pb-4 flex items-end gap-6 border-b border-gold-500/15">
-        <div className="min-w-0">
-          <h1 className="h-title text-[28px] leading-none">{tx('Collection')}</h1>
-          <p className="text-sm text-rift-400 mt-2">{total} {tx('carte')}{total > 1 ? 's' : ''} · {ownedByCard.size} {tx('différente')}{ownedByCard.size > 1 ? 's' : ''}</p>
-        </div>
-        <div className="seg ml-6 w-[420px]" role="tablist" aria-label={tx('Vues')} data-help="collection.views">
-          {VIEWS.map(v => (
-            <button key={v.id} role="tab" aria-selected={view === v.id} onClick={() => setView(v.id)}>
-              {v.label}{v.id === 'wishlist' && wishCount > 0 && <span className="ml-1.5 text-rift-400 font-normal">{wishCount}</span>}
-            </button>
-          ))}
-        </div>
-      </header>
-
-      {view === 'cards' && (
-        <CardsPanel
-          scannedCards={scannedCards} org={org} onOpen={openCard} onUpdateCard={onUpdateCard}
-          onRemoveCard={onRemoveCard} onDeleteStacks={onDeleteStacks} onMoveStack={onMoveStack}
-          onExport={onExport} onImportEntries={onImportEntries} defaultLanguage={defaultLanguage}
-        />
+      <div className={treasure ? 'flex-1 min-h-0 flex flex-col' : 'hidden'}>
+        <CollectionTreasure scannedCards={scannedCards} ownedByCard={ownedByCard} copies={copies} wishlist={wishlist} prices={prices} history={history}
+          onOpen={onOpen} onOpenSet={(code) => setView({ kind: 'set', code })} onOpenJournal={() => setView({ kind: 'journal' })} onSearch={onSearch} />
+      </div>
+      {view.kind === 'set' && (
+        <CollectionSetPage key={view.code} code={view.code} scannedCards={scannedCards} ownedByCard={ownedByCard} wishlist={wishlist} prices={prices}
+          onOpen={onOpen} onBack={() => setView({ kind: 'treasure' })} />
       )}
-      {view === 'progress' && <ProgressView ownedByCard={ownedByCard} wishlist={wishlist} onOpen={openCard} />}
-      {view === 'wishlist' && <WishlistPanel ownedByCard={ownedByCard} wishlist={wishlist} onOpen={openCard} />}
-
-      {zoom && (
-        <CardZoom
-          cardId={zoom.cardId}
-          language={zoom.language}
-          stacks={scannedCards}
-          wanted={wishlist.byCard.get(zoom.cardId)?.quantity || 0}
-          byCard={wishlist.byCard}
-          onSetWanted={wishlist.setWanted}
-          onAddCopy={onAddCopy}
-          onRemoveCopy={onRemoveCopy}
-          onUpdateCard={onUpdateCard}
-          onClose={() => setZoom(null)}
-          onPrev={zoom.list && zoom.index > 0 ? () => stepZoom(-1) : null}
-          onNext={zoom.list && zoom.index < zoom.list.length - 1 ? () => stepZoom(1) : null}
-          position={zoom.list ? `${zoom.index + 1} / ${zoom.list.length}` : null}
-        />
-      )}
+      {view.kind === 'journal' && <CollectionJournal copies={copies} prices={prices} onOpen={onOpen} onBack={() => setView({ kind: 'treasure' })} />}
+      {zoom.element}
     </div>
   );
 }

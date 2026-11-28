@@ -11,7 +11,7 @@ export default function ToastNotification({ notification }) {
     <div
       role="status"
       aria-live="polite"
-      className="fixed bottom-24 left-4 right-4 sm:left-auto sm:max-w-sm z-50 flex items-center gap-2.5 px-3.5 py-2.5 bg-rift-800 border border-gold-500/40 text-[13px] font-semibold text-rift-100 shadow-xl fade-in"
+      className="fixed bottom-24 left-4 right-4 sm:left-auto sm:max-w-sm z-[85] flex items-center gap-2.5 px-3.5 py-2.5 bg-rift-800 border border-gold-500/40 text-[13px] font-semibold text-rift-100 shadow-xl fade-in"
     >
       <span className={`hexagon w-3 h-3 flex-shrink-0 ${color}`} aria-hidden="true" />
       {notification.message}
