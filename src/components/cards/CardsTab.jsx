@@ -1,11 +1,11 @@
 // Phone « Cartes » tab — « Atelier » mobile (maquette mobile-reference.html écrans 4–5) :
-// en-tête « Cartes » + menu ⋯, recherche pleine largeur avec le compteur, ligne qui
-// défile (bouton « Filtres » + badge hexagonal, filtres actifs en étiquettes, « Toutes ▾ »),
-// grille de 3 colonnes (2 via ⋯) avec toutes les cartes en couleur et les noms complets.
+// en-tête « Cartes », recherche pleine largeur avec le compteur, rangée « Filtres » (+ badge)
+// et interrupteur « Regrouper les impressions » (le menu ⋯ et ses options ont été retirés :
+// ils dépassaient du cadre du téléphone), grille de 3 colonnes, cartes en couleur.
 // Toucher une carte = zoom « Reliquaire » (fenêtre de ±30 cartes) ; ＋ = zoom + panneau d'ajout.
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Search, MoreHorizontal, Heart, Layers, ScanLine, Check, SlidersHorizontal } from 'lucide-react';
+import { Search, Layers, Check } from 'lucide-react';
 
 import CardZoom from '../collection/CardZoom.jsx';
 
@@ -15,7 +15,7 @@ import CardTileMobile from './CardTileMobile.jsx';
 
 import useCardsBrowser from '../../hooks/useCardsBrowser.js';
 
-import { ActiveChips, SyntaxHelp, CardsGrid, useCardsActions, MobileFilters } from './CardsParts.jsx';
+import { CardsGrid, MobileFilters } from './CardsParts.jsx';
 
 import { hasKeys } from '../../lib/cardQuery.js';
 
@@ -25,13 +25,10 @@ import { locale, tx, tp } from '../../lib/i18n.js';
 
 const WINDOW = 30; // cards each side of the opened one kept for the carousel
 
-export default function CardsTab({ scannedCards, wishlist, org, onAddCopy, onAddCopies, onRemoveCopy, onUpdateCard, notify, defaultLanguage, onFind }) {
+export default function CardsTab({ scannedCards, wishlist, org, onAddCopy, onAddCopies, onRemoveCopy, onUpdateCard, defaultLanguage }) {
   const b = useCardsBrowser({ scannedCards, decks: org.decks.items, wishlist });
-  const a = useCardsActions({ b, wishlist, notify });
   const scrollRef = useRef(null);
-  const [sheet, setSheet] = useState(null); // 'filters' | 'help'
-  const [menu, setMenu] = useState(false);
-  const [ownMenu, setOwnMenu] = useState(null); // anchor rect
+  const [sheet, setSheet] = useState(null); // 'filters'
   const [zoom, setZoom] = useState(() => { const r = takeRequest('cardsFind'); return r?.cardId ? { id: r.cardId, list: null, forge: false } : null; });
   useEffect(() => onRequest((q) => {
     if (q.kind === 'cardsFind') { const r = takeRequest('cardsFind'); if (r?.cardId) setZoom({ id: r.cardId, list: null, forge: false }); }
@@ -47,42 +44,11 @@ export default function CardsTab({ scannedCards, wishlist, org, onAddCopy, onAdd
   const nFilters = b.parsed.tokens.length;
   const cols = b.view.cols === 2 ? 2 : 3;
   const fmt = (v) => v.toLocaleString(locale());
-  const ownLabel = { all: tx('Toutes'), owned: tx('Possédées'), missing: tx('Manquantes') }[b.view.ownership] || tx('Toutes');
-  const ownBtnRef = useRef(null);
-
-  const menuItem = 'w-full flex items-center gap-2 px-3 h-11 text-[13px] text-rift-100 hover:bg-rift-700 disabled:opacity-40 text-left';
-
   return (
     <div className="relative flex-1 min-h-0 flex flex-col">
       <header className="flex-shrink-0 flex flex-col">
         <div className="mh">
           <h2>{tx('Cartes')}</h2>
-          <div className="relative">
-            <button type="button" className="ib" style={{ position: 'relative' }} aria-haspopup="menu" aria-expanded={menu} aria-label={tx('Plus d’actions')} title={tx('Plus d’actions')} onClick={() => setMenu(m => !m)} data-help="cards.actions">
-              <MoreHorizontal size={18} />
-            </button>
-            {menu && (
-              <div role="menu" className="absolute right-0 top-10 z-30 w-[240px] bg-rift-800 border border-gold-500/40 shadow-xl py-1" onMouseLeave={() => setMenu(false)}>
-                <button role="menuitem" type="button" disabled={!b.counts.missing} onClick={() => { setMenu(false); a.missingToWish(); }} className={menuItem}>
-                  <Heart className="w-4 h-4 text-[#ff8ab8]" aria-hidden="true" /> {tx('Manquantes → souhaits')}
-                </button>
-                <button role="menuitemcheckbox" aria-checked={b.view.grouped} type="button" onClick={() => { b.setView({ grouped: !b.view.grouped }); setMenu(false); }} className={menuItem}>
-                  <Layers className="w-4 h-4" aria-hidden="true" /> {tx('Regrouper les impressions')} {b.view.grouped ? <Check className="w-4 h-4 ml-auto" aria-hidden="true" /> : null}
-                </button>
-                <button role="menuitemcheckbox" aria-checked={cols === 2} type="button" onClick={() => { b.setView({ cols: cols === 3 ? 2 : 3 }); setMenu(false); }} className={menuItem}>
-                  <SlidersHorizontal className="w-4 h-4" aria-hidden="true" /> {cols === 3 ? tx('Grille de 2 colonnes') : tx('Grille de 3 colonnes')}
-                </button>
-                <button role="menuitem" type="button" onClick={() => { setMenu(false); setSheet('help'); }} className={menuItem}>
-                  <span className="w-4 text-center font-mono text-[13px]" aria-hidden="true">?</span> {tx('Aide sur la syntaxe de recherche')}
-                </button>
-                {onFind && (
-                  <button role="menuitem" type="button" onClick={() => { setMenu(false); onFind(); }} className={menuItem}>
-                    <ScanLine className="w-4 h-4" aria-hidden="true" /> {tx('Trouver une carte avec le scanner')}
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
         </div>
 
         <label className="qm">
@@ -100,25 +66,13 @@ export default function CardsTab({ scannedCards, wishlist, org, onAddCopy, onAdd
             {tx('Filtres')}
             {nFilters > 0 && <i>{nFilters}</i>}
           </button>
-          <ActiveChips b={b} className="flex-nowrap w-max" withClear={false} />
-          <button ref={ownBtnRef} type="button" className="tk dash" aria-haspopup="menu" aria-expanded={!!ownMenu}
-            onClick={() => { const r = ownBtnRef.current?.getBoundingClientRect(); setOwnMenu(ownMenu ? null : { top: (r?.bottom || 0) + 4, left: Math.max(8, (r?.left || 0) - 120) }); }}>
-            {ownLabel} ▾
+          <button type="button" className={`tk ${b.view.grouped ? 'on' : ''}`} aria-pressed={b.view.grouped} data-help="cards.grouped"
+            onClick={() => b.setView({ grouped: !b.view.grouped })}>
+            <Layers style={{ width: 13, height: 13 }} aria-hidden="true" /> {tx('Regrouper les impressions')}
+            {b.view.grouped ? <Check style={{ width: 13, height: 13 }} aria-hidden="true" /> : null}
           </button>
         </div>
       </header>
-
-      {ownMenu && (
-        <div role="menu" className="fixed z-50 w-[180px] bg-rift-800 border border-gold-500/40 shadow-xl py-1"
-          style={{ top: ownMenu.top, left: ownMenu.left }} onMouseLeave={() => setOwnMenu(null)}>
-          {[['all', tx('Toutes')], ['owned', tx('Possédées')], ['missing', tx('Manquantes')]].map(([v, l]) => (
-            <button key={v} role="menuitemradio" aria-checked={b.view.ownership === v} type="button"
-              onClick={() => { b.setView({ ownership: v, scroll: 0 }); setOwnMenu(null); }} className={menuItem}>
-              {l} {b.view.ownership === v && <Check className="w-4 h-4 ml-auto" aria-hidden="true" />}
-            </button>
-          ))}
-        </div>
-      )}
 
       <main ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-[14px] pb-6">
         {b.items.length === 0 ? (
@@ -148,7 +102,6 @@ export default function CardsTab({ scannedCards, wishlist, org, onAddCopy, onAdd
         <MobileFilters b={b} />
       </Sheet>
 
-      {sheet === 'help' && <SyntaxHelp onClose={() => setSheet(null)} />}
 
       {zoom && (
         <CardZoom

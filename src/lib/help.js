@@ -63,6 +63,7 @@ export const HELP = {
   'cards.facets': { label: tx('Filtres'), title: tx('Le panneau de filtres'), text: tx('Extensions, domaines, énergie, puissance, rareté et types en icônes : chaque filtre écrit sa clé dans la recherche.') },
   'cards.filtersheet': { label: tx('Filtres'), title: tx('La feuille de filtres'), text: tx('Possession, boosters, runes, ronds d’énergie, hexagones de puissance, gemmes, types et tri : les filtres s’appliquent en direct, le bouton du bas indique le nombre de résultats.') },
   'cards.size': { label: tx('Taille des cartes'), title: tx('Taille des cartes'), text: tx('Agrandis ou réduis les cartes de la grille ; ton choix est retenu.') },
+  'cards.grouped': { label: tx('Impressions'), title: tx('Regrouper les impressions'), text: tx('Une seule tuile par carte avec le nombre d’impressions ; désactivé, chaque impression a sa tuile.') },
   'collection.wish': { label: tx('Souhaits'), title: tx('Vos souhaits'), text: tx('Le cœur en haut de la Collection ouvre ta liste de souhaits (aussi dans « Plus »).') },
   // Decks, value, settings
   'decks.new': { label: tx('Nouveau deck'), title: tx('Créer un deck'), text: tx('Commencez un deck : choisissez la Légende, puis ajoutez des cartes de votre collection ou non.') },
@@ -74,7 +75,7 @@ export const HELP = {
 /** Page → the order of its tour (ids missing on screen are skipped). */
 export const TOURS = {
   collection: ['collection.hero', 'collection.portals', 'collection.shelves', 'collection.wish', 'collection.views', 'collection.add', 'collection.search', 'collection.sort', 'collection.filters', 'collection.card', 'collection.layout', 'collection.io', 'collection.select'],
-  cards: ['cards.search', 'cards.facets', 'cards.filtersheet', 'cards.size', 'cards.filters', 'cards.grid', 'cards.actions'],
+  cards: ['cards.search', 'cards.facets', 'cards.filtersheet', 'cards.grouped', 'cards.size', 'cards.filters', 'cards.grid', 'cards.actions'],
   set: ['set.ribbon', 'set.grid'],
   journal: ['journal.timeline'],
   progress: ['progress.set', 'progress.show', 'progress.wishAll'],
