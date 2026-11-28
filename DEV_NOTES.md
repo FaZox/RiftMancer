@@ -77,7 +77,7 @@ RiftMancer/
 ```
 
 ### Interface PC : Cartes, Collection, Souhaits, fiche carte (refonte 2026-11)
-Plan de référence : `maquettes/PLAN-refonte-cartes-collection-zoom.md` (maquette : `maquettes/reference-cartes-collection-zoom.html`). Android (`src/App.jsx`, `CardZoom`, `CardsView`, `ImportCsvDialog`…) **n'est pas concerné** et garde ses écrans.
+Plan de référence : `maquettes/PLAN-refonte-cartes-collection-zoom.md` (maquette : `maquettes/reference-cartes-collection-zoom.html`). Android suit le même design depuis la branche `feat/refonte-mobile` (plan `maquettes/PLAN-mobile-cartes-collection-zoom.md`, maquette `maquettes/mobile-reference.html`) — voir la section « Interface mobile » ci-dessous.
 
 **Cartes « Atelier »** — `src/desktop/pages/CardsPage.jsx`
 - Panneau de filtres toujours visible, 262 px : `src/components/cards/AtelierFilters.jsx` (recherche, possession, boosters, runes, ronds d'énergie, hexagones de **puissance**, gemmes, types avec nombres). Chaque bouton écrit dans la ligne de recherche (`src/lib/cardQuery.js` : `toggleOption`, `setSelection`) : syntaxe et filtres restent une seule chose.
@@ -101,9 +101,20 @@ Plan de référence : `maquettes/PLAN-refonte-cartes-collection-zoom.md` (maquet
 
 **Souhaits** : entrée de la barre latérale (♥ + badge) sous Collection, page `src/desktop/pages/WishlistPage.jsx` (enveloppe `WishlistPanel`).
 
-**Retiré côté PC** : vue « Mes cartes » (`CollectionCards.jsx` supprimé), import / export CSV, actions groupées, « Noms en français » dans les pages PC. Les briques partagées (`ImportCsvDialog`, `EXPORT_FORMATS`, `useDisplayFrench`, `ProgressView`, `CardsView`) restent car **Android les utilise encore**.
+**Retiré côté PC** : vue « Mes cartes » (`CollectionCards.jsx` supprimé), import / export CSV, actions groupées, « Noms en français » dans les pages PC.
 
 **Aide** (`src/lib/help.js`) : nouvelles ancres `collection.hero/portals/shelves`, `set.*`, `journal.timeline`, `card.forge/nav`, `cards.facets/size` ; les anciennes ancres restent (Android).
+
+### Interface mobile (Android, refonte 2026-11 — branche `feat/refonte-mobile`)
+Plan : `maquettes/PLAN-mobile-cartes-collection-zoom.md`, maquette : `maquettes/mobile-reference.html` (7 écrans 390 × 844). Toutes les classes de la maquette sont scopées sous `.mapp` (coquille de `src/App.jsx`) dans `src/index.css` — la version PC n'est pas concernée. Aperçu comparatif PC : `maquettes/preview-mobile-app.html` (servir la racine + `npx vite preview`).
+
+- **Barre du bas** : `src/components/BottomTabBar.jsx` — 7 onglets en hexagones 34 × 30, actif doré + trait lumineux, Scanner = hexagone doré 58 × 64 qui dépasse de 26 px et pulse (2,6 s, coupé si `rf-calm`).
+- **Feuilles du bas** : `src/components/common/Sheet.jsx` (branche téléphone : coins 22 px, bord or, poignée or, fond `#141f33 → #0d1626`, pied avec gros bouton doré, `env(safe-area-inset-bottom)`, prop `action` = lien « Tout effacer » en tête).
+- **Collection** : `src/components/collection/CollectionTab.jsx` = aiguillage `{ kind: 'treasure' | 'set' | 'journal' }` (plus de `VIEWS`). `TreasureMobile.jsx` (héros 128 px + 4 médaillons + portails `HexPortal` en défilement + courbe 30 j + étagères), `SetPageMobile.jsx` (Atlas : booster, portail, palier, ruban — toucher = aller à la carte, appui long = aperçu —, barre collante + feuille de filtres, grille de 3 avec alvéoles sombres et ＋ au coin), `JournalMobile.jsx` (Chronique). Pièces communes déplacées dans `src/components/collection/CollectionParts.jsx`. `CardsView.jsx`, `ProgressView.jsx`, `ImportCsvDialog.jsx` **supprimés** (import/export CSV, actions groupées et « Noms en français » retirés d'Android aussi). Souhaits : ♥ dans l'en-tête du Trésor (`requestOpen({ kind: 'more', id: 'wishlist' })`, `App.jsx` bascule sur l'onglet `more`) + entrée « Souhaits » en tête de `MoreTab.jsx` (`WishlistView` réutilisée).
+- **Cartes (Atelier mobile)** : `src/components/cards/CardsTab.jsx` — en-tête + menu ⋯ (manquantes → souhaits, regrouper les impressions, grille 2/3 colonnes via `view.cols`, aide syntaxe, trouver avec le scanner), recherche 46 px + compteur, ligne qui défile (bouton « Filtres » + badge hexagonal, `ActiveChips` avec icônes, étiquette pointillée « Toutes ▾ »), grille 3 colonnes via `CardTileMobile.jsx` (couleur, badge quantité, ♥, nom complet + n°). Feuille de filtres `MobileFilters` dans `CardsParts.jsx` (possession, boosters, 6 runes, 8 ronds d'énergie, 8 hexagones de puissance, 5 gemmes, types avec nombres, tri) — filtres en direct, pied « Voir {n} cartes ». `CardsGrid` accepte `renderTile` / `withSets`.
+- **Zoom « Reliquaire » mobile** : `CardZoom.jsx` délègue à `CardReliquary.jsx` quand `!usePcInterface` (mêmes props + `list` / `forge` / `onAddCopies` / `org` / `defaultLanguage` ; `byCard` toujours passé). Mise en page mobile dans `CardReliquary.jsx` : plein écran z-45, halo `--dc` + rayons (coupés si Android < 10 ou `hardwareConcurrency <= 4`), ✕ / extension·n° / ♥ en haut, carte 218 px, 4 hexagones 54 × 62 au bord de la scène, voisines qui dépassent (rotateY ±32°), balayage > 50 px sur la scène seule = effet Portail (`reliquaryFx.js`), dossier = feuille du bas 268 px / 78 % (poignée : tap = bascule, drag = tire/replie), 5 onglets (contenu identique au PC, extrait dans `tabPanels`). « ＋ Ma collection » → `Sheet` + `AddCopiesPanel.jsx` (mise en page téléphone : 3 hexagones de langue, −/+ 42 px + hexagone quantité + ×1 ×2 ×3, finition, état, rangement, pied Annuler + « Ajouter » doré). « + Deck » → feuille de choix de deck. Bouton retour : feuille → replier le dossier → fermer le zoom (`useBackHandler`).
+- `PurchaseEditor` déplacé dans `src/components/collection/PurchaseEditor.jsx` (réexporté par `CardZoom.jsx`).
+- **Aide** : ancres `card.swipe`, `card.sheet`, `cards.filtersheet`, `collection.wish`.
 
 ---
 

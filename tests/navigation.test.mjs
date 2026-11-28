@@ -45,5 +45,10 @@ test('phone: Collection · Cartes · Valeur · Scanner · Decks · Boîtes · Pl
   assert.deepEqual([...bar.matchAll(/\{ id: '(\w+)'/g)].map(m => m[1]), ['collection', 'cards', 'value', 'scan', 'decks', 'boxes', 'more']);
   const more = read('src/components/more/MoreTab.jsx');
   assert.doesNotMatch(more, /id: 'value'|id: 'boxes'/);
-  assert.match(read('src/components/collection/CollectionTab.jsx'), /label: 'Mes cartes'/);
+  assert.match(more, /id: 'wishlist'/); // « Souhaits » en tête de « Plus » (refonte mobile)
+  const coll = read('src/components/collection/CollectionTab.jsx');
+  assert.match(coll, /TreasureMobile/); // aiguillage Trésor / Atlas / Chronique (plus de vues « Mes cartes »…)
+  assert.match(coll, /SetPageMobile/);
+  assert.match(coll, /JournalMobile/);
+  assert.doesNotMatch(coll, /Mes cartes/);
 });

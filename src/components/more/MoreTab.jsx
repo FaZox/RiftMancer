@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Repeat, Users, Settings, ChevronRight, ArrowLeft, RefreshCw } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Repeat, Users, Settings, ChevronRight, ArrowLeft, RefreshCw, Heart } from 'lucide-react';
 import { useNeedsAttention } from '../../lib/attention.js';
 import FriendsView from '../friends/FriendsView.jsx';
 import CardZoom from '../collection/CardZoom.jsx';
+import { WishlistView } from '../collection/WishlistView.jsx';
 import OrganizeTab from '../organize/OrganizeTab.jsx';
 import SettingsTab from '../settings/SettingsTab.jsx';
 import { getSyncState, subscribeSync, checkPcOffer } from '../../lib/syncClient.js';
@@ -10,13 +11,13 @@ import { SyncButtons } from '../settings/SyncSection.jsx';
 import { isDesktop } from '../../lib/collectionDB.js';
 import { useBackHandler } from '../../lib/backButton.js';
 import { takeRequest, onRequest } from '../../lib/navRequest.js';
-import { tx } from '../../lib/i18n.js';
+import { tx, tp } from '../../lib/i18n.js';
 
 /**
  * « Plus » tab: everything that is not used every day — trades, boxes,
  * loans, settings (with the phone ↔ PC sync).
  */
-export default function MoreTab({ scannedCards, collection, org, wishlist, onAddCopy, defaultLanguage, settingsProps, showNotification }) {
+export default function MoreTab({ scannedCards, collection, org, wishlist, onAddCopy, onAddCopies, defaultLanguage, settingsProps, showNotification }) {
   const [section, setSection] = useState(() => takeRequest('more')?.id || null);
   const [settingsOpen, setSettingsOpen] = useState(() => takeRequest('setting')?.id || null);
   useEffect(() => onRequest((q) => {
@@ -26,6 +27,11 @@ export default function MoreTab({ scannedCards, collection, org, wishlist, onAdd
   useBackHandler(!!section, () => setSection(null));
   const [zoom, setZoom] = useState(null);
   const attention = useNeedsAttention();
+  const ownedByCard = useMemo(() => {
+    const m = new Map();
+    for (const s of scannedCards) m.set(s.cardData.id, (m.get(s.cardData.id) || 0) + s.quantity);
+    return m;
+  }, [scannedCards]);
   const [sync, setSync] = useState(getSyncState());
   useEffect(() => subscribeSync(setSync), []);
   useEffect(() => { if (!isDesktop) checkPcOffer(); }, []);
@@ -39,6 +45,7 @@ export default function MoreTab({ scannedCards, collection, org, wishlist, onAdd
       : tx('Synchronisation avec le PC, options');
 
   const SECTIONS = [
+    { id: 'wishlist', label: tx('Souhaits'), sub: tp(wishlist.items.length, '{n} carte souhaitée', '{n} cartes souhaitées', { n: wishlist.items.length }), icon: Heart },
     { id: 'trades', label: tx('Échanges et amis'), sub: tx('{length} liste(s) d’amis · {length2} échange(s) enregistré(s)', { length: org.people.items.filter(p => p.list).length, length2: org.trades.items.length }), icon: Repeat },
     { id: 'loans', label: tx('Prêts'), sub: activeLoans ? tx('{activeLoans} prêt(s) en cours', { activeLoans }) : tx('Aucun prêt en cours'), icon: Users },
     { id: 'settings', label: tx('Réglages'), sub: syncLine, icon: Settings },
@@ -90,6 +97,9 @@ export default function MoreTab({ scannedCards, collection, org, wishlist, onAdd
             </button>
             <h1 className="h-title text-[20px]">{current.label}</h1>
           </div>
+          {section === 'wishlist' && (
+            <WishlistView ownedByCard={ownedByCard} wishlist={wishlist} onOpen={openCard} />
+          )}
           {section === 'trades' && (
             <FriendsView scannedCards={scannedCards} collection={collection} org={org} wishlist={wishlist} defaultLanguage={defaultLanguage} onOpen={openCard} notify={showNotification} />
           )}
@@ -102,10 +112,12 @@ export default function MoreTab({ scannedCards, collection, org, wishlist, onAdd
         <CardZoom
           cardId={zoom}
           stacks={scannedCards}
-          wanted={wishlist.byCard.get(zoom)?.quantity || 0}
           byCard={wishlist.byCard}
           onSetWanted={wishlist.setWanted}
           onAddCopy={onAddCopy}
+          onAddCopies={onAddCopies}
+          org={org}
+          defaultLanguage={defaultLanguage}
           onClose={() => setZoom(null)}
         />
       )}

@@ -58,8 +58,12 @@ export const HELP = {
   'journal.timeline': { label: tx('Frise'), title: tx('La chronique'), text: tx('Tes ajouts jour après jour, avec leur valeur ; clique une barre de l’histogramme pour aller à ce jour.') },
   'card.forge': { label: tx('Ajouter à ma collection'), title: tx('Ajouter à ma collection'), text: tx('Choisis langue, quantité, finition, état et rangement, puis ajoute les exemplaires d’un coup.') },
   'card.nav': { label: tx('Cartes voisines'), title: tx('Changer de carte'), text: tx('Flèches ← →, un clic sur une carte voisine ou un glissé de la carte : la suivante jaillit du portail.') },
+  'card.swipe': { label: tx('Balaie'), title: tx('Changer de carte au doigt'), text: tx('Sur la scène de la carte, balaie à gauche ou à droite : la carte suivante jaillit du portail.') },
+  'card.sheet': { label: tx('La feuille'), title: tx('Le dossier de la carte'), text: tx('En bas, la feuille du dossier : tire la poignée vers le haut pour lire tous les onglets (Infos, Ma collection, Prix, Impressions, Rulings).') },
   'cards.facets': { label: tx('Filtres'), title: tx('Le panneau de filtres'), text: tx('Extensions, domaines, énergie, puissance, rareté et types en icônes : chaque filtre écrit sa clé dans la recherche.') },
+  'cards.filtersheet': { label: tx('Filtres'), title: tx('La feuille de filtres'), text: tx('Possession, boosters, runes, ronds d’énergie, hexagones de puissance, gemmes, types et tri : les filtres s’appliquent en direct, le bouton du bas indique le nombre de résultats.') },
   'cards.size': { label: tx('Taille des cartes'), title: tx('Taille des cartes'), text: tx('Agrandis ou réduis les cartes de la grille ; ton choix est retenu.') },
+  'collection.wish': { label: tx('Souhaits'), title: tx('Vos souhaits'), text: tx('Le cœur en haut de la Collection ouvre ta liste de souhaits (aussi dans « Plus »).') },
   // Decks, value, settings
   'decks.new': { label: tx('Nouveau deck'), title: tx('Créer un deck'), text: tx('Commencez un deck : choisissez la Légende, puis ajoutez des cartes de votre collection ou non.') },
   'value.total': { label: tx('Valeur'), title: tx('Valeur de la collection'), text: tx('La valeur de vos cartes au prix Cardmarket, et son évolution jour après jour.') },
@@ -69,14 +73,14 @@ export const HELP = {
 
 /** Page → the order of its tour (ids missing on screen are skipped). */
 export const TOURS = {
-  collection: ['collection.hero', 'collection.portals', 'collection.shelves', 'collection.views', 'collection.add', 'collection.search', 'collection.sort', 'collection.filters', 'collection.card', 'collection.layout', 'collection.io', 'collection.select'],
-  cards: ['cards.search', 'cards.facets', 'cards.size', 'cards.filters', 'cards.grid', 'cards.actions'],
+  collection: ['collection.hero', 'collection.portals', 'collection.shelves', 'collection.wish', 'collection.views', 'collection.add', 'collection.search', 'collection.sort', 'collection.filters', 'collection.card', 'collection.layout', 'collection.io', 'collection.select'],
+  cards: ['cards.search', 'cards.facets', 'cards.filtersheet', 'cards.size', 'cards.filters', 'cards.grid', 'cards.actions'],
   set: ['set.ribbon', 'set.grid'],
   journal: ['journal.timeline'],
   progress: ['progress.set', 'progress.show', 'progress.wishAll'],
   wishlist: ['wish.summary', 'wish.wanted', 'wish.alert', 'wish.cardmarket', 'wish.empty'],
   scan: ['scan.modes', 'scan.place', 'scan.lang', 'scan.search', 'scan.pending'],
-  card: ['card.forge', 'card.nav', 'card.count', 'card.tabs', 'card.lang', 'card.prints', 'card.rulings', 'card.wish'],
+  card: ['card.forge', 'card.nav', 'card.swipe', 'card.sheet', 'card.count', 'card.tabs', 'card.lang', 'card.prints', 'card.rulings', 'card.wish'],
   decks: ['decks.new'],
   value: ['value.total'],
   content: ['content.cards', 'content.prices'],
